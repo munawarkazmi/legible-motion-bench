@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "id": "open_two_goals",
+  "description": "Two goals placed symmetrically about the start with no obstacles. The simplest world in which the benchmark question is well posed: both goals cost the same from the start, so nothing about the robot's first step is determined by efficiency alone.",
+  "bounds": {
+    "xmin": 0.0,
+    "ymin": 0.0,
+    "xmax": 10.0,
+    "ymax": 10.0
+  },
+  "start": [
+    1.0,
+    5.0
+  ],
+  "goals": [
+    {
+      "id": "A",
+      "position": [
+        9.0,
+        8.0
+      ]
+    },
+    {
+      "id": "B",
+      "position": [
+        9.0,
+        2.0
+      ]
+    }
+  ],
+  "true_goal": "A",
+  "obstacles": [],
+  "keep_out_zones": [],
+  "properties": [
+    {
+      "kind": "goal_separation_at_least",
+      "args": {
+        "threshold": 5.0
+      }
+    },
+    {
+      "kind": "goal_cost_spread_at_most",
+      "args": {
+        "threshold": 1e-09
+      }
+    },
+    {
+      "kind": "geodesic_cost",
+      "args": {
+        "from": "start",
+        "to": "A"
+      },
+      "value": 8.54400374531753
+    },
+    {
+      "kind": "geodesic_cost",
+      "args": {
+        "from": "start",
+        "to": "B"
+      },
+      "value": 8.54400374531753
+    }
+  ]
+}

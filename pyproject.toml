@@ -1,0 +1,13 @@
+[project]
+name = "legible-motion-bench"
+version = "0.0.1"
+description = "Benchmark of legible robot motion under path cost and safety constraints, with exactly computed metrics"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+render = ["matplotlib>=3.8"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
