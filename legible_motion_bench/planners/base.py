@@ -15,7 +15,17 @@ from ..world import Scenario
 
 
 class PlannerError(ValueError):
-    """Raised when a planner cannot produce a trajectory for a scenario."""
+    """Raised when a planner cannot produce a trajectory for a scenario.
+
+    Carries what the search had spent when it gave up, because a sweep
+    needs to report the effort behind a failure rather than only the fact
+    of it.
+    """
+
+    def __init__(self, message: str, evaluations: int = 0, refusals: int = 0):
+        super().__init__(message)
+        self.evaluations = evaluations
+        self.refusals = refusals
 
 
 @dataclass(frozen=True)

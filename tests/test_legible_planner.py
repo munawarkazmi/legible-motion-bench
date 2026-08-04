@@ -18,6 +18,7 @@ from legible_motion_bench.planners import (
     LegiblePlanner,
     PlannerError,
     ShortestPathPlanner,
+    sweep,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -140,10 +141,18 @@ def test_plan_settings_record_what_produced_the_trajectory():
 
 
 def test_planner_names_carry_their_parameters():
-    assert LegiblePlanner(waypoints=3, budget=2000).name == "legible_k3_b2000"
+    # Two budgets travel with a legible planner and they mean different
+    # things: c is the ceiling on path cost, e the number of objective
+    # evaluations. A name that carried only one of them would let two
+    # incomparable rows sit under the same heading.
+    assert LegiblePlanner(waypoints=3, budget=2000).name == "legible_k3_cinf_e2000"
+    assert (
+        LegiblePlanner(waypoints=3, budget=2000, cost_budget=1.25).name
+        == "legible_k3_c1.25_e2000"
+    )
     assert (
         LegiblePlanner(waypoints=2, budget=500, respect_keep_out=True).name
-        == "legible_safe_k2_b500"
+        == "legible_safe_k2_cinf_e500"
     )
 
 
@@ -161,3 +170,55 @@ def test_malformed_planners_are_rejected():
         LegiblePlanner(budget=0)
     with pytest.raises(PlannerError, match="restarts cannot be negative"):
         LegiblePlanner(restarts=-1)
+    with pytest.raises(PlannerError, match="cannot be below one"):
+        LegiblePlanner(cost_budget=0.9)
+
+
+@pytest.mark.parametrize("ceiling", [1.05, 1.25, 2.0])
+def test_the_cost_budget_is_never_exceeded(ceiling):
+    open_world = scenario("open_two_goals")
+    plan = LegiblePlanner(cost_budget=ceiling, **FAST).plan(open_world)
+    result = metrics.evaluate(open_world, Observer(), plan.points, spacing=0.3)
+    assert result.cost_ratio <= ceiling + 1e-9
+    assert plan.settings["cost_budget"] == ceiling
+
+
+def test_a_looser_budget_buys_more_clarity_than_a_tight_one():
+    open_world = scenario("open_two_goals")
+    tight = LegiblePlanner(cost_budget=1.05, **FAST).plan(open_world)
+    loose = LegiblePlanner(cost_budget=None, **FAST).plan(open_world)
+    assert legibility_of(open_world, loose.points) > legibility_of(
+        open_world, tight.points
+    )
+
+
+def test_the_sweep_returns_one_point_per_ceiling():
+    open_world = scenario("open_two_goals")
+    ceilings = (1.05, 1.25, None)
+    points = sweep(open_world, ceilings=ceilings, **FAST)
+    assert [p.ceiling for p in points] == list(ceilings)
+    assert all(p.plan is not None for p in points)
+    assert all(p.not_found is None for p in points)
+
+
+def test_the_sweep_records_a_failure_instead_of_raising():
+    # A ceiling under which nothing admissible is found is part of the
+    # frontier, not an error, and the record must say the search failed
+    # rather than that nothing exists.
+    pillar = scenario("pillar_two_goals")
+    points = sweep(
+        pillar, ceilings=(1.0,), respect_keep_out=True, budget=20, restarts=0,
+        spacing=0.3,
+    )
+    assert len(points) == 1
+    assert points[0].plan is None
+    assert "not a proof that none exists" in points[0].not_found
+    assert points[0].refusals > 0
+
+
+def test_sweep_points_serialise():
+    points = sweep(scenario("open_two_goals"), ceilings=(1.1,), **FAST)
+    restored = json.loads(json.dumps(points[0].as_record()))
+    assert restored["ceiling"] == 1.1
+    assert restored["plan"]["settings"]["cost_budget"] == 1.1
+    assert restored["not_found"] is None

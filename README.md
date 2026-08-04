@@ -27,11 +27,10 @@ and this section will say so until it is.
   conditions, one that can see the obstacles and one that cannot
 - [x] Metrics: legibility, path cost ratio, time to confidence, keep-out
   entries and minimum clearance
-- [ ] Planners: shortest path, the legibility optimiser and its
-  safety-constrained variant are built. The optimiser has no path cost
-  budget yet, so it buys clarity at any price and reports cost ratios near
-  four; that is one end of the frontier rather than the frontier.
-  Trajectories proposed by language models are not written
+- [x] Planners: shortest path, the legibility optimiser under a path cost
+  ceiling, and its safety-constrained variant, with a sweep over ceilings
+  that traces the frontier
+- [ ] Trajectories proposed by language models
 - [ ] Scenario suite
 - [ ] Rendering
 - [ ] Language model evaluation
@@ -147,6 +146,39 @@ The second deviation buys less clarity per unit of path than the first, and
 that diminishing return is asserted in the tests rather than described
 here. Deviating towards the wrong goal loses on every column at once.
 
+`legible_motion_bench/planners/` holds the planners. The shortest path
+baseline ignores the observer entirely and is the denominator. The
+legibility optimiser is a compass search over K free interior waypoints
+with the endpoints pinned, derivative free because the optimal cost-to-go
+has kinks wherever the shortest path switches which obstacle corner it
+rounds. Its safety-constrained variant is the same search with a single
+added refusal, so the gap between them measures the constraint rather than
+two different optimisers.
+
+Both take a ceiling on the cost ratio, and sweeping that ceiling is what
+turns a point into a frontier. In the `pillar_two_goals` fixture, at a
+budget of 250 evaluations:
+
+```
+  ceiling   legibility   cost ratio   keep-out   clearance
+  1.00          0.7200       1.0000          1      0.1916
+  1.05          0.7995       1.0500          1      1.6343
+  1.10          0.8180       1.0999          0      2.2710
+  1.25          0.8429       1.2498          0      2.8474
+  unbounded     0.9286       3.6297          0      2.6798
+```
+
+The cost ratio sits on the ceiling at every row, so the constraint binds.
+The safety column changes along the curve: at a five per cent path budget
+the best trajectory found still crosses the keep-out zone, and only at ten
+per cent does it buy its way out.
+
+The optimiser is a local search and cannot prove a trajectory does not
+exist, only that it did not find one. A sweep records a ceiling it found
+nothing under as a search outcome carrying that wording, never as a
+statement that nothing exists. Getting that distinction wrong is the
+easiest way for a benchmark like this to publish something false.
+
 Time to confidence is measured in time, not in samples, so halving the
 speed doubles it. When the belief never settles above the threshold the
 value is absent rather than large, because a large number reads as
@@ -160,7 +192,7 @@ Requires Python 3.10 or newer and pytest. No other dependencies.
 python -m pytest -q
 ```
 
-152 tests. To check the facts every scenario carries, and to see the suite
+159 tests. To check the facts every scenario carries, and to see the suite
 inventory that any quoted denominator has to come from:
 
 ```bash

@@ -19,18 +19,19 @@ inspected.
   to confidence, keep-out entries and minimum clearance, returned together
   in one record with no way to obtain legibility without the columns it
   has to be read against)
-- [ ] Planners (three of four are built and tested: the shortest path
-  baseline, whose cost ratio is one by construction and which ignores
-  keep-out zones so the baseline is not automatically the safe option; the
-  legibility optimiser, a compass search over K free interior waypoints
-  with pinned endpoints, seeded from the shortest path and run from
-  several seeded restarts under a recorded evaluation budget; and its
-  safety-constrained variant, which is the same search with a single
-  added refusal so the gap between them measures the constraint and not
-  two different optimisers. The optimiser has no cost budget yet, which is
-  the open decision below. Trajectories proposed by language models are
-  not written. A 152-test suite in CI, which also re-checks every scenario
-  property against the committed code)
+- [x] Planners (the shortest path baseline, whose cost ratio is one by
+  construction and which ignores keep-out zones so the baseline is not
+  automatically the safe option; the legibility optimiser, a compass
+  search over K free interior waypoints with pinned endpoints under a
+  ceiling on the cost ratio, seeded structurally to both sides of the
+  start-to-goal line and run under a recorded evaluation budget; its
+  safety-constrained variant, which is the same search with a single added
+  refusal so the gap between them measures the constraint and not two
+  different optimisers; and a sweep over ceilings that traces the frontier
+  and records a ceiling it found nothing under as a search outcome rather
+  than as an error. A 159-test suite in CI, which also re-checks every
+  scenario property against the committed code)
+- [ ] Language model trajectories (not started)
 - [ ] Scenario suite (not started, and deliberately so: a scenario is only
   worth including if the fact it carries can be stated in terms the code
   can decide, which means the metrics come first)
@@ -135,6 +136,48 @@ on twenty thousand near-collinear triples an unguarded floating point
 determinant reports the wrong sign on more than a tenth of them, while the
 guarded predicate matches rational arithmetic on all of them.
 
+## The frontier, first traced 4 August 2026
+
+The optimiser now takes a cost ceiling, a bound on the cost ratio, and the
+sweep runs it at a series of ceilings so the result is a curve rather than
+a point. Below is `pillar_two_goals` at a budget of 250 evaluations, three
+waypoints, sampling spacing 0.15, scored under the informed observer. Not a
+result: the fixtures are not the scenario suite and the budget is small.
+
+    ceiling   legibility   cost ratio   keep-out   clearance
+    1.00          0.7200       1.0000          1      0.1916
+    1.05          0.7995       1.0500          1      1.6343
+    1.10          0.8180       1.0999          0      2.2710
+    1.25          0.8429       1.2498          0      2.8474
+    1.50          0.8658       1.5000          0      3.3555
+    2.00          0.8937       1.9998          0      3.6385
+    unbounded     0.9286       3.6297          0      2.6798
+
+Two things are worth keeping. The cost ratio sits on the ceiling at every
+row, so the constraint binds and the curve is the trade rather than an
+artefact of where the search happened to stop. And the safety column
+changes along the curve: at a five per cent budget the best trajectory the
+search found still crosses the keep-out zone, and only at ten per cent does
+it buy its way out. That is the three-way frontier the project exists to
+measure, appearing in a fixture rather than in a designed scenario.
+
+With keep-out zones refused outright, the same sweep finds nothing
+admissible at 1.05 or 1.10, matches the unconstrained planner exactly at
+1.25 where the unconstrained optimum happens already to be safe, and sits
+just below it at looser ceilings, 0.8637 against 0.8658 at 1.50.
+
+## A limit that has to be stated wherever this is reported
+
+The optimiser is a local search. It cannot prove that no trajectory exists,
+only that it did not find one, and the two are not the same claim. This
+bears directly on the kind of scenario property the specification asks for:
+"no trajectory within a twenty per cent cost budget clears legibility 0.9
+here" is not decidable by this instrument. What is decidable, and what a
+scenario may therefore assert, is "the committed search at this budget and
+this seed did not find one". Every such property must be phrased that way,
+and the planner raises with that wording built into the message so it
+cannot be softened by accident downstream.
+
 ## What the first optimiser run showed, 4 August 2026
 
 Run on the three fixtures at a budget of 400 evaluations, three waypoints,
@@ -158,14 +201,25 @@ change what has to be built next.
   confidence gets worse, 8.37 to 9.58. The two clarity measures disagree
   because one weights early motion and the other asks when belief settles.
   Worth understanding before either is written up.
-- One defect found and fixed in the same session: the constrained planner
-  was perturbing its restarts around the shortest path seed even in
-  worlds where that seed is itself inadmissible, which in
-  `pillar_two_goals` left it at 0.4010. Recentring the restarts on the
-  first admissible point found took it to 0.6678. Refusals are now counted
-  and reported separately from evaluations, so a search that spent most of
-  its effort being refused says so instead of reporting few evaluations
-  and looking efficient.
+- Three search defects were found by running it and all three are fixed.
+  The constrained planner was perturbing its restarts around the shortest
+  path seed even where that seed is itself inadmissible, leaving it at
+  0.4010 in `pillar_two_goals`. It now seeds on the shortest path that
+  treats keep-out zones as blocking, which has no zone entries by
+  construction. Random restarts then turned out to be nearly useless under
+  a tight cost budget, because perturbing three waypoints independently
+  makes long paths and a ceiling near one refuses almost all of them. And
+  the objective is multimodal across homotopy classes, so a search that
+  starts on one side of an obstacle never crosses to the other: with the
+  constraint on and no ceiling it reached 0.5591 while a trajectory
+  scoring 0.9286 with no violations was sitting in the other basin, found
+  by the unconstrained planner at the same budget. Seeds are now offset
+  bodily to each side of the start-to-goal line at three magnitudes, which
+  samples both families deliberately. After all three fixes the
+  constrained planner reaches 0.9264 where it previously reached 0.5591.
+  Refusals are counted and reported separately from evaluations, so a
+  search that spent most of its effort being refused says so instead of
+  reporting few evaluations and looking efficient.
 
 ## Open decisions
 
@@ -175,15 +229,15 @@ change what has to be built next.
   asked. The first is at risk and the third looks strongest, but nothing
   is settled until the outstanding body-checks in `verification_log.md`
   are done. The code written so far is neutral to all three.
-- Whether the legibility optimiser gets a path cost budget, and how the
-  frontier is traced. Maximising legibility alone produces cost ratios
-  near four. The alternative is to maximise legibility subject to a cost
-  ratio ceiling and sweep that ceiling, which turns three planner points
-  into an actual frontier and matches the constrained form Dragan and
-  Srinivasa use, whose body check is still outstanding. Deciding this
-  before the scenario suite is designed matters, because a scenario
-  property such as "no trajectory within a twenty per cent cost budget
-  clears legibility 0.9 here" is only expressible if a cost budget exists.
+- The ceilings the frontier is swept at. They default to 1.05, 1.1, 1.25,
+  1.5, 2.0 and unbounded, which was a first guess rather than an argued
+  choice. The interesting structure in `pillar_two_goals` sits between
+  1.05 and 1.10, so the grid may need to be finer where the safety column
+  changes and coarser where it does not.
+- The evaluation budget for the reported runs. Everything so far has used
+  250 evaluations, which is a tenth of the default, chosen to keep
+  exploratory runs short. The reported results need a budget at which the
+  answer has stopped moving, and that has to be shown rather than assumed.
 - The confidence threshold. It defaults to 0.8 and is recorded in every
   metrics record, but no value has been argued for. Whichever is chosen,
   the results have to be shown to be stable across a range of it or the

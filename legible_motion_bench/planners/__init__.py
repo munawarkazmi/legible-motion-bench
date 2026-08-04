@@ -6,7 +6,15 @@ confounded by differences in how they are run.
 """
 
 from .base import Plan, PlannerError
-from .legible import LegiblePlanner
+from .legible import DEFAULT_COST_CEILINGS, LegiblePlanner, SweepPoint, sweep
 from .shortest import ShortestPathPlanner
 
-__all__ = ["LegiblePlanner", "Plan", "PlannerError", "ShortestPathPlanner"]
+__all__ = [
+    "DEFAULT_COST_CEILINGS",
+    "LegiblePlanner",
+    "Plan",
+    "PlannerError",
+    "ShortestPathPlanner",
+    "SweepPoint",
+    "sweep",
+]

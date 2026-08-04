@@ -28,8 +28,11 @@ from __future__ import annotations
 
 import random
 from dataclasses import dataclass, field
+from math import hypot, sqrt
 
 from .. import metrics
+from ..costs import geodesic
+from ..geometry import GeometryError, polyline_length
 from ..observer import Observer
 from ..world import Scenario
 from .base import Plan, PlannerError, pinned_endpoints
@@ -43,6 +46,14 @@ DEFAULT_SEED = 20260804
 STEP_FLOOR_FRACTION = 1e-3
 INITIAL_STEP_FRACTION = 0.12
 IMPROVEMENT = 1e-12
+
+# The ceilings the frontier is traced at. A ceiling is a bound on the cost
+# ratio, so 1.1 means the planner may spend a tenth more path than the
+# optimum to buy clarity, and None means it may spend anything. The
+# unbounded point is kept in the sweep because it says what the metric
+# would ask for if nobody stopped it, which is worth seeing next to what a
+# deployable robot could do.
+DEFAULT_COST_CEILINGS = (1.05, 1.1, 1.25, 1.5, 2.0, None)
 
 
 class _Budget:
@@ -79,6 +90,7 @@ class LegiblePlanner:
     seed: int = DEFAULT_SEED
     spacing: float = metrics.DEFAULT_SAMPLE_SPACING
     respect_keep_out: bool = False
+    cost_budget: float | None = None
     observer: Observer = field(default_factory=lambda: Observer(condition="geodesic"))
 
     def __post_init__(self):
@@ -91,11 +103,17 @@ class LegiblePlanner:
             raise PlannerError(f"budget must be positive, found {self.budget}")
         if self.restarts < 0:
             raise PlannerError(f"restarts cannot be negative, found {self.restarts}")
+        if self.cost_budget is not None and self.cost_budget < 1.0:
+            raise PlannerError(
+                f"cost budget is a ratio against the optimal path and cannot "
+                f"be below one, found {self.cost_budget}"
+            )
 
     @property
     def name(self) -> str:
         kind = "legible_safe" if self.respect_keep_out else "legible"
-        return f"{kind}_k{self.waypoints}_b{self.budget}"
+        ceiling = "inf" if self.cost_budget is None else f"{self.cost_budget:g}"
+        return f"{kind}_k{self.waypoints}_c{ceiling}_e{self.budget}"
 
     def _path(self, scenario: Scenario, params) -> tuple:
         interior = [
@@ -106,13 +124,13 @@ class LegiblePlanner:
             [scenario.start, *interior, scenario.true_goal_position],
         )
 
-    def _score(self, scenario: Scenario, params, budget: _Budget):
+    def _score(self, scenario: Scenario, params, budget: _Budget, optimal_cost: float):
         """Legibility of these waypoints, or None if they are not allowed.
 
-        None covers three separate refusals and the caller does not need to
+        None covers four separate refusals and the caller does not need to
         tell them apart: a waypoint outside the world, a trajectory that is
-        infeasible, and, for the constrained planner, one that enters a
-        keep-out zone.
+        infeasible, one that spends more path than the cost budget allows,
+        and, for the constrained planner, one that enters a keep-out zone.
         """
         if budget.exhausted:
             return None
@@ -124,6 +142,12 @@ class LegiblePlanner:
 
         points = self._path(scenario, params)
         if metrics.feasibility(scenario, points):
+            budget.refuse()
+            return None
+        if (
+            self.cost_budget is not None
+            and polyline_length(points) > self.cost_budget * optimal_cost
+        ):
             budget.refuse()
             return None
         if self.respect_keep_out and metrics.safety(scenario, points).keep_out_entries:
@@ -142,17 +166,34 @@ class LegiblePlanner:
         return legibility
 
     def _seed_along_the_optimal_path(self, scenario: Scenario) -> list:
-        """Waypoints spread evenly along the shortest path.
+        """Waypoints spread evenly along the shortest admissible path.
 
-        A starting point that is feasible by construction, and whose score
-        is the baseline's legibility, so the search can only report an
+        For the unconstrained planner that is the shortest path, whose cost
+        ratio is one so no cost budget can refuse it, and whose score is
+        the baseline's legibility, so the search can only report an
         improvement on doing nothing.
-        """
-        from ..costs import geodesic
 
-        route = geodesic(
-            scenario.start, scenario.true_goal_position, scenario.obstacles
-        )
+        For the constrained planner the shortest path may be exactly what
+        the constraint forbids, and it is precisely in those worlds that
+        the comparison is interesting. So its seed is the shortest path
+        that treats keep-out zones as blocking. That route has no zone
+        entries by construction and is the cheapest such route, which
+        matters because random restarts almost never satisfy a tight cost
+        budget: perturbing three waypoints independently produces long
+        paths, and a ceiling near one refuses nearly all of them.
+        """
+        blocking = tuple(scenario.obstacles)
+        if self.respect_keep_out:
+            blocking += tuple(scenario.keep_out_zones)
+        try:
+            route = geodesic(scenario.start, scenario.true_goal_position, blocking)
+        except GeometryError:
+            # A start or goal sitting inside a keep-out zone, or a zone
+            # that seals the goal off. Fall back to the unconstrained
+            # route; it will be refused, and the random restarts take over.
+            route = geodesic(
+                scenario.start, scenario.true_goal_position, scenario.obstacles
+            )
         samples = metrics.resample(
             route.path, max(route.cost / (self.waypoints + 1), 1e-9)
         )
@@ -162,7 +203,9 @@ class LegiblePlanner:
             params.extend(samples[index])
         return params
 
-    def _starting_points(self, scenario: Scenario, budget: _Budget) -> list:
+    def _starting_points(
+        self, scenario: Scenario, budget: _Budget, optimal_cost: float
+    ) -> list:
         """Admissible waypoint sets to search from.
 
         The optimal path is the natural first seed, but the constrained
@@ -174,37 +217,96 @@ class LegiblePlanner:
         recentres on the first admissible point it finds.
         """
         base = self._seed_along_the_optimal_path(scenario)
-        starts = []
-        if self._score(scenario, base, budget) is not None:
-            starts.append(base)
+        scored = []
+        for candidate in self._structured_starts(scenario, base, optimal_cost):
+            score = self._score(scenario, candidate, budget, optimal_cost)
+            if score is not None:
+                scored.append((score, candidate))
 
         rng = random.Random(self.seed)
-        span = min(
-            scenario.bounds.xmax - scenario.bounds.xmin,
-            scenario.bounds.ymax - scenario.bounds.ymin,
-        )
-        wanted = self.restarts if starts else max(self.restarts, 1)
-        attempts = 20 if starts else 200
-        while len(starts) < wanted + (1 if starts else 0):
-            centre = starts[0] if starts else base
-            found = False
-            for attempt in range(attempts):
+        deviation = self._characteristic_deviation(scenario, optimal_cost)
+        centre = scored[0][1] if scored else base
+        for _ in range(self.restarts):
+            for attempt in range(60):
                 # Widen the search the longer it goes without an
                 # admissible point, so a tightly constrained world is not
                 # explored at the same radius as an open one.
-                scale = 0.25 * span * (1.0 + 3.0 * attempt / attempts)
+                scale = deviation * (1.0 + 3.0 * attempt / 60)
                 candidate = [p + rng.gauss(0.0, scale) for p in centre]
-                if self._score(scenario, candidate, budget) is not None:
-                    starts.append(candidate)
-                    found = True
+                score = self._score(scenario, candidate, budget, optimal_cost)
+                if score is not None:
+                    scored.append((score, candidate))
                     break
-            if not found:
-                break
+
+        # Refine the most promising starts rather than all of them, so a
+        # small budget is spent going deep in a few basins instead of
+        # shallow in many.
+        scored.sort(key=lambda pair: -pair[0])
+        return [candidate for _score, candidate in scored[: self.restarts + 1]]
+
+    def _structured_starts(self, scenario: Scenario, base, optimal_cost: float) -> list:
+        """Seeds that differ in which way they go round, not only by how far.
+
+        The objective is multimodal across homotopy classes: going above an
+        obstacle and going below it are separate basins, and a compass
+        search started in one will not cross to the other however long it
+        runs. Random perturbation does not reliably cross either, because
+        under a tight cost budget nearly every random displacement is
+        refused for being too long.
+
+        So the seed is also offset bodily to each side of the line from the
+        start to the goal, at several magnitudes. That samples both
+        families deliberately instead of hoping to stumble into them.
+        """
+        deviation = self._characteristic_deviation(scenario, optimal_cost)
+        sx, sy = scenario.start
+        gx, gy = scenario.true_goal_position
+        length = hypot(gx - sx, gy - sy)
+        if length <= 0:
+            return [base]
+        across = (-(gy - sy) / length, (gx - sx) / length)
+
+        starts = [base]
+        for magnitude in (0.5, 1.0, 2.0):
+            for sign in (1.0, -1.0):
+                offset = sign * magnitude * deviation
+                starts.append(
+                    [
+                        value + across[index % 2] * offset
+                        for index, value in enumerate(base)
+                    ]
+                )
         return starts
 
-    def _compass_search(self, scenario: Scenario, start, budget: _Budget):
+    def _characteristic_deviation(
+        self, scenario: Scenario, optimal_cost: float
+    ) -> float:
+        """How far a waypoint can move before the cost budget refuses it.
+
+        A detour that leaves a straight path of length L, reaches a
+        perpendicular distance d and returns costs about 2d^2/L more than
+        going straight, so a cost ratio ceiling of c allows a deviation of
+        roughly L*sqrt((c-1)/2). Sizing the search around that keeps a
+        tight ceiling from spending its whole restart allowance proposing
+        detours it will refuse, and keeps a loose one from creeping.
+
+        With no ceiling there is nothing to derive it from, so the search
+        falls back to a fraction of the world.
+        """
+        span = max(
+            scenario.bounds.xmax - scenario.bounds.xmin,
+            scenario.bounds.ymax - scenario.bounds.ymin,
+        )
+        if self.cost_budget is None:
+            return INITIAL_STEP_FRACTION * span
+        allowed = optimal_cost * sqrt(max(self.cost_budget - 1.0, 0.0) / 2.0)
+        return min(max(allowed, STEP_FLOOR_FRACTION * span), INITIAL_STEP_FRACTION * span)
+
+    def _compass_search(
+        self, scenario: Scenario, start, budget: _Budget, optimal_cost: float
+    ):
         best = list(start)
-        best_score = self._score(scenario, best, budget)
+        best_score = self._score(scenario, best, budget, optimal_cost)
         if best_score is None:
             return None, None
 
@@ -212,7 +314,7 @@ class LegiblePlanner:
             scenario.bounds.xmax - scenario.bounds.xmin,
             scenario.bounds.ymax - scenario.bounds.ymin,
         )
-        step = INITIAL_STEP_FRACTION * span
+        step = self._characteristic_deviation(scenario, optimal_cost)
         floor = STEP_FLOOR_FRACTION * span
 
         while step > floor and not budget.exhausted:
@@ -223,7 +325,7 @@ class LegiblePlanner:
                         break
                     candidate = list(best)
                     candidate[axis] += delta
-                    score = self._score(scenario, candidate, budget)
+                    score = self._score(scenario, candidate, budget, optimal_cost)
                     if score is not None and score > best_score + IMPROVEMENT:
                         best, best_score = candidate, score
                         improved = True
@@ -233,21 +335,39 @@ class LegiblePlanner:
 
     def plan(self, scenario: Scenario) -> Plan:
         budget = _Budget(self.budget)
+        optimal_cost = geodesic(
+            scenario.start, scenario.true_goal_position, scenario.obstacles
+        ).cost
         baseline = self._score(
-            scenario, self._seed_along_the_optimal_path(scenario), budget
+            scenario,
+            self._seed_along_the_optimal_path(scenario),
+            budget,
+            optimal_cost,
         )
 
         best = None
         best_score = None
-        for start in self._starting_points(scenario, budget):
-            params, score = self._compass_search(scenario, start, budget)
+        for start in self._starting_points(scenario, budget, optimal_cost):
+            params, score = self._compass_search(
+                scenario, start, budget, optimal_cost
+            )
             if score is not None and (best_score is None or score > best_score):
                 best, best_score = params, score
 
         if best is None:
+            # The wording matters and is not defensive. A compass search
+            # that comes back empty has failed to find something; it has
+            # not shown there is nothing to find. Any claim of the form
+            # "no trajectory within this cost budget achieves that" is a
+            # statement about this search at this budget, and must be
+            # written that way wherever it is reported.
             raise PlannerError(
-                f"{self.name} found no admissible trajectory for scenario "
-                f"{scenario.id!r} within a budget of {self.budget} evaluations"
+                f"{self.name} did not find an admissible trajectory for "
+                f"scenario {scenario.id!r} within {self.budget} evaluations "
+                f"after {budget.rejected} refusals; this is a failure to "
+                f"find one, not a proof that none exists",
+                evaluations=budget.used,
+                refusals=budget.rejected,
             )
 
         return Plan(
@@ -263,8 +383,79 @@ class LegiblePlanner:
                 "seed": self.seed,
                 "spacing": self.spacing,
                 "respect_keep_out": self.respect_keep_out,
+                "cost_budget": self.cost_budget,
                 "observer": self.observer.name,
                 "seed_legibility": baseline,
                 "best_legibility": best_score,
             },
         )
+
+
+@dataclass(frozen=True)
+class SweepPoint:
+    """One cost ceiling and what the search found under it.
+
+    `plan` is None when the search came back empty. That is recorded as a
+    search outcome and never as a proof: `not_found` says the committed
+    search at this budget did not find an admissible trajectory, which is
+    a weaker statement than saying none exists, and the difference has to
+    survive into anything written from these records.
+    """
+
+    ceiling: float | None
+    plan: Plan | None
+    not_found: str | None
+    evaluations: int
+    refusals: int
+
+    def as_record(self) -> dict:
+        return {
+            "ceiling": self.ceiling,
+            "plan": None if self.plan is None else self.plan.as_record(),
+            "not_found": self.not_found,
+            "evaluations": self.evaluations,
+            "refusals": self.refusals,
+        }
+
+
+def sweep(scenario: Scenario, ceilings=DEFAULT_COST_CEILINGS, **planner_settings):
+    """One point per cost ceiling, which is what traces the frontier.
+
+    A single legibility-optimised trajectory is a point. The question the
+    benchmark asks is what clarity costs, and that is only answerable by
+    asking the same planner the same question under a series of budgets.
+    Ceilings are searched in the order given and each is planned
+    independently, so no ceiling inherits another's answer and the sweep
+    cannot smuggle a result from a looser budget into a tighter one.
+
+    A ceiling under which nothing admissible is found does not stop the
+    sweep. Tight ceilings combined with a safety constraint are exactly
+    where that happens, and it is the interesting part of the frontier
+    rather than an error.
+    """
+    points = []
+    for ceiling in ceilings:
+        planner = LegiblePlanner(cost_budget=ceiling, **planner_settings)
+        try:
+            plan = planner.plan(scenario)
+        except PlannerError as exc:
+            points.append(
+                SweepPoint(
+                    ceiling=ceiling,
+                    plan=None,
+                    not_found=str(exc),
+                    evaluations=getattr(exc, "evaluations", 0),
+                    refusals=getattr(exc, "refusals", 0),
+                )
+            )
+            continue
+        points.append(
+            SweepPoint(
+                ceiling=ceiling,
+                plan=plan,
+                not_found=None,
+                evaluations=plan.settings["evaluations"],
+                refusals=plan.settings["refusals"],
+            )
+        )
+    return tuple(points)
