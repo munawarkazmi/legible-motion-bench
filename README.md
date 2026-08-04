@@ -16,6 +16,75 @@ and where different planners sit on it.
 Nothing in the scoring loop is a human rater or a language model judge.
 Every metric is computed exactly from the trajectory and the world.
 
+![Four planners in the keep_out_shortcut scenario, with the observer's
+belief in each goal updating beneath each panel](docs/img/keep_out_shortcut.gif)
+
+One scenario, four planners, one clock. The shortest path on the top left
+stays clear of the hatched keep-out zone and leaves the watcher guessing.
+The three legible trajectories commit early, and to do it they cut straight
+through the zone. All four are still moving at the same instant, because
+the ones that paid for clarity arrive later. The bars underneath are the
+observer's belief in each goal, and they are the same numbers the tables
+below are computed from, not a second drawing of them.
+
+## What the frontier looks like
+
+`pillar_aisle`, our own optimiser, 250 evaluations, informed observer:
+
+| cost ceiling | legibility | cost ratio | keep-out entries | clearance |
+| --- | --- | --- | --- | --- |
+| 1.00 (shortest path) | 0.7200 | 1.0000 | 1 | 0.1916 |
+| 1.05 | 0.7995 | 1.0500 | 1 | 1.6343 |
+| 1.10 | 0.8180 | 1.0999 | 0 | 2.2710 |
+| 1.25 | 0.8429 | 1.2498 | 0 | 2.8474 |
+| 1.50 | 0.8658 | 1.5000 | 0 | 3.3555 |
+| 2.00 | 0.8937 | 1.9998 | 0 | 3.6385 |
+
+The cost ratio sits on the ceiling in every row, so the constraint binds
+and the curve is the trade rather than an artefact of where the search
+stopped. The safety column moves along it: at a five per cent path budget
+the best trajectory found still crosses the keep-out zone, and only at ten
+per cent does it buy its way out.
+
+## What language models do with the same question
+
+Two models, eight scenarios, five samples each at temperature 0.7, the same
+cost ceiling of 1.25 stated in the prompt. Counts over 40 decodes each:
+
+| | Qwen 2.5 7B | Llama 3.3 70B |
+| --- | --- | --- |
+| parsed | 40 | 40 |
+| feasible | 26 | 29 |
+| more legible than the shortest path | 10 | 20 |
+| exceeded the stated cost budget | 9 | 15 |
+| entered a keep-out zone | 7 | 7 |
+| called legible by the model | 40 | 40 |
+
+Every one of the 80 decodes claimed legibility, including the 25 that were
+not feasible at all. In `keep_out_shortcut`, the scenario the animation
+above shows, both models beat the shortest path on 5 of 5 samples and both
+entered the keep-out zone on 5 of 5. Ten decodes out of ten bought the
+clarity and paid for it with the constraint.
+
+Asking Qwen the same question under four different cost budgets moves
+nothing it does:
+
+| stated ceiling | median cost ratio | over budget | more legible than shortest |
+| --- | --- | --- | --- |
+| 1.10 | 1.1663 | 17 | 8 |
+| 1.25 | 1.1588 | 9 | 10 |
+| 1.50 | 1.1712 | 3 | 9 |
+| 2.00 | 1.1709 | 0 | 11 |
+
+The ceiling nearly doubles and the median cost ratio moves by 0.012. The
+violation count falls only because the line moved past a fixed habit of
+spending about 1.17. Where the optimiser treats the budget as a constraint
+that binds, the model treats it as text.
+
+Two models at one temperature is a pilot, not a finding. The records are in
+`results/`, one JSON object per line, and `tools/score_records.py` and
+`tools/consistency.py` recompute every number above from them.
+
 ## Status
 
 Early. Three components are built and tested; the rest is not written yet,
