@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "id": "pillar_aisle",
+  "description": "A pillar between the start and both goals, with a keep-out zone covering the space above it. The cheapest route to the true goal already crosses that zone, so the baseline is not the safe option and safety is not something a planner can have for free by doing nothing. This is the scenario where a tight cost budget forces a choice between clarity and the constraint.",
+  "bounds": {
+    "xmin": 0.0,
+    "ymin": 0.0,
+    "xmax": 12.0,
+    "ymax": 10.0
+  },
+  "start": [
+    1.0,
+    5.0
+  ],
+  "goals": [
+    {
+      "id": "A",
+      "position": [
+        11.0,
+        8.0
+      ]
+    },
+    {
+      "id": "B",
+      "position": [
+        11.0,
+        2.0
+      ]
+    }
+  ],
+  "true_goal": "A",
+  "obstacles": [
+    {
+      "id": "pillar",
+      "vertices": [
+        [
+          5.0,
+          4.0
+        ],
+        [
+          7.0,
+          4.0
+        ],
+        [
+          7.0,
+          6.0
+        ],
+        [
+          5.0,
+          6.0
+        ]
+      ]
+    }
+  ],
+  "keep_out_zones": [
+    {
+      "id": "aisle",
+      "vertices": [
+        [
+          4.0,
+          6.0
+        ],
+        [
+          8.0,
+          6.0
+        ],
+        [
+          8.0,
+          8.0
+        ],
+        [
+          4.0,
+          8.0
+        ]
+      ]
+    }
+  ],
+  "properties": [
+    {
+      "kind": "goal_separation_at_least",
+      "args": {
+        "threshold": 5.0
+      }
+    },
+    {
+      "kind": "goal_cost_spread_at_most",
+      "args": {
+        "threshold": 1e-09
+      }
+    },
+    {
+      "kind": "observer_disagreement_at_least",
+      "args": {
+        "threshold": 0.08
+      }
+    },
+    {
+      "kind": "optimal_path_early_belief_at_most",
+      "args": {
+        "observer": "geodesic",
+        "until_fraction": 0.4,
+        "threshold": 0.85
+      }
+    },
+    {
+      "kind": "geodesic_cost",
+      "args": {
+        "from": "start",
+        "to": "A"
+      },
+      "value": 10.44030650891055
+    },
+    {
+      "kind": "geodesic_keep_out_entries",
+      "args": {
+        "from": "start",
+        "to": "A"
+      },
+      "value": 1
+    },
+    {
+      "kind": "geodesic_keep_out_entries",
+      "args": {
+        "from": "start",
+        "to": "B"
+      },
+      "value": 0
+    },
+    {
+      "kind": "geodesic_min_clearance",
+      "args": {
+        "from": "start",
+        "to": "A"
+      },
+      "value": 0.1915652570442301
+    }
+  ]
+}

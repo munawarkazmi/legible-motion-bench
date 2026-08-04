@@ -28,12 +28,12 @@ from legible_motion_bench import metrics, render, world  # noqa: E402
 from legible_motion_bench.observer import Observer  # noqa: E402
 from legible_motion_bench.planners import ShortestPathPlanner, sweep  # noqa: E402
 
-DEFAULT_CEILINGS = (1.1, 1.5, None)
+DEFAULT_CEILINGS = (1.1, 1.5, 2.0)
 
 
 def _label(ceiling, plan) -> str:
     if ceiling is None:
-        return "legible, no cost ceiling"
+        return "legible, no cost ceiling (diagnostic)"
     return f"legible, cost ceiling {ceiling:g}"
 
 

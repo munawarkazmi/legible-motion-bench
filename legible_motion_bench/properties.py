@@ -19,9 +19,16 @@ from typing import Callable
 
 from .costs import geodesic
 from .geometry import polyline_enters_interior, polyline_min_clearance
+from .metrics import DEFAULT_SAMPLE_SPACING, resample
+from .observer import Observer
 from .world import Property, Scenario
 
 TOLERANCE = 1e-9
+
+# Properties about belief are evaluated along the optimal path at this
+# spacing. It is fixed rather than a property argument so that two
+# scenarios cannot quietly assert their facts at different resolutions.
+BELIEF_SPACING = DEFAULT_SAMPLE_SPACING
 
 
 class PropertyError(ValueError):
@@ -93,6 +100,56 @@ def _compute_goal_cost_spread(scenario: Scenario, args: dict) -> float:
     return max(costs) - min(costs)
 
 
+def _optimal_beliefs(scenario: Scenario, condition: str) -> tuple[float, ...]:
+    """Belief in the true goal along the optimal path, sample by sample.
+
+    Every belief property is about the optimal path rather than about some
+    planner's output, because a scenario has to state what it is for
+    without depending on which planners happen to exist. What a scenario
+    can honestly assert is a fact about its own geometry: how long the
+    cheapest way to the goal leaves an observer guessing.
+    """
+    route = geodesic(
+        scenario.start, scenario.true_goal_position, scenario.obstacles
+    )
+    samples = resample(route.path, BELIEF_SPACING)
+    return Observer(condition=condition).belief_in_true_goal(scenario, samples)
+
+
+def _compute_early_belief(scenario: Scenario, args: dict) -> float:
+    """Highest belief in the true goal over the opening of the optimal path.
+
+    The fact the whole benchmark rests on: that the cheapest trajectory
+    leaves the question open for a while. If this is already high, there
+    is no ambiguity for a legible trajectory to resolve and the scenario
+    is not testing anything.
+    """
+    beliefs = _optimal_beliefs(scenario, args["observer"])
+    fraction = float(args["until_fraction"])
+    if not 0.0 < fraction <= 1.0:
+        raise PropertyError(
+            f"until_fraction must lie in (0, 1], found {fraction!r}"
+        )
+    cutoff = max(1, round(fraction * (len(beliefs) - 1)))
+    return max(beliefs[: cutoff + 1])
+
+
+def _compute_final_belief(scenario: Scenario, args: dict) -> float:
+    return _optimal_beliefs(scenario, args["observer"])[-1]
+
+
+def _compute_observer_disagreement(scenario: Scenario, args: dict) -> float:
+    """Widest gap between the two observers along the optimal path.
+
+    A scenario where this is near zero cannot say anything about whether
+    the ranking of planners survives an observer who cannot see the room,
+    because in that world there is nothing to see.
+    """
+    informed = _optimal_beliefs(scenario, "geodesic")
+    naive = _optimal_beliefs(scenario, "straight_line")
+    return max(abs(a - b) for a, b in zip(informed, naive))
+
+
 def _compare_value(computed, prop: Property) -> tuple[bool, str]:
     if prop.value is None:
         raise PropertyError(
@@ -124,6 +181,15 @@ def _describe_path(prop: Property) -> str:
 
 def _describe_threshold(prop: Property) -> str:
     return f"{prop.kind} {prop.args['threshold']}"
+
+
+def _describe_belief(prop: Property) -> str:
+    where = prop.args.get("until_fraction")
+    span = f" over the first {where:g} of the path" if where is not None else ""
+    return (
+        f"{prop.kind} {prop.args['threshold']} "
+        f"to the {prop.args['observer']} observer{span}"
+    )
 
 
 _KINDS: dict[str, Kind] = {}
@@ -179,6 +245,68 @@ _register(
         required_args=frozenset({"threshold"}),
         carries_value=False,
         compute=_compute_goal_cost_spread,
+        compare=_compare_at_most,
+        describes=_describe_threshold,
+    )
+)
+
+
+_register(
+    Kind(
+        name="optimal_path_early_belief_at_most",
+        required_args=frozenset({"observer", "until_fraction", "threshold"}),
+        carries_value=False,
+        compute=_compute_early_belief,
+        compare=_compare_at_most,
+        describes=_describe_belief,
+    )
+)
+_register(
+    Kind(
+        name="optimal_path_early_belief_at_least",
+        required_args=frozenset({"observer", "until_fraction", "threshold"}),
+        carries_value=False,
+        compute=_compute_early_belief,
+        compare=_compare_at_least,
+        describes=_describe_belief,
+    )
+)
+_register(
+    Kind(
+        name="optimal_path_final_belief_at_least",
+        required_args=frozenset({"observer", "threshold"}),
+        carries_value=False,
+        compute=_compute_final_belief,
+        compare=_compare_at_least,
+        describes=_describe_belief,
+    )
+)
+_register(
+    Kind(
+        name="optimal_path_final_belief_at_most",
+        required_args=frozenset({"observer", "threshold"}),
+        carries_value=False,
+        compute=_compute_final_belief,
+        compare=_compare_at_most,
+        describes=_describe_belief,
+    )
+)
+_register(
+    Kind(
+        name="observer_disagreement_at_least",
+        required_args=frozenset({"threshold"}),
+        carries_value=False,
+        compute=_compute_observer_disagreement,
+        compare=_compare_at_least,
+        describes=_describe_threshold,
+    )
+)
+_register(
+    Kind(
+        name="observer_disagreement_at_most",
+        required_args=frozenset({"threshold"}),
+        carries_value=False,
+        compute=_compute_observer_disagreement,
         compare=_compare_at_most,
         describes=_describe_threshold,
     )

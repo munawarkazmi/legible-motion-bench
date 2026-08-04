@@ -22,7 +22,66 @@ def test_registry_is_closed_and_pinned():
         "geodesic_min_clearance",
         "goal_cost_spread_at_most",
         "goal_separation_at_least",
+        "observer_disagreement_at_least",
+        "observer_disagreement_at_most",
+        "optimal_path_early_belief_at_least",
+        "optimal_path_early_belief_at_most",
+        "optimal_path_final_belief_at_least",
+        "optimal_path_final_belief_at_most",
     )
+
+
+def test_early_belief_measures_how_long_the_question_stays_open():
+    # In wall_detour the optimal paths to both goals share their first leg,
+    # so the informed observer learns nothing at all over that stretch and
+    # sits at the prior.
+    detour = scenario("wall_detour")
+    early = properties.compute(
+        detour,
+        Property(
+            "optimal_path_early_belief_at_most",
+            {"observer": "geodesic", "until_fraction": 0.3, "threshold": 0.0},
+            None,
+        ),
+    )
+    assert early == pytest.approx(0.5)
+    late = properties.compute(
+        detour,
+        Property(
+            "optimal_path_early_belief_at_most",
+            {"observer": "geodesic", "until_fraction": 1.0, "threshold": 0.0},
+            None,
+        ),
+    )
+    assert late > 0.95
+
+
+def test_the_naive_observer_can_be_driven_below_the_prior():
+    detour = scenario("wall_detour")
+    disagreement = properties.compute(
+        detour, Property("observer_disagreement_at_least", {"threshold": 0.0}, None)
+    )
+    assert disagreement > 0.15
+
+
+def test_an_open_world_gives_the_two_observers_nothing_to_disagree_about():
+    open_world = scenario("open_two_goals")
+    disagreement = properties.compute(
+        open_world, Property("observer_disagreement_at_most", {"threshold": 1.0}, None)
+    )
+    assert disagreement == pytest.approx(0.0)
+
+
+def test_a_malformed_fraction_is_rejected():
+    with pytest.raises(properties.PropertyError, match="until_fraction"):
+        properties.compute(
+            scenario("open_two_goals"),
+            Property(
+                "optimal_path_early_belief_at_most",
+                {"observer": "geodesic", "until_fraction": 0.0, "threshold": 0.5},
+                None,
+            ),
+        )
 
 
 @pytest.mark.parametrize(

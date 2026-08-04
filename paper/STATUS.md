@@ -37,12 +37,18 @@ inspected.
   arriving after the direct one. Frames are the metric's own samples, so a
   figure and the table beside it cannot disagree. A grid too small for its
   panels is refused rather than truncated. Nothing in CI asserts on
-  rendered bytes. A 197-test suite in CI, which also re-checks every
+  rendered bytes. A 210-test suite in CI, which also re-checks every
   scenario property against the committed code)
 - [ ] Language model trajectories (not started)
-- [ ] Scenario suite (not started, and deliberately so: a scenario is only
-  worth including if the fact it carries can be stated in terms the code
-  can decide, which means the metrics come first)
+- [x] Scenario suite (eight worlds, 46 machine-checked facts carried
+  inline and re-verified in CI. Each world is present for a stated reason:
+  a no-obstacle control on the observer model, a paired comparison between
+  a middle and an outer goal that differ in one field, two keep-out worlds
+  that differ in whether the cheapest route already violates, a world where
+  the optimal routes to both goals share a leg, a world where deviating
+  shaves clearance rather than crossing a line, and a low ambiguity world
+  where the cheapest route is already fairly legible. `tests/test_suite.py`
+  asserts the coverage claims no single scenario can make)
 - [ ] Rendering (not started)
 - [ ] Language model evaluation (not started; the model manifest and the
   example config land with it rather than as empty scaffolding now)
@@ -197,6 +203,29 @@ ceilings of one, 1.1, 1.5 and unbounded.
 This is the second time a defect surfaced only when the output was looked
 at rather than asserted on, and it is the argument for building the
 renderer before the scenario suite rather than after.
+
+## What building the suite showed, 4 August 2026
+
+- The minimum clearance of an optimal path is exactly zero whenever that
+  path rounds a corner, because a shortest path touches the obstacle
+  vertex it turns at. So the clearance column says nothing in any world
+  where the geodesic turns, and `wall_choice` records exactly zero. This
+  is a property of shortest paths rather than a defect, but it means
+  clearance can only be read in worlds where the optimal route is
+  straight, which is why `narrow_gap` exists and why a test asserts both
+  halves of the statement.
+- The specification's example property, that no trajectory within a cost
+  budget clears a legibility threshold, is not expressible as a scenario
+  property and the suite does not contain one. A local search cannot
+  decide it. What scenarios assert instead are facts about their own
+  geometry and about the optimal path, which are exact and cheap, and
+  which is why CI can re-check all 46 on every push.
+- `door_pair` was designed as a test of committing early to a doorway and
+  turned out to be something else: the cheapest route already threads the
+  revealing doorway, so its early belief is 0.77 and the world is barely
+  ambiguous. It is kept, with its description rewritten to say what it is,
+  because a suite of uniformly ambiguous worlds could not show whether a
+  planner wastes path where clarity is already free.
 
 ## A limit that has to be stated wherever this is reported
 

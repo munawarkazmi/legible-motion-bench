@@ -33,7 +33,8 @@ and this section will say so until it is.
 - [ ] Trajectories proposed by language models
 - [x] Rendering: one animated GIF per scenario, panels side by side, the
   observer's belief updating underneath, all panels on one clock
-- [ ] Scenario suite
+- [x] Scenario suite: eight worlds, each carrying its facts inline and
+  re-checked in CI
 - [ ] Language model evaluation
 
 ## What is here
@@ -211,7 +212,7 @@ Requires Python 3.10 or newer and pytest. No other dependencies.
 python -m pytest -q
 ```
 
-197 tests. To check the facts every scenario carries, and to see the suite
+210 tests. To check the facts every scenario carries, and to see the suite
 inventory that any quoted denominator has to come from:
 
 ```bash

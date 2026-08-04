@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "id": "fan_middle",
+  "description": "Three goals on an arc at equal distance from the start, with the true goal in the middle. Dragan and Srinivasa observe that for a goal in the middle of a scene the most legible trajectory coincides with the predictable one, because any exaggeration points at a different goal: legibility is limited by the complexity of the scene. This scenario exists so the benchmark contains a case where clarity cannot be bought, and pairs with fan_outer, which shares its geometry exactly and differs only in which goal is true.",
+  "bounds": {
+    "xmin": 0.0,
+    "ymin": 0.0,
+    "xmax": 12.0,
+    "ymax": 10.0
+  },
+  "start": [
+    1.0,
+    5.0
+  ],
+  "goals": [
+    {
+      "id": "A",
+      "position": [
+        10.3969262078591,
+        8.4202014332567
+      ]
+    },
+    {
+      "id": "B",
+      "position": [
+        11.0,
+        5.0
+      ]
+    },
+    {
+      "id": "C",
+      "position": [
+        10.3969262078591,
+        1.5797985667433
+      ]
+    }
+  ],
+  "true_goal": "B",
+  "obstacles": [],
+  "keep_out_zones": [],
+  "properties": [
+    {
+      "kind": "goal_cost_spread_at_most",
+      "args": {
+        "threshold": 1e-06
+      }
+    },
+    {
+      "kind": "observer_disagreement_at_most",
+      "args": {
+        "threshold": 1e-09
+      }
+    },
+    {
+      "kind": "optimal_path_early_belief_at_most",
+      "args": {
+        "observer": "geodesic",
+        "until_fraction": 0.4,
+        "threshold": 0.5
+      }
+    },
+    {
+      "kind": "optimal_path_final_belief_at_most",
+      "args": {
+        "observer": "geodesic",
+        "threshold": 0.95
+      }
+    },
+    {
+      "kind": "geodesic_cost",
+      "args": {
+        "from": "start",
+        "to": "B"
+      },
+      "value": 10.0
+    }
+  ]
+}

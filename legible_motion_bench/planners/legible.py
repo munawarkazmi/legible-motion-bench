@@ -47,13 +47,25 @@ STEP_FLOOR_FRACTION = 1e-3
 INITIAL_STEP_FRACTION = 0.12
 IMPROVEMENT = 1e-12
 
-# The ceilings the frontier is traced at. A ceiling is a bound on the cost
-# ratio, so 1.1 means the planner may spend a tenth more path than the
-# optimum to buy clarity, and None means it may spend anything. The
-# unbounded point is kept in the sweep because it says what the metric
-# would ask for if nobody stopped it, which is worth seeing next to what a
-# deployable robot could do.
-DEFAULT_COST_CEILINGS = (1.05, 1.1, 1.25, 1.5, 2.0, None)
+# The ceilings the frontier is traced at. A ceiling bounds the cost ratio,
+# so 1.1 means the planner may spend a tenth more path than the optimum to
+# buy clarity.
+#
+# There is no unbounded ceiling here, and its absence is a finding rather
+# than an oversight. Dragan and Srinivasa bound their own optimisation with
+# a trust region on cost, and they are explicit that their legibility model
+# can only be trusted inside it: their user studies found observers who
+# stopped reasoning about the declared goals once motion became strange
+# enough, and began to believe in a goal that was not in the scene. Our
+# observer cannot represent that belief, because its posterior sums to one
+# over the goals the scenario declares however odd the trajectory is. An
+# unbounded search reached a cost ratio near 3.6 on the fixtures, which is
+# a legibility number computed outside the region where the formalism has
+# ever been shown to correspond to what people perceive. Passing
+# cost_budget=None is still supported, because seeing what the metric asks
+# for when nothing stops it is the argument for stopping it, but such a
+# point is a diagnostic and never a reported result.
+DEFAULT_COST_CEILINGS = (1.05, 1.1, 1.25, 1.5, 2.0)
 
 
 class _Budget:

@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "id": "narrow_gap",
+  "description": "Two blocks leaving a corridor the robot must pass through, with a goal beyond each end. Deviating for clarity here does not cross a line, it shaves the distance to a wall, so this is the scenario that exercises minimum clearance rather than the binary keep-out count. A planner can be perfectly compliant on every constraint the benchmark checks and still be uncomfortable to stand next to.",
+  "bounds": {
+    "xmin": 0.0,
+    "ymin": 0.0,
+    "xmax": 14.0,
+    "ymax": 10.0
+  },
+  "start": [
+    1.0,
+    5.0
+  ],
+  "goals": [
+    {
+      "id": "A",
+      "position": [
+        13.0,
+        7.0
+      ]
+    },
+    {
+      "id": "B",
+      "position": [
+        13.0,
+        3.0
+      ]
+    }
+  ],
+  "true_goal": "A",
+  "obstacles": [
+    {
+      "id": "upper_block",
+      "vertices": [
+        [
+          5.0,
+          6.5
+        ],
+        [
+          8.0,
+          6.5
+        ],
+        [
+          8.0,
+          10.0
+        ],
+        [
+          5.0,
+          10.0
+        ]
+      ]
+    },
+    {
+      "id": "lower_block",
+      "vertices": [
+        [
+          5.0,
+          0.0
+        ],
+        [
+          8.0,
+          0.0
+        ],
+        [
+          8.0,
+          3.5
+        ],
+        [
+          5.0,
+          3.5
+        ]
+      ]
+    }
+  ],
+  "keep_out_zones": [],
+  "properties": [
+    {
+      "kind": "goal_cost_spread_at_most",
+      "args": {
+        "threshold": 1e-09
+      }
+    },
+    {
+      "kind": "optimal_path_early_belief_at_most",
+      "args": {
+        "observer": "geodesic",
+        "until_fraction": 0.4,
+        "threshold": 0.65
+      }
+    },
+    {
+      "kind": "geodesic_cost",
+      "args": {
+        "from": "start",
+        "to": "A"
+      },
+      "value": 12.165525060596439
+    },
+    {
+      "kind": "geodesic_min_clearance",
+      "args": {
+        "from": "start",
+        "to": "A"
+      },
+      "value": 0.32879797461071486
+    },
+    {
+      "kind": "geodesic_keep_out_entries",
+      "args": {
+        "from": "start",
+        "to": "A"
+      },
+      "value": 0
+    }
+  ]
+}

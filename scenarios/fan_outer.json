@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "id": "fan_outer",
+  "description": "The geometry of fan_middle with an outer goal made true. Nothing about the world changes, so any difference in what a cost budget buys between the two is a property of where the goal sits among its rivals rather than of the scene. An outer goal has open space to exaggerate into and should be the easier of the pair.",
+  "bounds": {
+    "xmin": 0.0,
+    "ymin": 0.0,
+    "xmax": 12.0,
+    "ymax": 10.0
+  },
+  "start": [
+    1.0,
+    5.0
+  ],
+  "goals": [
+    {
+      "id": "A",
+      "position": [
+        10.3969262078591,
+        8.4202014332567
+      ]
+    },
+    {
+      "id": "B",
+      "position": [
+        11.0,
+        5.0
+      ]
+    },
+    {
+      "id": "C",
+      "position": [
+        10.3969262078591,
+        1.5797985667433
+      ]
+    }
+  ],
+  "true_goal": "A",
+  "obstacles": [],
+  "keep_out_zones": [],
+  "properties": [
+    {
+      "kind": "goal_cost_spread_at_most",
+      "args": {
+        "threshold": 1e-06
+      }
+    },
+    {
+      "kind": "observer_disagreement_at_most",
+      "args": {
+        "threshold": 1e-09
+      }
+    },
+    {
+      "kind": "optimal_path_final_belief_at_least",
+      "args": {
+        "observer": "geodesic",
+        "threshold": 0.96
+      }
+    },
+    {
+      "kind": "geodesic_cost",
+      "args": {
+        "from": "start",
+        "to": "A"
+      },
+      "value": 10.00000000000002
+    }
+  ]
+}
