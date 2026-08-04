@@ -263,6 +263,23 @@ def test_the_example_config_matches_the_manifest():
         assert entry["temperature"] == 0.0
 
 
+def test_every_committed_record_file_is_complete_and_scoreable(suite):
+    # The record files are the evidence. A committed run that had lost a
+    # scenario, or that named a checkpoint the manifest does not know,
+    # would be worse than no run at all.
+    root = Path(__file__).resolve().parents[1]
+    manifest = adapter.load_manifest()
+    files = sorted((root / "results").glob("*.jsonl"))
+    for path in files:
+        records = runner.load_records(path)
+        runner.require_complete(records, suite, str(path))
+        for record in records:
+            assert record["run_alias"] in manifest, (path.name, record["run_alias"])
+            assert record["api_model"] == manifest[record["run_alias"]]["api_model"]
+            assert len(record["prompt_sha256"]) == 64
+            assert record["record_version"] == runner.RECORD_VERSION
+
+
 def test_a_missing_key_is_reported_before_the_request(monkeypatch):
     monkeypatch.delenv("GROQ_API_KEY", raising=False)
     model = adapter.RemoteModel(
