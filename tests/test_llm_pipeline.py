@@ -8,6 +8,7 @@ the status file rather than pretended about.
 
 import json
 import re
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -348,14 +349,36 @@ def test_records_written_before_a_field_existed_still_resume(tmp_path, suite):
     assert (attempted, skipped) == (1, 1)
 
 
+def tracked_record_files(root: Path):
+    """Record files git knows about, which is what "committed" means here.
+
+    Deliberately not every file in results/. A run in progress writes a
+    partial file, and that file is not evidence of anything until it is
+    finished and committed; failing the suite because a model is halfway
+    through answering would be testing the clock.
+    """
+    try:
+        listing = subprocess.run(
+            ["git", "ls-files", "results/*.jsonl"],
+            cwd=root,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError):
+        pytest.skip("git is not available to list committed records")
+    if listing.returncode != 0:
+        pytest.skip("not a git checkout, so there is nothing committed to check")
+    return [root / name for name in listing.stdout.split() if name]
+
+
 def test_every_committed_record_file_is_complete_and_scoreable(suite):
     # The record files are the evidence. A committed run that had lost a
     # scenario, or that named a checkpoint the manifest does not know,
     # would be worse than no run at all.
     root = Path(__file__).resolve().parents[1]
     manifest = adapter.load_manifest()
-    files = sorted((root / "results").glob("*.jsonl"))
-    for path in files:
+    for path in tracked_record_files(root):
         records = runner.load_records(path)
         runner.require_complete(records, suite, str(path))
         for record in records:
