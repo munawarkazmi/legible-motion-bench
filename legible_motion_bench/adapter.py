@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
@@ -28,6 +29,12 @@ from pathlib import Path
 
 MANIFEST_PATH = Path(__file__).resolve().parents[1] / "configs" / "model_manifest.json"
 DEFAULT_TIMEOUT = 180
+
+# The standard library sends "Python-urllib/x.y" by default, which at
+# least one provider's front end rejects outright with a 403 before the
+# request reaches the API. This says what the client actually is, which is
+# what a user agent is for.
+USER_AGENT = "legible-motion-bench/0.0.1"
 
 
 class AdapterError(RuntimeError):
@@ -64,6 +71,7 @@ class RemoteModel:
     temperature: float | None = 0.0
     max_tokens: int = 2000
     timeout: int = DEFAULT_TIMEOUT
+    retries: int = 6
 
     def _key(self) -> str:
         if not self.api_key_env:
@@ -84,18 +92,43 @@ class RemoteModel:
         raise AdapterError(f"unknown backend {self.backend!r} for {self.alias!r}")
 
     def _post(self, url: str, payload: dict, headers: dict) -> dict:
+        headers = {"User-Agent": USER_AGENT, **headers}
         body = json.dumps(payload).encode("utf-8")
-        request = urllib.request.Request(url, data=body, headers=headers, method="POST")
-        try:
-            with urllib.request.urlopen(request, timeout=self.timeout) as response:
-                return json.loads(response.read().decode("utf-8"))
-        except urllib.error.HTTPError as exc:
-            detail = exc.read().decode("utf-8", errors="replace")[:500]
-            raise AdapterError(
-                f"{self.alias}: HTTP {exc.code} from {url}: {detail}"
-            ) from exc
-        except urllib.error.URLError as exc:
-            raise AdapterError(f"{self.alias}: could not reach {url}: {exc}") from exc
+        for attempt in range(self.retries + 1):
+            request = urllib.request.Request(
+                url, data=body, headers=headers, method="POST"
+            )
+            try:
+                with urllib.request.urlopen(request, timeout=self.timeout) as response:
+                    return json.loads(response.read().decode("utf-8"))
+            except urllib.error.HTTPError as exc:
+                detail = exc.read().decode("utf-8", errors="replace")[:500]
+                # A 429 is the provider saying "not yet", not "no". Waiting
+                # and asking again is not a retry of a bad answer, because
+                # no answer was produced; the model never saw the prompt.
+                # Retrying a reply we did not like would be a different
+                # thing entirely and nothing here does it.
+                if exc.code == 429 and attempt < self.retries:
+                    time.sleep(self._retry_after(exc, attempt))
+                    continue
+                raise AdapterError(
+                    f"{self.alias}: HTTP {exc.code} from {url}: {detail}"
+                ) from exc
+            except urllib.error.URLError as exc:
+                raise AdapterError(
+                    f"{self.alias}: could not reach {url}: {exc}"
+                ) from exc
+        raise AdapterError(f"{self.alias}: gave up after {self.retries} retries")
+
+    def _retry_after(self, exc, attempt: int) -> float:
+        """How long to wait, preferring what the provider asked for."""
+        header = exc.headers.get("retry-after") if exc.headers else None
+        if header:
+            try:
+                return min(float(header) + 0.5, 90.0)
+            except ValueError:
+                pass
+        return min(2.0 * (2**attempt), 60.0)
 
     def _openai_chat(self, prompt: str) -> str:
         payload = {

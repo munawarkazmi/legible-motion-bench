@@ -263,6 +263,40 @@ def test_the_example_config_matches_the_manifest():
         assert entry["temperature"] == 0.0
 
 
+def test_a_rate_limited_scenario_is_retried_not_skipped(tmp_path, suite):
+    # The failure this guards against costs a day: a run stopped by a rate
+    # limit records the error, and if the resume guard counted that as an
+    # answer the scenario could never be asked again.
+    class Limited:
+        alias = "local_qwen"
+        api_model = "qwen2.5:7b-instruct"
+
+        def __init__(self, fail_first):
+            self.fail_first = fail_first
+            self.seen = 0
+
+        def complete(self, prompt, scenario_id):
+            self.seen += 1
+            if self.fail_first:
+                raise adapter.AdapterError("429 rate limit reached")
+            return GOOD_REPLY
+
+    out = tmp_path / "run.jsonl"
+    runner.run(suite[:2], Limited(True), out, cost_ceiling=1.25)
+    assert runner.existing_scenarios(out) == set()
+
+    second = Limited(False)
+    attempted, skipped = runner.run(suite[:2], second, out, cost_ceiling=1.25)
+    assert (attempted, skipped) == (2, 0)
+
+    records = runner.load_records(out)
+    assert len(records) == 4
+    # The failures stay in the file as evidence, and the completeness
+    # check counts the replies rather than the attempts.
+    assert sum(1 for r in records if r["request_error"]) == 2
+    runner.require_complete(records, suite[:2])
+
+
 def test_records_carry_the_temperature_they_were_sampled_at(tmp_path, suite):
     out = tmp_path / "run.jsonl"
     runner.run(

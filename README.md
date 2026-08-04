@@ -37,9 +37,9 @@ and this section will say so until it is.
   re-checked in CI
 - [ ] Language model evaluation: the prompt, the extraction, the record
   format, the resume guard and the scoring are built and tested. One
-  model has been run, Qwen 2.5 7B on a local Ollama, once at temperature
-  zero and five times at temperature 0.7, with all records committed. The
-  Groq and Gemini backends are written but have never made a live call
+  two models have been run at k = 5, Qwen 2.5 7B on a local Ollama and
+  Llama 3.3 70B through Groq, with all records committed. The Gemini
+  backend is written but has never made a live call
 
 ## What is here
 
@@ -216,7 +216,7 @@ Requires Python 3.10 or newer and pytest. No other dependencies.
 python -m pytest -q
 ```
 
-234 tests. To check the facts every scenario carries, and to see the suite
+235 tests. To check the facts every scenario carries, and to see the suite
 inventory that any quoted denominator has to come from:
 
 ```bash

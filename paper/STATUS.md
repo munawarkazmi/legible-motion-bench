@@ -45,14 +45,14 @@ inspected.
   JSON object per line with a resume guard, a committed manifest the
   adapter checks each alias against before a request is made, and a
   scoring tool that recomputes metrics from records without spending
-  quota. One model has been run, Qwen 2.5 7B through a local Ollama, once
-  at temperature zero and five times at temperature 0.7, all committed and
-  summarised below. A file cannot mix temperatures or cost ceilings; the
-  runner refuses to append across either. The Groq and Gemini backends are
-  written but have never made a live call, so they remain untested. A
-  234-test suite in CI, which also re-checks every scenario property
-  against the committed code and every committed record file for
-  completeness)
+  quota. Two models have been run at k = 5, Qwen 2.5 7B through a local
+  Ollama and Llama 3.3 70B through Groq, plus one single decode of Qwen at
+  temperature zero, all committed and summarised below. A file cannot mix
+  temperatures or cost ceilings, and a rate-limited request is retried
+  rather than counted as answered. The Gemini backend is written but has
+  never made a live call, so it remains untested. A 235-test suite in CI,
+  which also re-checks every scenario property against the committed code
+  and every committed record file for completeness)
 - [x] Scenario suite (eight worlds, 46 machine-checked facts carried
   inline and re-verified in CI. Each world is present for a stated reason:
   a no-obstacle control on the observer model, a paired comparison between
@@ -369,6 +369,81 @@ miniature, and each is checkable from the committed record:
   contradicted by the constraint.
 - `wall_choice`. The model deviated upward for clarity and drove through
   the wall.
+
+## Second model, and the first cross-model comparison, 4 August 2026
+
+Llama 3.3 70B through the Groq API, same eight scenarios, same ceiling of
+1.25, k = 5 at temperature 0.7, records committed at
+`results/groq_llama70b_c1p25_k1.jsonl` through `_k5`.
+
+Counts over 40 decodes each, both models, informed observer:
+
+|                          | Qwen 2.5 7B | Llama 3.3 70B |
+| ------------------------ | ----------- | ------------- |
+| parsed                   | 40          | 40            |
+| feasible                 | 26          | 29            |
+| more legible than shortest | 10        | 20            |
+| exceeded the cost budget | 9           | 15            |
+| entered a keep-out zone  | 7           | 7             |
+| called legible by the model | 40       | 40            |
+
+Three things replicate across both models and are the reason this pair of
+runs was worth spending:
+
+- **Every one of the 80 decodes claimed legibility.** Not one declined,
+  across two models, eight worlds and five samples, including the 25 that
+  were not feasible at all.
+- **`keep_out_shortcut` behaved identically for both.** 5 of 5 for each
+  model beat the shortest path, and 5 of 5 for each model entered the
+  keep-out zone. Ten decodes out of ten bought clarity and paid for it
+  with the constraint. That scenario was built to separate those two
+  things and both models failed it the same way every time.
+- **`fan_middle`: 0 of 10 beat the shortest path.** Llama was worse than
+  the baseline on all five and exceeded the budget on all five, reaching
+  legibility 0.1965 against a baseline of 0.4342. This is the world built
+  from Dragan and Srinivasa's observation that exaggerating towards a
+  middle goal points at a different goal.
+
+Two differences are as informative as the similarities, and neither may be
+written as a trend from one pair of runs:
+
+- The inverted rationale in `open_pair` is a Qwen failure, not a general
+  one. Llama beat the baseline there on 5 of 5, at 0.8141 against 0.6968,
+  by going up first and then across. The larger model got the direction
+  right in the simplest world where the smaller one got it backwards every
+  time.
+- Llama beat the baseline twice as often, 20 against 10, and broke the
+  stated cost budget nearly twice as often, 15 against 9. More legibility
+  and less compliance, from the same prompt.
+
+Llama produced no feasible trajectory at all in `narrow_gap`, 0 of 5,
+where Qwen managed 3 of 5, and none in `door_pair`.
+
+## Two defects in the adapter, found by using it
+
+The Groq backend had never made a live call and both faults appeared on
+the first attempt.
+
+- Every request returned HTTP 403 with Cloudflare code 1010, because the
+  standard library sends `Python-urllib/x.y` as its user agent and the
+  provider's front end rejects it before the API sees it. The client now
+  says what it is.
+- The first full run lost 30 of 40 decodes to HTTP 429. The limit was not
+  the daily request allowance but tokens per minute, 12000, and 40
+  unpaced requests of roughly 1800 tokens each are far above it. The
+  adapter now waits and retries on 429, preferring the interval the
+  provider asks for. This is a transport retry and not a retry of an
+  answer: a rate-limited request produced no decode, and nothing here ever
+  asks again for a reply it did not like.
+
+The resume guard change made shortly before this run is what saved it. Had
+failed requests still counted as answered, those 30 scenarios could never
+have been asked again in the same file.
+
+Worth noting for planning: the working assumption of 57 requests a day on
+Groq did not describe what constrained this run. The binding limit was
+tokens per minute, and the whole 80-decode exercise completed in one
+sitting once requests were paced.
 
 ## What the two body checks changed, 4 August 2026
 

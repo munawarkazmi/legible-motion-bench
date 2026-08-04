@@ -26,6 +26,17 @@ from .world import Scenario
 RECORD_VERSION = 1
 
 
+def answered(record: dict) -> bool:
+    """Whether a record holds a reply, as opposed to a failed request.
+
+    A request that never reached the model is not a decode. It is kept in
+    the file because what happened is evidence, but it does not count as
+    the scenario having been asked, or a run stopped by a rate limit could
+    never be finished.
+    """
+    return record.get("request_error") is None
+
+
 def existing_scenarios(path) -> set:
     """Which scenarios a record file already answers, for the resume guard."""
     path = Path(path)
@@ -44,7 +55,8 @@ def existing_scenarios(path) -> set:
                     f"{path}: line {number} is not valid JSON, so the resume "
                     f"guard cannot tell what has already been run: {exc}"
                 ) from exc
-            done.add(record["scenario_id"])
+            if answered(record):
+                done.add(record["scenario_id"])
     return done
 
 
@@ -195,7 +207,10 @@ def require_complete(records, scenarios, path="records") -> None:
     report a number for a benchmark that had not been run.
     """
     wanted = [s.id for s in scenarios]
-    seen = [r["scenario_id"] for r in records]
+    # Failed requests are ignored here. They are evidence of what happened
+    # and stay in the file, but a scenario is answered when the model
+    # replied, and a scenario retried after a rate limit has one reply.
+    seen = [r["scenario_id"] for r in records if answered(r)]
     missing = sorted(set(wanted) - set(seen))
     duplicated = sorted({s for s in seen if seen.count(s) > 1})
     if missing:
