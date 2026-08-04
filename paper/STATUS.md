@@ -50,7 +50,13 @@ inspected.
   temperature zero, all committed and summarised below. A file cannot mix
   temperatures or cost ceilings, and a rate-limited request is retried
   rather than counted as answered. The Gemini backend is written but has
-  never made a live call, so it remains untested. A 235-test suite in CI,
+  now been run and its backend worked on the first live call, unlike
+  Groq's. Two runs are part finished and stopped by daily limits rather
+  than by anything going wrong: Llama at cost ceiling 2.0, 26 of 40
+  replies, and Gemini 3.6 Flash at ceiling 1.25, 16 of 40 over two
+  complete samples. Both resume where they stopped, and their partial
+  files are deliberately untracked until they are whole. A 237-test suite
+  in CI,
   which also re-checks every scenario property against the committed code
   and every committed record file for completeness)
 - [x] Scenario suite (eight worlds, 46 machine-checked facts carried
@@ -418,6 +424,39 @@ written as a trend from one pair of runs:
 
 Llama produced no feasible trajectory at all in `narrow_gap`, 0 of 5,
 where Qwen managed 3 of 5, and none in `door_pair`.
+
+## A credential leak, found by using it, 4 August 2026
+
+The Gemini API takes its key as a URL query parameter. The adapter put the
+failing URL into its error message, and the runner writes that message into
+the record, so the first time Gemini returned a 429 the key was written
+into a record file. Record files are committed. Nothing containing key
+material ever reached git, which was checked rather than assumed, and the
+one contaminated file was deleted.
+
+Three changes followed. The Gemini backend now sends its key as an
+`x-goog-api-key` header, which the API accepts and which cannot end up in
+an error string. A redaction pass runs over every error at the adapter and
+again at the runner, on the principle that a secret should not be one
+failed request away from a public repository. And a test asserts that a
+deliberately leaky exception produces a record containing the status code
+and not the key.
+
+## Rate limits, as actually observed rather than assumed
+
+The working assumptions were 57 requests a day on Groq and 20 on Gemini.
+Neither described what happened.
+
+- Groq's binding limits are tokens per minute, 12000, and tokens per day,
+  100000. The per-minute limit stopped the first unpaced run; the daily
+  one stopped the last ceiling of the sweep with 14 of 40 replies
+  outstanding.
+- Gemini returned 429 quota exceeded and 503 high demand after about 20
+  replies, which is the only figure from the brief that held.
+
+Both are resumable and neither loses work. Failed requests are recorded as
+evidence and retried rather than counted as answered, and a file built
+across two days is byte-identical to one built in a single run.
 
 ## Two defects in the adapter, found by using it
 

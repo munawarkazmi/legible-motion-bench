@@ -20,6 +20,7 @@ import json
 from pathlib import Path
 
 from . import prompts
+from .adapter import redact
 from .extraction import extract
 from .world import Scenario
 
@@ -171,7 +172,10 @@ def run(
             try:
                 reply = model.complete(prompt, scenario.id)
             except Exception as exc:  # noqa: BLE001
-                error = f"{type(exc).__name__}: {exc}"
+                # Redacted here as well as at the source. This string is
+                # about to be written into a file that gets committed, and
+                # the exception may have come from anywhere.
+                error = redact(f"{type(exc).__name__}: {exc}")
             record = build_record(
                 scenario, model, cost_ceiling, prompt, reply, error, temperature
             )

@@ -105,10 +105,12 @@ and this section will say so until it is.
 - [x] Scenario suite: eight worlds, each carrying its facts inline and
   re-checked in CI
 - [ ] Language model evaluation: the prompt, the extraction, the record
-  format, the resume guard and the scoring are built and tested. One
-  two models have been run at k = 5, Qwen 2.5 7B on a local Ollama and
-  Llama 3.3 70B through Groq, with all records committed. The Gemini
-  backend is written but has never made a live call
+  format, the resume guard and the scoring are built and tested. Two
+  models are complete at k = 5, Qwen 2.5 7B on a local Ollama across four
+  cost ceilings and Llama 3.3 70B through Groq across three. Llama's
+  fourth ceiling and a first Gemini 3.6 Flash run are part finished,
+  stopped by daily token limits rather than by anything going wrong, and
+  resume where they stopped
 
 ## What is here
 
@@ -285,7 +287,7 @@ Requires Python 3.10 or newer and pytest. No other dependencies.
 python -m pytest -q
 ```
 
-235 tests. To check the facts every scenario carries, and to see the suite
+237 tests. To check the facts every scenario carries, and to see the suite
 inventory that any quoted denominator has to come from:
 
 ```bash

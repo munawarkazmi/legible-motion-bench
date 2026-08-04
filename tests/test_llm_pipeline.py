@@ -264,6 +264,64 @@ def test_the_example_config_matches_the_manifest():
         assert entry["temperature"] == 0.0
 
 
+def test_credentials_never_reach_a_record(tmp_path, suite):
+    # A failed request writes its error into a record, and records are
+    # committed. Any path from a key to the repository has to be closed.
+    secrets = [
+        "https://api.example/v1beta/models/x:generateContent?key=AQ.EXAMPLEnotarealkey000",
+        "AIzaSyD-fakefakefakefakefakefakefake",
+        "Bearer gsk_fakefakefakefakefakefakefake",
+    ]
+    for text in secrets:
+        cleaned = adapter.redact(text)
+        assert "AQ.EXAMPLEnotarealkey000" not in cleaned
+        assert "AIzaSyD-fakefakefake" not in cleaned
+        assert "gsk_fakefakefake" not in cleaned
+
+    class Leaky:
+        alias = "local_qwen"
+        api_model = "qwen2.5:7b-instruct"
+
+        def complete(self, prompt, scenario_id):
+            raise RuntimeError(
+                "HTTP 429 from https://api.example/v1beta/m:generateContent"
+                "?key=AQ.EXAMPLEnotarealkey000"
+            )
+
+    out = tmp_path / "run.jsonl"
+    runner.run(suite[:1], Leaky(), out, cost_ceiling=1.25)
+    written = out.read_text(encoding="utf-8")
+    assert "AQ.EXAMPLEnotarealkey000" not in written
+    assert "REDACTED" in written
+    assert "429" in written
+
+
+def test_the_gemini_backend_sends_its_key_in_a_header(monkeypatch):
+    # Not the query string, which is what ends up in an error message.
+    monkeypatch.setenv("GEMINI_API_KEY", "AQ.testkeyvalue123456")
+    seen = {}
+
+    model = adapter.RemoteModel(
+        alias="gemini_flash",
+        api_model="models/gemini-3.6-flash",
+        backend="gemini",
+        base_url="https://example.invalid/v1beta",
+        api_key_env="GEMINI_API_KEY",
+    )
+
+    def fake_post(self, url, payload, headers):
+        seen["url"] = url
+        seen["headers"] = headers
+        return {"candidates": [{"content": {"parts": [{"text": "{}"}]}}]}
+
+    # Patched on the class: RemoteModel is frozen, so the instance will
+    # not take an attribute.
+    monkeypatch.setattr(adapter.RemoteModel, "_post", fake_post)
+    model.complete("hello", "open_pair")
+    assert "key=" not in seen["url"]
+    assert seen["headers"]["x-goog-api-key"] == "AQ.testkeyvalue123456"
+
+
 def test_a_rate_limited_scenario_is_retried_not_skipped(tmp_path, suite):
     # The failure this guards against costs a day: a run stopped by a rate
     # limit records the error, and if the resume guard counted that as an

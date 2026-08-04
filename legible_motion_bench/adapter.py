@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import time
 import urllib.error
 import urllib.request
@@ -39,6 +40,20 @@ USER_AGENT = "legible-motion-bench/0.0.1"
 
 class AdapterError(RuntimeError):
     """Raised when a model cannot be reached or is configured inconsistently."""
+
+
+def redact(text: str) -> str:
+    """Strip anything that looks like a credential out of a message.
+
+    Belt and braces. Keys are sent in headers rather than query strings,
+    but an error message travels into a record file and a record file is
+    committed, so any path from a secret to the repository is worth
+    closing twice.
+    """
+    text = re.sub(r"([?&](?:key|api_key|access_token)=)[^&\s\"']+", r"\1REDACTED", text)
+    text = re.sub(r"\b(AIza|AQ\.)[A-Za-z0-9_\-.]{8,}", "REDACTED", text)
+    text = re.sub(r"\b(gsk|sk)_[A-Za-z0-9]{8,}", "REDACTED", text)
+    return text
 
 
 @dataclass(frozen=True)
@@ -112,11 +127,11 @@ class RemoteModel:
                     time.sleep(self._retry_after(exc, attempt))
                     continue
                 raise AdapterError(
-                    f"{self.alias}: HTTP {exc.code} from {url}: {detail}"
+                    redact(f"{self.alias}: HTTP {exc.code} from {url}: {detail}")
                 ) from exc
             except urllib.error.URLError as exc:
                 raise AdapterError(
-                    f"{self.alias}: could not reach {url}: {exc}"
+                    redact(f"{self.alias}: could not reach {url}: {exc}")
                 ) from exc
         raise AdapterError(f"{self.alias}: gave up after {self.retries} retries")
 
@@ -159,11 +174,17 @@ class RemoteModel:
         }
         if self.temperature is not None:
             payload["generationConfig"]["temperature"] = self.temperature
-        url = (
-            f"{self.base_url.rstrip('/')}/{self.api_model}:generateContent"
-            f"?key={self._key()}"
+        # The key goes in a header, never in the query string. This API
+        # accepts it either way, and the query string form ends up in
+        # error messages, which the runner writes into a record file that
+        # gets committed. A secret should not be one failed request away
+        # from the repository.
+        url = f"{self.base_url.rstrip('/')}/{self.api_model}:generateContent"
+        document = self._post(
+            url,
+            payload,
+            {"Content-Type": "application/json", "x-goog-api-key": self._key()},
         )
-        document = self._post(url, payload, {"Content-Type": "application/json"})
         try:
             parts = document["candidates"][0]["content"]["parts"]
             return "".join(part.get("text", "") for part in parts)
