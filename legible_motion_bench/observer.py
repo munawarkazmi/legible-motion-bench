@@ -100,6 +100,18 @@ class Observer:
             raise ObserverError(f"prior sums to {total}, which cannot be normalised")
         return {k: v / total for k, v in self.prior.items()}
 
+    def baseline(self, scenario: Scenario) -> dict:
+        """Optimal cost from the start to each goal, C*(S -> G).
+
+        Constant for a scenario and an observer condition, so it is
+        computed once and handed to each belief rather than recomputed at
+        every point of a trajectory.
+        """
+        return {
+            g.id: self.cost_to_go(scenario.start, g.position, scenario.obstacles)
+            for g in scenario.goals
+        }
+
     def posterior(self, scenario: Scenario, prefix) -> dict:
         """Belief over the goals after the robot has travelled `prefix`.
 
@@ -107,6 +119,11 @@ class Observer:
         start position. A single point is a valid prefix and returns the
         prior, since no motion has yet distinguished anything.
         """
+        return self._posterior(
+            scenario, prefix, self._prior_for(scenario), self.baseline(scenario)
+        )
+
+    def _posterior(self, scenario: Scenario, prefix, prior: dict, baseline: dict) -> dict:
         points = [tuple(map(float, p)) for p in prefix]
         if not points:
             raise ObserverError("a prefix must contain at least one point")
@@ -116,18 +133,14 @@ class Observer:
                 f"starts at {scenario.start}"
             )
 
-        prior = self._prior_for(scenario)
         travelled = polyline_length(points)
         current = points[-1]
 
         exponents = {}
         for goal in scenario.goals:
-            optimal_from_start = self.cost_to_go(
-                scenario.start, goal.position, scenario.obstacles
-            )
             remaining = self.cost_to_go(current, goal.position, scenario.obstacles)
             exponents[goal.id] = self.beta * (
-                optimal_from_start - travelled - remaining
+                baseline[goal.id] - travelled - remaining
             )
 
         # Subtract the largest exponent before exponentiating. A path that
@@ -154,8 +167,11 @@ class Observer:
         the prior, and the last is the belief on arrival.
         """
         path = [tuple(map(float, p)) for p in points]
+        prior = self._prior_for(scenario)
+        baseline = self.baseline(scenario)
         return tuple(
-            self.posterior(scenario, path[: i + 1]) for i in range(len(path))
+            self._posterior(scenario, path[: i + 1], prior, baseline)
+            for i in range(len(path))
         )
 
     def belief_in_true_goal(self, scenario: Scenario, points) -> tuple[float, ...]:

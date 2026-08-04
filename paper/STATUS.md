@@ -18,9 +18,14 @@ inspected.
 - [x] Metrics (legibility in the Dragan weighting, path cost ratio, time
   to confidence, keep-out entries and minimum clearance, returned together
   in one record with no way to obtain legibility without the columns it
-  has to be read against. A 111-test suite in CI, which also re-checks
-  every scenario property against the committed code)
-- [ ] Planners (not started)
+  has to be read against)
+- [ ] Planners (the shortest path baseline is built and tested, and is the
+  denominator the frontier is measured against; its cost ratio is one by
+  construction and it ignores keep-out zones, so the baseline is not
+  automatically the safe option. The legibility optimiser is not written
+  and is waiting on the parameterisation decision below. A 126-test suite
+  in CI, which also re-checks every scenario property against the
+  committed code)
 - [ ] Scenario suite (not started, and deliberately so: a scenario is only
   worth including if the fact it carries can be stated in terms the code
   can decide, which means the metrics come first)
@@ -99,6 +104,22 @@ it is going to. Both traces are asserted in
 `tests/test_observer.py::test_the_two_observers_disagree_when_the_room_is_not_visible`.
 This is a property of the world and the optimal path, not a finding about
 any planner, and it must not be written up as one.
+
+## Measured cost of the objective, 4 August 2026
+
+One legibility evaluation at the default sampling spacing takes about 10 ms
+in the obstacle-free fixture, 289 ms in `pillar_two_goals` and 414 ms in
+`wall_detour`, measured on this machine after hoisting the constant
+C*(S -> G) out of the per-sample loop, which alone was worth a factor of
+about two and changed no computed value. A profile attributes roughly 87
+per cent of the remaining time to the exact segment predicate, dominated by
+rational arithmetic. Two further reductions are available and neither
+changes a result: caching the static part of the visibility graph per
+scenario, since only the query point differs between calls, and filtering
+the exact predicate through a floating point evaluation with an error bound
+so the rational fallback runs only near zero. This matters because an
+optimiser evaluates the objective thousands of times, and at 414 ms a
+search is impractical.
 
 ## Open decisions
 
