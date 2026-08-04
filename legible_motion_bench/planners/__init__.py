@@ -6,6 +6,7 @@ confounded by differences in how they are run.
 """
 
 from .base import Plan, PlannerError
+from .legible import LegiblePlanner
 from .shortest import ShortestPathPlanner
 
-__all__ = ["Plan", "PlannerError", "ShortestPathPlanner"]
+__all__ = ["LegiblePlanner", "Plan", "PlannerError", "ShortestPathPlanner"]

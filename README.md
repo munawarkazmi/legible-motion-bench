@@ -27,9 +27,11 @@ and this section will say so until it is.
   conditions, one that can see the obstacles and one that cannot
 - [x] Metrics: legibility, path cost ratio, time to confidence, keep-out
   entries and minimum clearance
-- [ ] Planners: shortest path is built and is the baseline the frontier is
-  measured against. The legibility optimiser, its safety-constrained
-  variant, and trajectories proposed by language models are not written
+- [ ] Planners: shortest path, the legibility optimiser and its
+  safety-constrained variant are built. The optimiser has no path cost
+  budget yet, so it buys clarity at any price and reports cost ratios near
+  four; that is one end of the frontier rather than the frontier.
+  Trajectories proposed by language models are not written
 - [ ] Scenario suite
 - [ ] Rendering
 - [ ] Language model evaluation
@@ -158,7 +160,7 @@ Requires Python 3.10 or newer and pytest. No other dependencies.
 python -m pytest -q
 ```
 
-135 tests. To check the facts every scenario carries, and to see the suite
+152 tests. To check the facts every scenario carries, and to see the suite
 inventory that any quoted denominator has to come from:
 
 ```bash

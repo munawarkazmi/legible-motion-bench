@@ -19,13 +19,18 @@ inspected.
   to confidence, keep-out entries and minimum clearance, returned together
   in one record with no way to obtain legibility without the columns it
   has to be read against)
-- [ ] Planners (the shortest path baseline is built and tested, and is the
-  denominator the frontier is measured against; its cost ratio is one by
-  construction and it ignores keep-out zones, so the baseline is not
-  automatically the safe option. The legibility optimiser is not written
-  and is waiting on the parameterisation decision below. A 135-test suite
-  in CI, which also re-checks every scenario property against the
-  committed code)
+- [ ] Planners (three of four are built and tested: the shortest path
+  baseline, whose cost ratio is one by construction and which ignores
+  keep-out zones so the baseline is not automatically the safe option; the
+  legibility optimiser, a compass search over K free interior waypoints
+  with pinned endpoints, seeded from the shortest path and run from
+  several seeded restarts under a recorded evaluation budget; and its
+  safety-constrained variant, which is the same search with a single
+  added refusal so the gap between them measures the constraint and not
+  two different optimisers. The optimiser has no cost budget yet, which is
+  the open decision below. Trajectories proposed by language models are
+  not written. A 152-test suite in CI, which also re-checks every scenario
+  property against the committed code)
 - [ ] Scenario suite (not started, and deliberately so: a scenario is only
   worth including if the fact it carries can be stated in terms the code
   can decide, which means the metrics come first)
@@ -130,6 +135,38 @@ on twenty thousand near-collinear triples an unguarded floating point
 determinant reports the wrong sign on more than a tenth of them, while the
 guarded predicate matches rational arithmetic on all of them.
 
+## What the first optimiser run showed, 4 August 2026
+
+Run on the three fixtures at a budget of 400 evaluations, three waypoints,
+scored under both observers. Not results: the fixtures are not the scenario
+suite and the budget is small. Recorded because two of the three findings
+change what has to be built next.
+
+- The optimiser works. In `open_two_goals` legibility rises from 0.7165 to
+  0.9316 and time to confidence falls from 3.70 to 1.99. In
+  `pillar_two_goals`, from 0.7222 to 0.9298.
+- It pays cost ratios of 3.76 and 3.63 to do it. With legibility as the
+  sole objective and no bound on path cost there is nothing to stop it,
+  and a robot taking nearly four times the necessary path is not a point
+  anyone would deploy. This is one end of the frontier, not the frontier.
+- Legibility optimisation walks into constraints, which is the phenomenon
+  the project exists to measure and it appears without being looked for.
+  The unconstrained optimiser leaves minimum clearances of 0.0029 in
+  `wall_detour` and, in `pillar_two_goals` under the safety constraint,
+  0.0001: refused the keep-out zone, it hugs the pillar instead.
+- In `wall_detour` legibility improves from 0.5457 to 0.7094 while time to
+  confidence gets worse, 8.37 to 9.58. The two clarity measures disagree
+  because one weights early motion and the other asks when belief settles.
+  Worth understanding before either is written up.
+- One defect found and fixed in the same session: the constrained planner
+  was perturbing its restarts around the shortest path seed even in
+  worlds where that seed is itself inadmissible, which in
+  `pillar_two_goals` left it at 0.4010. Recentring the restarts on the
+  first admissible point found took it to 0.6678. Refusals are now counted
+  and reported separately from evaluations, so a search that spent most of
+  its effort being refused says so instead of reporting few evaluations
+  and looking efficient.
+
 ## Open decisions
 
 - Contribution framing. Three candidates were set out before the
@@ -138,8 +175,15 @@ guarded predicate matches rational arithmetic on all of them.
   asked. The first is at risk and the third looks strongest, but nothing
   is settled until the outstanding body-checks in `verification_log.md`
   are done. The code written so far is neutral to all three.
-- The trajectory parameterisation the legibility optimiser searches over.
-  Arrives with the planners.
+- Whether the legibility optimiser gets a path cost budget, and how the
+  frontier is traced. Maximising legibility alone produces cost ratios
+  near four. The alternative is to maximise legibility subject to a cost
+  ratio ceiling and sweep that ceiling, which turns three planner points
+  into an actual frontier and matches the constrained form Dragan and
+  Srinivasa use, whose body check is still outstanding. Deciding this
+  before the scenario suite is designed matters, because a scenario
+  property such as "no trajectory within a twenty per cent cost budget
+  clears legibility 0.9 here" is only expressible if a cost budget exists.
 - The confidence threshold. It defaults to 0.8 and is recorded in every
   metrics record, but no value has been argued for. Whichever is chosen,
   the results have to be shown to be stable across a range of it or the
