@@ -194,13 +194,42 @@ class LegiblePlanner:
             route = geodesic(
                 scenario.start, scenario.true_goal_position, scenario.obstacles
             )
-        samples = metrics.resample(
-            route.path, max(route.cost / (self.waypoints + 1), 1e-9)
-        )
+
+        corners = route.path[1:-1]
+        if len(corners) <= self.waypoints:
+            # Keep every corner the optimal path turns at, then pad by
+            # halving the longest leg. Spacing the waypoints evenly
+            # instead would cut those corners, and a seed that cuts a
+            # corner runs through the obstacle the corner was going
+            # round: refused, leaving the search to start somewhere
+            # arbitrary and able to finish below the baseline it was
+            # supposed to begin from.
+            points = list(route.path)
+            while len(points) - 2 < self.waypoints:
+                legs = [
+                    hypot(b[0] - a[0], b[1] - a[1])
+                    for a, b in zip(points, points[1:])
+                ]
+                longest = legs.index(max(legs))
+                a, b = points[longest], points[longest + 1]
+                points.insert(longest + 1, ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2))
+            interior = points[1:-1]
+        else:
+            # More corners than free waypoints, so no setting of them
+            # reproduces the optimal path. The seed is the best even
+            # spacing available and may well be refused; the structured
+            # starts are what the search then relies on.
+            samples = metrics.resample(
+                route.path, max(route.cost / (self.waypoints + 1), 1e-9)
+            )
+            interior = [
+                samples[round(i * (len(samples) - 1) / (self.waypoints + 1))]
+                for i in range(1, self.waypoints + 1)
+            ]
+
         params = []
-        for i in range(1, self.waypoints + 1):
-            index = round(i * (len(samples) - 1) / (self.waypoints + 1))
-            params.extend(samples[index])
+        for point in interior:
+            params.extend(point)
         return params
 
     def _starting_points(

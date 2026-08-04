@@ -5,6 +5,12 @@ __pycache__/
 venv/
 configs/models.json
 
+# Rendered animations are derived from committed scenarios and committed
+# code, weigh about a megabyte each, and their bytes move with the
+# matplotlib version. They are committed deliberately at milestones rather
+# than on every regeneration. See docs/img/README.md.
+docs/img/*.gif
+
 # LaTeX build artefacts; the PDF is committed at milestones only.
 paper/*.aux
 paper/*.log

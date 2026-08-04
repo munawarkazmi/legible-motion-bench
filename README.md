@@ -31,8 +31,9 @@ and this section will say so until it is.
   ceiling, and its safety-constrained variant, with a sweep over ceilings
   that traces the frontier
 - [ ] Trajectories proposed by language models
+- [x] Rendering: one animated GIF per scenario, panels side by side, the
+  observer's belief updating underneath, all panels on one clock
 - [ ] Scenario suite
-- [ ] Rendering
 - [ ] Language model evaluation
 
 ## What is here
@@ -179,6 +180,24 @@ nothing under as a search outcome carrying that wording, never as a
 statement that nothing exists. Getting that distinction wrong is the
 easiest way for a benchmark like this to publish something false.
 
+`legible_motion_bench/render.py` animates a trajectory with the observer's
+belief updating beneath it. It is in two halves on purpose. Building a
+storyboard is arithmetic and is tested; drawing is matplotlib and is not,
+because rendered bytes move with the library version and a test on them
+would fail for reasons unconnected to this benchmark.
+
+Frames are the metric's own samples, or an evenly spaced subset of them, so
+the bars in a GIF are the values that were scored rather than a second
+computation that could disagree with the table beside it. Panels in a
+comparison share one clock: the shorter trajectories finish and wait at
+their goal while the longer one is still moving, which is the only way the
+price of clarity is visible rather than merely tabulated. A figure asked
+for more panels than its grid can hold is refused rather than truncated.
+
+```bash
+python tools/render_figures.py scenarios --out docs/img
+```
+
 Time to confidence is measured in time, not in samples, so halving the
 speed doubles it. When the belief never settles above the threshold the
 value is absent rather than large, because a large number reads as
@@ -192,7 +211,7 @@ Requires Python 3.10 or newer and pytest. No other dependencies.
 python -m pytest -q
 ```
 
-159 tests. To check the facts every scenario carries, and to see the suite
+197 tests. To check the facts every scenario carries, and to see the suite
 inventory that any quoted denominator has to come from:
 
 ```bash

@@ -31,6 +31,14 @@ inspected.
   and records a ceiling it found nothing under as a search outcome rather
   than as an error. A 159-test suite in CI, which also re-checks every
   scenario property against the committed code)
+- [x] Rendering (one animated GIF per scenario, panels side by side, the
+  observer's belief updating beneath each with its value read out, all
+  panels on one clock so a trajectory that paid for clarity is seen
+  arriving after the direct one. Frames are the metric's own samples, so a
+  figure and the table beside it cannot disagree. A grid too small for its
+  panels is refused rather than truncated. Nothing in CI asserts on
+  rendered bytes. A 197-test suite in CI, which also re-checks every
+  scenario property against the committed code)
 - [ ] Language model trajectories (not started)
 - [ ] Scenario suite (not started, and deliberately so: a scenario is only
   worth including if the fact it carries can be stated in terms the code
@@ -165,6 +173,26 @@ With keep-out zones refused outright, the same sweep finds nothing
 admissible at 1.05 or 1.10, matches the unconstrained planner exactly at
 1.25 where the unconstrained optimum happens already to be safe, and sits
 just below it at looser ceilings, 0.8637 against 0.8658 at 1.50.
+
+## A fourth search defect, found by looking at the figures
+
+Building the renderer turned up a defect the numbers alone had hidden. In
+`wall_detour` the optimiser under a ten per cent cost ceiling scored
+0.5398, below the shortest path's 0.5455, which is impossible for a search
+that seeds itself on the shortest path. It was not seeding itself on the
+shortest path. Three evenly spaced waypoints cannot express a geodesic that
+turns two corners, so the seed cut the corner, ran through the wall the
+corner was going round, and was refused, leaving the search to start
+somewhere arbitrary and finish below the baseline it was meant to begin
+from. The seed now keeps every corner the optimal path turns at and pads by
+halving its longest leg, and a test asserts that the seed is feasible and
+has cost ratio exactly one wherever the waypoint count allows it. The
+sequence in `wall_detour` is now 0.5455, 0.5784, 0.6514, 0.7239 across
+ceilings of one, 1.1, 1.5 and unbounded.
+
+This is the second time a defect surfaced only when the output was looked
+at rather than asserted on, and it is the argument for building the
+renderer before the scenario suite rather than after.
 
 ## A limit that has to be stated wherever this is reported
 

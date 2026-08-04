@@ -13,6 +13,8 @@ from pathlib import Path
 import pytest
 
 from legible_motion_bench import metrics, world
+from legible_motion_bench.costs import geodesic
+from legible_motion_bench.geometry import polyline_length
 from legible_motion_bench.observer import Observer
 from legible_motion_bench.planners import (
     LegiblePlanner,
@@ -33,6 +35,28 @@ def legibility_of(scenario_, points, spacing=0.3):
     return metrics.evaluate(
         scenario_, Observer(condition="geodesic"), points, spacing=spacing
     ).legibility
+
+
+@pytest.mark.parametrize(
+    "name", ["open_two_goals", "pillar_two_goals", "wall_detour"]
+)
+def test_the_seed_reproduces_the_optimal_path(name):
+    # The search is only guaranteed to beat the baseline because it starts
+    # from it. That holds only if the waypoints can express the optimal
+    # path, which means keeping the corners it turns at rather than
+    # spacing waypoints evenly along it: an evenly spaced seed cuts the
+    # corner and runs through the obstacle the corner was avoiding.
+    scenario_ = scenario(name)
+    planner = LegiblePlanner(**FAST)
+    optimal = geodesic(
+        scenario_.start, scenario_.true_goal_position, scenario_.obstacles
+    )
+    assert len(optimal.path) - 2 <= planner.waypoints, "fixture needs more waypoints"
+
+    seed = planner._seed_along_the_optimal_path(scenario_)
+    points = planner._path(scenario_, seed)
+    assert metrics.feasibility(scenario_, points) == ()
+    assert polyline_length(points) == pytest.approx(optimal.cost)
 
 
 @pytest.mark.parametrize(

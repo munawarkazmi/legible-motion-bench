@@ -13,7 +13,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install pytest
+      # matplotlib is needed only by the rendering smoke test. CI never
+      # checks what a figure looks like; rendered bytes move with the
+      # library version, so the trajectory arrays and the metric values
+      # are what get asserted.
+      - run: pip install pytest matplotlib
       - run: python -m pytest -q
       # Every property a scenario carries is re-checked here against the
       # committed code, so a scenario cannot assert a fact that stopped
