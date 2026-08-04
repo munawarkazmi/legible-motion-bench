@@ -46,9 +46,13 @@ inspected.
 - [ ] Rendering (not started)
 - [ ] Language model evaluation (not started; the model manifest and the
   example config land with it rather than as empty scaffolding now)
-- [ ] Literature review (first pass done 4 August 2026, recorded in
-  `verification_log.md` with its open obligations; the section is not
-  drafted and the positioning is not settled)
+- [ ] Literature review (first pass 4 August 2026; the two body checks
+  that were blocking the scenario suite are done the same day, Dragan and
+  Srinivasa RSS 2013 read in full and Francis et al. read for whether it
+  calls for runnable instruments, both recorded in
+  `verification_log.md` with what they change. The section is not drafted
+  and the positioning is not settled, but two of the three contribution
+  claims now have to be restated and one result has to be quarantined)
 - [ ] Writing (nothing drafted)
 
 ## Decisions taken
@@ -248,6 +252,37 @@ change what has to be built next.
   Refusals are counted and reported separately from evaluations, so a
   search that spent most of its effort being refused says so instead of
   reporting few evaluations and looking efficient.
+
+## What the two body checks changed, 4 August 2026
+
+Recorded here as well as in the verification log because these are claim
+decisions, not reading notes.
+
+- The unbounded point in the cost sweep is computed outside the region in
+  which the observer model has ever been shown to correspond to what
+  people perceive. Dragan and Srinivasa bound their own user studies to
+  inside the trust region and say the model can only be trusted there. Our
+  unbounded row reaches a cost ratio near 3.6. It is not the far end of
+  the frontier and it must not be reported as a legibility result.
+- Contribution claim (a), legibility under safety constraints, is a
+  narrowing rather than a gap. The founding paper states that legibility
+  moves the trajectory closer to obstacles. It does not measure it, uses a
+  soft cost rather than a constraint, and never reports clearance. The
+  claim becomes: noticed, left qualitative, now measured.
+- Contribution claim (b), the judge-free instrument, is strengthened in
+  its framing and weakened in one respect. Francis et al. ask for exactly
+  this kind of instrument and endorse computed metrics for
+  reproducibility, so it is cited as motivation. But their guideline B6
+  requires objective metrics to be validated, and this metric is exactly
+  reproducible without being validated. The draft has to say so.
+- The cost ceiling is not our idea. It is the trust region of the founding
+  paper expressed as a ratio, and the sweep has to cite it as such.
+- The observer has no "neither of these goals" option. Dragan's follow-up
+  study found subjects forming exactly that belief once motion became
+  strange enough, and our posterior will keep summing to one over the
+  declared goals however strange the trajectory is. This is a known
+  direction of error that grows with the cost ratio, and it belongs in the
+  limitations rather than being discovered by a reviewer.
 
 ## Open decisions
 
