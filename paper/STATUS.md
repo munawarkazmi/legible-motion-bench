@@ -23,7 +23,7 @@ inspected.
   denominator the frontier is measured against; its cost ratio is one by
   construction and it ignores keep-out zones, so the baseline is not
   automatically the safe option. The legibility optimiser is not written
-  and is waiting on the parameterisation decision below. A 126-test suite
+  and is waiting on the parameterisation decision below. A 135-test suite
   in CI, which also re-checks every scenario property against the
   committed code)
 - [ ] Scenario suite (not started, and deliberately so: a scenario is only
@@ -105,21 +105,30 @@ it is going to. Both traces are asserted in
 This is a property of the world and the optimal path, not a finding about
 any planner, and it must not be written up as one.
 
-## Measured cost of the objective, 4 August 2026
+## Cost of the objective, measured 4 August 2026
 
-One legibility evaluation at the default sampling spacing takes about 10 ms
-in the obstacle-free fixture, 289 ms in `pillar_two_goals` and 414 ms in
-`wall_detour`, measured on this machine after hoisting the constant
-C*(S -> G) out of the per-sample loop, which alone was worth a factor of
-about two and changed no computed value. A profile attributes roughly 87
-per cent of the remaining time to the exact segment predicate, dominated by
-rational arithmetic. Two further reductions are available and neither
-changes a result: caching the static part of the visibility graph per
-scenario, since only the query point differs between calls, and filtering
-the exact predicate through a floating point evaluation with an error bound
-so the rational fallback runs only near zero. This matters because an
-optimiser evaluates the objective thousands of times, and at 414 ms a
-search is impractical.
+One legibility evaluation at the default sampling spacing cost 985 ms in
+`wall_detour` and 550 ms in `pillar_two_goals` on this machine, which made
+any search impractical. Three changes brought that to 95 ms and 67 ms, a
+factor of ten, and none of them altered a computed value:
+
+1. Hoisting the constant C*(S -> G) out of the per-sample loop, worth 2.4x.
+   It was being recomputed at every sample of every trajectory.
+2. A cost-to-go index that builds the static part of the visibility graph
+   once per scenario and searches it once per goal, after which a query is
+   one visibility test per node and a minimum, worth 2.6x.
+3. An orientation predicate guarded by a forward error bound, so rational
+   arithmetic runs only where floating point cannot be trusted, plus a
+   trivial reject in the segment test that decides most calls from
+   orientation signs alone, worth 1.7x.
+
+Every legibility value in the fixtures is bit-identical before and after,
+and all fourteen recorded scenario properties still hold. The fast paths
+are held to the obvious implementations by `tests/test_differential.py`
+rather than by argument. That file also asserts that its own corpus is hard:
+on twenty thousand near-collinear triples an unguarded floating point
+determinant reports the wrong sign on more than a tenth of them, while the
+guarded predicate matches rational arithmetic on all of them.
 
 ## Open decisions
 

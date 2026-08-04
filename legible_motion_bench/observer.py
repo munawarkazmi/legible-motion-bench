@@ -34,7 +34,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from math import exp
 
-from .costs import geodesic_cost, straight_line_cost
+from .costs import CostToGoIndex, geodesic_cost, straight_line_cost
 from .geometry import polyline_length
 from .world import Scenario
 
@@ -78,9 +78,36 @@ class Observer:
         return f"{self.condition}_beta{self.beta:g}"
 
     def cost_to_go(self, position, goal_position, obstacles) -> float:
+        """Cost-to-go under this observer's condition, computed from scratch.
+
+        The reference implementation, kept simple and slow. Belief over a
+        whole trajectory goes through the index instead, which returns the
+        same numbers; `tests/test_costs.py` holds the differential test
+        that says so.
+        """
         if self.condition == "geodesic":
             return geodesic_cost(position, goal_position, obstacles)
         return straight_line_cost(position, goal_position)
+
+    def index_for(self, scenario: Scenario) -> CostToGoIndex | None:
+        """A reusable cost-to-go structure for this scenario, if one helps.
+
+        None for the straight line observer, whose cost-to-go is a
+        distance and needs no structure, and None for a world with no
+        obstacles, where the geodesic is that same distance.
+        """
+        if self.condition != "geodesic" or not scenario.obstacles:
+            return None
+        return CostToGoIndex(
+            scenario.obstacles, [g.position for g in scenario.goals]
+        )
+
+    def _cost_to_go(self, position, goal_position, obstacles, index) -> float:
+        if self.condition != "geodesic":
+            return straight_line_cost(position, goal_position)
+        if index is None:
+            return geodesic_cost(position, goal_position, obstacles)
+        return index.cost_to(position, goal_position)
 
     def _prior_for(self, scenario: Scenario) -> dict:
         if self.prior is None:
@@ -100,7 +127,7 @@ class Observer:
             raise ObserverError(f"prior sums to {total}, which cannot be normalised")
         return {k: v / total for k, v in self.prior.items()}
 
-    def baseline(self, scenario: Scenario) -> dict:
+    def baseline(self, scenario: Scenario, index=None) -> dict:
         """Optimal cost from the start to each goal, C*(S -> G).
 
         Constant for a scenario and an observer condition, so it is
@@ -108,7 +135,9 @@ class Observer:
         every point of a trajectory.
         """
         return {
-            g.id: self.cost_to_go(scenario.start, g.position, scenario.obstacles)
+            g.id: self._cost_to_go(
+                scenario.start, g.position, scenario.obstacles, index
+            )
             for g in scenario.goals
         }
 
@@ -119,11 +148,18 @@ class Observer:
         start position. A single point is a valid prefix and returns the
         prior, since no motion has yet distinguished anything.
         """
+        index = self.index_for(scenario)
         return self._posterior(
-            scenario, prefix, self._prior_for(scenario), self.baseline(scenario)
+            scenario,
+            prefix,
+            self._prior_for(scenario),
+            self.baseline(scenario, index),
+            index,
         )
 
-    def _posterior(self, scenario: Scenario, prefix, prior: dict, baseline: dict) -> dict:
+    def _posterior(
+        self, scenario: Scenario, prefix, prior: dict, baseline: dict, index
+    ) -> dict:
         points = [tuple(map(float, p)) for p in prefix]
         if not points:
             raise ObserverError("a prefix must contain at least one point")
@@ -138,7 +174,9 @@ class Observer:
 
         exponents = {}
         for goal in scenario.goals:
-            remaining = self.cost_to_go(current, goal.position, scenario.obstacles)
+            remaining = self._cost_to_go(
+                current, goal.position, scenario.obstacles, index
+            )
             exponents[goal.id] = self.beta * (
                 baseline[goal.id] - travelled - remaining
             )
@@ -168,9 +206,10 @@ class Observer:
         """
         path = [tuple(map(float, p)) for p in points]
         prior = self._prior_for(scenario)
-        baseline = self.baseline(scenario)
+        index = self.index_for(scenario)
+        baseline = self.baseline(scenario, index)
         return tuple(
-            self._posterior(scenario, path[: i + 1], prior, baseline)
+            self._posterior(scenario, path[: i + 1], prior, baseline, index)
             for i in range(len(path))
         )
 

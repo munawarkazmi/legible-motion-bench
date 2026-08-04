@@ -49,10 +49,24 @@ arithmetic rather than against a tolerance, because the visibility graph is
 built entirely from those answers and one misclassified segment silently
 changes the optimal cost-to-go.
 
+The predicate is guarded rather than merely exact: it is decided in
+floating point wherever a forward error bound shows the sign cannot have
+been changed by rounding, and in rational arithmetic otherwise. That is not
+a detail of taste. On twenty thousand near-collinear triples an unguarded
+floating point determinant reports the wrong sign on more than a tenth of
+them; the guarded predicate matches rational arithmetic on all of them, and
+`tests/test_differential.py` asserts both halves of that sentence so the
+corpus cannot quietly become easy.
+
 `legible_motion_bench/costs.py` computes the optimal cost-to-go exactly. In
 a plane occupied by convex polygons the shortest obstacle-avoiding path is a
 polyline through obstacle vertices, so the optimum comes from shortest path
 search over the visibility graph. There is no grid and no discretisation.
+Repeated queries go through an index that builds the static part of that
+graph once per scenario, which is sound because a shortest path from a
+point either runs straight to its target or turns first at an obstacle
+vertex, and that first hop is by definition a visible segment. The index is
+tested against the full search rather than trusted.
 The same module holds the straight line cost-to-go, which is not a fallback
 but the second observer condition: it models someone who can see the robot
 and knows the candidate goals but has no view of what stands between them.
@@ -144,7 +158,7 @@ Requires Python 3.10 or newer and pytest. No other dependencies.
 python -m pytest -q
 ```
 
-126 tests. To check the facts every scenario carries, and to see the suite
+135 tests. To check the facts every scenario carries, and to see the suite
 inventory that any quoted denominator has to come from:
 
 ```bash

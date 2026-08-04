@@ -31,11 +31,50 @@ def _frac(p: Point) -> tuple[Fraction, Fraction]:
     return (Fraction(p[0]), Fraction(p[1]))
 
 
+# Half an ulp, and the forward error bound for a two by two determinant
+# evaluated in double precision. Both are Shewchuk's, from "Adaptive
+# Precision Floating-Point Arithmetic and Fast Robust Geometric
+# Predicates". The bound is what licenses trusting the floating point
+# answer: when the determinant exceeds it, no rounding could have changed
+# the sign.
+_EPSILON = 2.0**-53
+_ORIENTATION_ERROR = (3.0 + 16.0 * _EPSILON) * _EPSILON
+
+
 def orientation(o: Point, a: Point, b: Point) -> int:
     """Sign of the cross product of (a - o) and (b - o), computed exactly.
 
     Returns 1 if o, a, b turn left, -1 if they turn right, 0 if collinear.
+
+    The answer is exact. It is reached in floating point whenever floating
+    point can be shown to have got the sign right, and by rational
+    arithmetic otherwise. The two paths are held to agreement by a
+    differential test over degenerate configurations, because a filter that
+    was wrong in the collinear case would be wrong exactly where the
+    visibility graph is decided.
     """
+    left = (a[0] - o[0]) * (b[1] - o[1])
+    right = (a[1] - o[1]) * (b[0] - o[0])
+    det = left - right
+
+    if left > 0.0:
+        if right <= 0.0:
+            return (det > 0.0) - (det < 0.0)
+        total = left + right
+    elif left < 0.0:
+        if right >= 0.0:
+            return (det > 0.0) - (det < 0.0)
+        total = -left - right
+    else:
+        return (det > 0.0) - (det < 0.0)
+
+    bound = _ORIENTATION_ERROR * total
+    if det >= bound or -det >= bound:
+        return (det > 0.0) - (det < 0.0)
+    return _orientation_exact(o, a, b)
+
+
+def _orientation_exact(o: Point, a: Point, b: Point) -> int:
     ox, oy = _frac(o)
     ax, ay = _frac(a)
     bx, by = _frac(b)
@@ -170,6 +209,35 @@ class ConvexPolygon:
         against those half planes in exact arithmetic leaves an interval of
         the parameter t; the segment enters the interior exactly when that
         interval has positive length.
+
+        Most calls never reach that clip. If both endpoints lie in the
+        closed outer half plane of any one edge then the segment cannot
+        reach the interior, and if either endpoint is strictly inside then
+        it obviously does. Both are decided by the orientation predicate,
+        which is exact, so the short circuits change no answer and only the
+        genuinely straddling segments pay for rational arithmetic.
+        """
+        strictly_inside_a = True
+        strictly_inside_b = True
+        for v, w in self.edges():
+            side_a = orientation(v, w, a)
+            side_b = orientation(v, w, b)
+            if side_a <= 0 and side_b <= 0:
+                return False
+            if side_a <= 0:
+                strictly_inside_a = False
+            if side_b <= 0:
+                strictly_inside_b = False
+        if strictly_inside_a or strictly_inside_b:
+            return True
+        return self.segment_enters_interior_exact(a, b)
+
+    def segment_enters_interior_exact(self, a: Point, b: Point) -> bool:
+        """The unguarded clip, in rational arithmetic throughout.
+
+        Correct on its own for any input, and kept separate so the guarded
+        version above can be held to it by a differential test rather than
+        by argument.
         """
         ax, ay = _frac(a)
         bx, by = _frac(b)

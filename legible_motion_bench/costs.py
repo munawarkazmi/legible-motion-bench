@@ -110,8 +110,111 @@ def geodesic(a: Point, b: Point, obstacles) -> Geodesic:
 
 
 def geodesic_cost(a: Point, b: Point, obstacles) -> float:
-    """Optimal cost-to-go from a to b, written C* elsewhere in the code."""
+    """Optimal cost-to-go from a to b, written C* elsewhere in the code.
+
+    This is the reference implementation: it rebuilds the whole visibility
+    graph for every call, which is slow and obviously correct. The index
+    below is the fast path and is tested against this one.
+    """
     return geodesic(a, b, obstacles).cost
+
+
+class CostToGoIndex:
+    """Optimal cost-to-go to a fixed set of targets, from any query point.
+
+    Built once per scenario. The observer asks for the cost-to-go from
+    every sampled point of a trajectory to every candidate goal, which is
+    thousands of queries over a world that never changes, and rebuilding
+    the visibility graph each time was most of the cost of the benchmark.
+
+    Only the query point differs between calls. The obstacle vertices and
+    the targets form a graph that can be built once and searched once per
+    target, after which a query is one visibility test per node and a
+    minimum, with no search at all.
+
+    The answer is unchanged, and the reason is worth stating because the
+    whole benchmark rests on it. A shortest path from a point to a target
+    either runs straight there or turns first at an obstacle vertex, and
+    that first hop is by definition a visible segment. So the minimum over
+    visible nodes of the hop plus the precomputed remainder is the same
+    number the full search returns.
+    """
+
+    def __init__(self, obstacles, targets):
+        self._obstacles = tuple(obstacles)
+        self._targets = tuple((float(x), float(y)) for x, y in targets)
+
+        nodes: list[Point] = []
+        seen = set()
+        for ob in self._obstacles:
+            for v in ob.vertices:
+                if v not in seen:
+                    seen.add(v)
+                    nodes.append(v)
+        for t in self._targets:
+            if t not in seen:
+                seen.add(t)
+                nodes.append(t)
+        self._nodes = tuple(nodes)
+
+        n = len(self._nodes)
+        self._adjacency: list[list[tuple[int, float]]] = [[] for _ in range(n)]
+        for i in range(n):
+            for j in range(i + 1, n):
+                if _visible(self._nodes[i], self._nodes[j], self._obstacles):
+                    w = hypot(
+                        self._nodes[i][0] - self._nodes[j][0],
+                        self._nodes[i][1] - self._nodes[j][1],
+                    )
+                    self._adjacency[i].append((j, w))
+                    self._adjacency[j].append((i, w))
+
+        self._distance = {t: self._search_from(self._nodes.index(t)) for t in self._targets}
+
+    def _search_from(self, source: int) -> tuple[float, ...]:
+        n = len(self._nodes)
+        dist = [inf] * n
+        dist[source] = 0.0
+        settled = [False] * n
+        queue: list[tuple[float, int]] = [(0.0, source)]
+        while queue:
+            d, u = heapq.heappop(queue)
+            if settled[u]:
+                continue
+            settled[u] = True
+            for v, w in self._adjacency[u]:
+                nd = d + w
+                if nd < dist[v]:
+                    dist[v] = nd
+                    heapq.heappush(queue, (nd, v))
+        return tuple(dist)
+
+    @property
+    def targets(self) -> tuple[Point, ...]:
+        return self._targets
+
+    def cost_to(self, point: Point, target: Point) -> float:
+        query = (float(point[0]), float(point[1]))
+        key = (float(target[0]), float(target[1]))
+        if key not in self._distance:
+            raise GeometryError(
+                f"cost-to-go index was not built for target {key}; "
+                f"it holds {list(self._targets)}"
+            )
+        _check_free(query, self._obstacles, "query point")
+
+        distances = self._distance[key]
+        best = inf
+        for i, node in enumerate(self._nodes):
+            if distances[i] == inf:
+                continue
+            if _visible(query, node, self._obstacles):
+                candidate = hypot(query[0] - node[0], query[1] - node[1]) + distances[i]
+                if candidate < best:
+                    best = candidate
+        if best == inf:
+            raise UnreachableGoal(f"no obstacle-avoiding path from {query} to {key}")
+        return best
 
 
 def straight_line_cost(a: Point, b: Point) -> float:
