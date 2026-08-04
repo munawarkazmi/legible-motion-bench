@@ -37,9 +37,19 @@ inspected.
   arriving after the direct one. Frames are the metric's own samples, so a
   figure and the table beside it cannot disagree. A grid too small for its
   panels is refused rather than truncated. Nothing in CI asserts on
-  rendered bytes. A 210-test suite in CI, which also re-checks every
+  rendered bytes)
+- [ ] Language model trajectories (the machinery is built and tested
+  against a scripted model: one committed prompt template rendered from
+  the scenario with its SHA-256 in every record, an extraction step that
+  refuses a malformed reply rather than repairing it, records streamed one
+  JSON object per line with a resume guard, a committed manifest the
+  adapter checks each alias against before a request is made, and a
+  scoring tool that recomputes metrics from records without spending
+  quota. Untested: the HTTP backends have never made a live call, because
+  doing so spends a daily allowance that belongs to a real experiment
+  rather than to a smoke test. No model has been asked anything, and there
+  are no records. A 229-test suite in CI, which also re-checks every
   scenario property against the committed code)
-- [ ] Language model trajectories (not started)
 - [x] Scenario suite (eight worlds, 46 machine-checked facts carried
   inline and re-verified in CI. Each world is present for a stated reason:
   a no-obstacle control on the observer model, a paired comparison between
@@ -110,6 +120,12 @@ inspected.
   so the pair covers both readings. If the paper ever wants to say
   something about a fixed hesitation window, it has to say it with time to
   confidence and not with legibility.
+- 4 August 2026. A trajectory that stops a centimetre short of the goal
+  has not reached it. The arrival tolerance stays at one part in a
+  million, which absorbs floating point and nothing else, so a model
+  cannot post a legibility number for motion that never completed the
+  task. This only ever binds on language model output; every planner here
+  lands on the goal exactly.
 - 4 August 2026. Sampling spacing defaults to 0.05 world units and speed
   to 1.0, both recorded in every metrics record. Sample count follows path
   length rather than being fixed, so two trajectories are measured at the
@@ -334,12 +350,8 @@ decisions, not reading notes.
   metrics record, but no value has been argued for. Whichever is chosen,
   the results have to be shown to be stable across a range of it or the
   number is a number about the threshold.
-- The arrival tolerance for a trajectory proposed by a language model. Our
-  own planners land on the goal exactly and the tolerance of one part in a
-  million never binds. A model that writes a final waypoint a centimetre
-  short is a different case, and whether that is an arrival or a failure
-  to reach the goal has to be settled before the runs, not after seeing
-  them.
+- The confidence threshold, still at 0.8 and still unargued, is the only
+  measurement parameter left open.
 - Target venue. An HRI late-breaking report or an HRI or RO-MAN workshop.
   Not written into the paper until it is decided.
 

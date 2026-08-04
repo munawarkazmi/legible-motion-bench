@@ -37,8 +37,14 @@ from .observer import Observer
 from .world import Scenario
 
 # How close a trajectory must come to the true goal to count as having
-# arrived. Our own planners land on it exactly; this exists for optimiser
-# output and for trajectories proposed by a language model.
+# arrived. Our own planners land on it exactly, so this only ever binds on
+# a trajectory proposed by a language model.
+#
+# It is deliberately far tighter than any physically meaningful margin. A
+# trajectory that stops a centimetre short of the goal has not reached the
+# goal, and scoring it as an arrival would let a model post a legibility
+# number for motion that never completed the task. The tolerance absorbs
+# floating point, nothing else.
 ARRIVAL_TOLERANCE = 1e-6
 
 # Spacing between samples along the path, in world units. The robot moves

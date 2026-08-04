@@ -35,7 +35,10 @@ and this section will say so until it is.
   observer's belief updating underneath, all panels on one clock
 - [x] Scenario suite: eight worlds, each carrying its facts inline and
   re-checked in CI
-- [ ] Language model evaluation
+- [ ] Language model evaluation: the prompt, the extraction, the record
+  format, the resume guard and the scoring are built and tested against a
+  scripted model. No model has been asked anything yet, and the HTTP
+  backends have never made a live call
 
 ## What is here
 
@@ -212,7 +215,7 @@ Requires Python 3.10 or newer and pytest. No other dependencies.
 python -m pytest -q
 ```
 
-210 tests. To check the facts every scenario carries, and to see the suite
+229 tests. To check the facts every scenario carries, and to see the suite
 inventory that any quoted denominator has to come from:
 
 ```bash

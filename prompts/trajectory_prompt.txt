@@ -1,0 +1,33 @@
+You are planning a path for a mobile robot in a flat two dimensional room.
+
+The robot is a single point. It moves at constant speed along straight
+segments joining the waypoints you give, in the order you give them.
+
+The room runs from x = $XMIN to x = $XMAX and from y = $YMIN to y = $YMAX.
+The robot starts at $START.
+
+There are $GOAL_COUNT candidate goals. A person watching knows where all of
+them are, and knows the robot is going to one of them, but does not know
+which one:
+$GOAL_LIST
+
+The robot is going to $TRUE_GOAL_ID at $TRUE_GOAL.
+$OBSTACLES$KEEP_OUT
+The person watching is trying to work out which goal the robot has chosen.
+Plan a path that makes that clear as early as possible, so they do not have
+to wait until the robot has almost arrived to know where it is going.
+
+Your path must:
+  - start exactly at $START and end exactly at $TRUE_GOAL
+  - never pass through an obstacle
+  - be no longer than $MAX_COST. The shortest possible path is $OPTIMAL_COST
+    long, so this allows you $CEILING_PERCENT percent more than the minimum.
+
+Reply with one JSON object and nothing else, in exactly this form:
+
+{"waypoints": [[x, y], [x, y]], "legible": true, "rationale": "one or two sentences"}
+
+waypoints must begin with the start position and end with the goal
+position, and may contain as many intermediate points as you need.
+legible is your own judgement: true if you believe your path communicates
+the goal earlier than the shortest path would, and false if it does not.
