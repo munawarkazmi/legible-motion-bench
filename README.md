@@ -18,12 +18,12 @@ Every metric is computed exactly from the trajectory and the world.
 
 ## Status
 
-Early. One component is built and tested; the rest is not written yet, and
-this section will say so until it is.
+Early. Two components are built and tested; the rest is not written yet,
+and this section will say so until it is.
 
 - [x] World model: scenarios, exact convex polygonal geometry, exact optimal
   cost-to-go, and machine-checked properties carried inside scenario files
-- [ ] Observer model: Boltzmann-rational posterior over goals, in two
+- [x] Observer model: Boltzmann-rational posterior over goals, in two
   conditions, one that can see the obstacles and one that cannot
 - [ ] Metrics: legibility, path cost ratio, time to confidence, keep-out
   entries and minimum clearance
@@ -75,6 +75,30 @@ computes and a tool writes back. The registry is closed: a scenario naming a
 kind this build does not implement fails loudly instead of counting as
 verified.
 
+`legible_motion_bench/observer.py` is the Boltzmann-rational observer of
+Dragan, Lee and Srinivasa. A person who assumes the robot is efficient
+scores each candidate goal by how much the motion so far has cost relative
+to the best it could have done, and normalises those scores into a belief.
+Nothing here learns: given a world and a path, the belief is a
+deterministic function of the two.
+
+The two observer conditions are both first class. The informed observer's
+cost-to-go is the geodesic around the obstacles; the naive observer's is the
+straight line, modelling someone who can see the robot and knows the
+candidate goals but has no view of what stands between them. That
+distinction is not decoration. In the `wall_detour` fixture the optimal
+paths to both goals share their first leg around the wall, so the informed
+observer holds at the prior over that stretch and learns nothing, while the
+naive observer's belief in the true goal falls from 0.5000 to 0.3164 before
+the path clears the corner: the same motion reads as heading for the wrong
+goal. Both traces are asserted in
+`tests/test_observer.py::test_the_two_observers_disagree_when_the_room_is_not_visible`.
+
+The rationality coefficient is exposed rather than absorbed, and travels in
+the observer's name, because a belief computed at one coefficient is not
+comparable with a belief computed at another. It defaults to one, which
+recovers the formulation as Dragan et al. state it.
+
 ## Running it
 
 Requires Python 3.10 or newer and pytest. No other dependencies.
@@ -83,7 +107,7 @@ Requires Python 3.10 or newer and pytest. No other dependencies.
 python -m pytest -q
 ```
 
-62 tests. To check the facts every scenario carries, and to see the suite
+89 tests. To check the facts every scenario carries, and to see the suite
 inventory that any quoted denominator has to come from:
 
 ```bash
