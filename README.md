@@ -18,14 +18,14 @@ Every metric is computed exactly from the trajectory and the world.
 
 ## Status
 
-Early. Two components are built and tested; the rest is not written yet,
+Early. Three components are built and tested; the rest is not written yet,
 and this section will say so until it is.
 
 - [x] World model: scenarios, exact convex polygonal geometry, exact optimal
   cost-to-go, and machine-checked properties carried inside scenario files
 - [x] Observer model: Boltzmann-rational posterior over goals, in two
   conditions, one that can see the obstacles and one that cannot
-- [ ] Metrics: legibility, path cost ratio, time to confidence, keep-out
+- [x] Metrics: legibility, path cost ratio, time to confidence, keep-out
   entries and minimum clearance
 - [ ] Planners: shortest path, legibility-optimised, legibility-optimised
   under safety constraints, and trajectories proposed by language models
@@ -99,6 +99,42 @@ the observer's name, because a belief computed at one coefficient is not
 comparable with a belief computed at another. It defaults to one, which
 recovers the formulation as Dragan et al. state it.
 
+`legible_motion_bench/metrics.py` scores a trajectory. Legibility follows
+Dragan et al.: belief in the true goal averaged over the motion with weight
+f(t) = T - t, so the same clarity counts for more the earlier it arrives.
+Beside it sit the path cost ratio, the time to confidence, and the safety
+columns. There is no way to ask this module for legibility on its own; the
+four come back in one record, because legibility bought by cutting a corner
+is not legibility.
+
+Obstacles and keep-out zones are scored differently on purpose. Passing
+through an obstacle is infeasible, and an infeasible trajectory carries no
+legibility number and no cost ratio: its raw path length is still recorded
+so the row stays auditable, but nothing is turned into a figure that would
+flatter a trajectory for stopping short of the goal or walking through a
+wall. Crossing a keep-out zone is feasible and scored. If keep-out zones
+were hard as well there would be no frontier to measure.
+
+The trade is visible on trajectories built by hand in the obstacle-free
+fixture, all three ending at the same goal and differing only in how early
+they commit to it:
+
+```
+trajectory   legibility   cost ratio   time to confidence
+direct           0.7165       1.0000                 3.70
+legible          0.8128       1.1277                 2.25
+overshoot        0.8428       1.3002                 2.04
+```
+
+The second deviation buys less clarity per unit of path than the first, and
+that diminishing return is asserted in the tests rather than described
+here. Deviating towards the wrong goal loses on every column at once.
+
+Time to confidence is measured in time, not in samples, so halving the
+speed doubles it. When the belief never settles above the threshold the
+value is absent rather than large, because a large number reads as
+"arrived late" and the truth is "did not arrive".
+
 ## Running it
 
 Requires Python 3.10 or newer and pytest. No other dependencies.
@@ -107,7 +143,7 @@ Requires Python 3.10 or newer and pytest. No other dependencies.
 python -m pytest -q
 ```
 
-89 tests. To check the facts every scenario carries, and to see the suite
+111 tests. To check the facts every scenario carries, and to see the suite
 inventory that any quoted denominator has to come from:
 
 ```bash

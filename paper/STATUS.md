@@ -14,9 +14,12 @@ inspected.
   one whose cost-to-go is the straight line; property tested for
   normalisation, for recovering the prior exactly before the robot moves,
   for never losing belief in the goal of the path it is on, and for
-  symmetry under reflection. An 89-test suite in CI, which also re-checks
+  symmetry under reflection)
+- [x] Metrics (legibility in the Dragan weighting, path cost ratio, time
+  to confidence, keep-out entries and minimum clearance, returned together
+  in one record with no way to obtain legibility without the columns it
+  has to be read against. A 111-test suite in CI, which also re-checks
   every scenario property against the committed code)
-- [ ] Metrics (not started)
 - [ ] Planners (not started)
 - [ ] Scenario suite (not started, and deliberately so: a scenario is only
   worth including if the fact it carries can be stated in terms the code
@@ -58,6 +61,30 @@ inspected.
 - 4 August 2026. The observer is defined on the vertices of a path.
   Resampling a path to equal time steps belongs with the metrics, because
   the choice of step is a measurement decision and not part of the belief.
+- 4 August 2026. An infeasible trajectory is scored as a constraint
+  violation and carries no legibility number. Infeasible means passing
+  through an obstacle interior, not starting at the start, or not reaching
+  the true goal. Crossing a keep-out zone is not infeasibility; it is a
+  scored safety violation and the trajectory still receives a legibility
+  number, which is what makes the frontier measurable. The cost ratio is
+  also withheld from an infeasible trajectory, since a path that stops
+  after one step would otherwise post a ratio below one and read as
+  efficient. The raw path length and optimal length are recorded either
+  way so the row stays auditable.
+- 4 August 2026. Legibility uses the Dragan weighting f(t) = T - t,
+  normalised by the trajectory's own duration, which is what the
+  specification asked for. One tension is worth recording rather than
+  discovering later: the motivation for the whole project is stated in
+  absolute time, the first seconds during which a person hesitates,
+  whereas this weighting stretches "early" along with the trajectory. Time
+  to confidence is reported in absolute time and carries that information,
+  so the pair covers both readings. If the paper ever wants to say
+  something about a fixed hesitation window, it has to say it with time to
+  confidence and not with legibility.
+- 4 August 2026. Sampling spacing defaults to 0.05 world units and speed
+  to 1.0, both recorded in every metrics record. Sample count follows path
+  length rather than being fixed, so two trajectories are measured at the
+  same resolution rather than at the same count.
 
 ## First observation, 4 August 2026
 
@@ -81,16 +108,18 @@ any planner, and it must not be written up as one.
   asked. The first is at risk and the third looks strongest, but nothing
   is settled until the outstanding body-checks in `verification_log.md`
   are done. The code written so far is neutral to all three.
-- The legibility metric's time weighting, the confidence threshold for
-  time to confidence, and the trajectory parameterisation the legibility
-  optimiser searches over. All three arrive with their components.
-- What the benchmark does with an infeasible trajectory. A language model
-  will propose paths that pass through obstacles, and the observer cannot
-  compute a cost-to-go from a point inside one, so it raises. Whether such
-  a trajectory is scored as a constraint violation with no legibility
-  number, or excluded from the legibility column and counted separately,
-  is a scoring semantics decision and it is not made yet. It has to be
-  made before the language model runs, not after seeing them.
+- The trajectory parameterisation the legibility optimiser searches over.
+  Arrives with the planners.
+- The confidence threshold. It defaults to 0.8 and is recorded in every
+  metrics record, but no value has been argued for. Whichever is chosen,
+  the results have to be shown to be stable across a range of it or the
+  number is a number about the threshold.
+- The arrival tolerance for a trajectory proposed by a language model. Our
+  own planners land on the goal exactly and the tolerance of one part in a
+  million never binds. A model that writes a final waypoint a centimetre
+  short is a different case, and whether that is an arrival or a failure
+  to reach the goal has to be settled before the runs, not after seeing
+  them.
 - Target venue. An HRI late-breaking report or an HRI or RO-MAN workshop.
   Not written into the paper until it is decided.
 
