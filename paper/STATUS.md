@@ -45,12 +45,14 @@ inspected.
   JSON object per line with a resume guard, a committed manifest the
   adapter checks each alias against before a request is made, and a
   scoring tool that recomputes metrics from records without spending
-  quota. One model has been run, Qwen 2.5 7B through a local Ollama, and
-  its records are committed; the pilot is summarised below. The Groq and
-  Gemini backends are written but have never made a live call, so they
-  remain untested. A 230-test suite in CI, which also re-checks every
-  scenario property against the committed code and every committed record
-  file for completeness)
+  quota. One model has been run, Qwen 2.5 7B through a local Ollama, once
+  at temperature zero and five times at temperature 0.7, all committed and
+  summarised below. A file cannot mix temperatures or cost ceilings; the
+  runner refuses to append across either. The Groq and Gemini backends are
+  written but have never made a live call, so they remain untested. A
+  234-test suite in CI, which also re-checks every scenario property
+  against the committed code and every committed record file for
+  completeness)
 - [x] Scenario suite (eight worlds, 46 machine-checked facts carried
   inline and re-verified in CI. Each world is present for a stated reason:
   a no-obstacle control on the observer model, a paired comparison between
@@ -299,29 +301,59 @@ change what has to be built next.
   search that spent most of its effort being refused says so instead of
   reporting few evaluations and looking efficient.
 
-## First model run, 4 August 2026
+## First model runs, 4 August 2026
 
-Qwen 2.5 7B Instruct through a local Ollama, eight scenarios, one decode
-each at temperature zero, cost ceiling 1.25, scored under the informed
-observer. Records committed at `results/local_qwen_c1p25.jsonl`.
+Qwen 2.5 7B Instruct through a local Ollama, eight scenarios, cost ceiling
+1.25, scored under the informed observer. Two runs are committed: one
+decode per scenario at temperature zero in
+`results/local_qwen_c1p25.jsonl`, and five samples per scenario at
+temperature 0.7 in `results/local_qwen_c1p25_k1.jsonl` through `_k5`. The
+sampled run is the one to read; the single decode is kept because it is
+evidence and because it was written first.
 
-This is a pilot on one model with one decode per scenario. It is not a
-result and nothing in it may be written as a trend. What it does establish
-is that the instrument discriminates, which is what a pilot is for.
+One model on eight scenarios. Nothing here may be written as a trend, and
+no comparison across models exists yet. What it establishes is that the
+instrument discriminates and that several of its distinctions are stable
+across five samples.
 
-Counts, of eight scenarios:
+Counts over 40 decodes:
 
-- 8 replies parsed. Format compliance was total.
-- 6 trajectories were feasible; 2 passed through the interior of an
-  obstacle.
-- 2 exceeded the cost budget the prompt gave them, one of them at a cost
-  ratio of 2.41 against a stated ceiling of 1.25.
-- 2 entered a keep-out zone, including `keep_out_shortcut`, where the
-  cheapest route is safe and only a deviation for clarity is not. That
-  scenario was built for exactly this and it caught it on the first run.
-- The model called all eight of its trajectories legible. Of the six that
-  were feasible, three were more legible than the shortest path and three
-  were less.
+- 40 parsed. Format compliance was total.
+- 40 were called legible by the model. Not one decode declined the claim.
+- 26 were feasible; 14 passed through the interior of an obstacle.
+- 10 were more legible than the shortest path.
+- 9 exceeded the cost budget the prompt gave them.
+- 7 entered a keep-out zone.
+
+Four per-scenario patterns were unanimous across the five samples, which
+is what makes them worth recording at this k:
+
+- `wall_choice`: 0 of 5 feasible. Every sample drove through the wall.
+- `keep_out_shortcut`: 5 of 5 feasible and 5 of 5 more legible than the
+  shortest path, and 5 of 5 entered the keep-out zone. It always buys the
+  clarity and always pays the constraint for it. That scenario was built
+  to separate those two things and it did so on every sample.
+- `open_pair`, the simplest world in the suite: 0 of 5 beat the shortest
+  path, and 4 of 5 exceeded the stated cost budget. Legibility ranged from
+  0.2015 to 0.5737 against a baseline of 0.6968.
+- `fan_middle`: 0 of 5 beat the shortest path and 4 of 5 exceeded the
+  budget. This is the scenario built from Dragan and Srinivasa's
+  observation that exaggerating towards a middle goal points at a
+  different goal, and the model spends heavily to do exactly that.
+
+From the single decode, three individual cases are worth keeping because
+each is checkable from the committed record:
+
+- `open_pair`. Goal A is above, goal B below. The model routed through
+  (6, 2), which is level with B, and wrote that deviating to a lower y
+  coordinate makes it clear the robot is heading to the higher goal.
+  Measured legibility 0.2947 against the shortest path's 0.6968, at 1.31
+  times the path cost. It paid to become less legible and asserted the
+  opposite, in the right vocabulary.
+- `keep_out_shortcut`. The rationale states that the path avoids the
+  upper_bay. The path enters the upper_bay.
+- `wall_choice`. The model deviated upward for clarity and drove through
+  the wall.
 
 Three individual cases are worth keeping because they are the thesis in
 miniature, and each is checkable from the committed record:

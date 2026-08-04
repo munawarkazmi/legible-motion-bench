@@ -263,6 +263,57 @@ def test_the_example_config_matches_the_manifest():
         assert entry["temperature"] == 0.0
 
 
+def test_records_carry_the_temperature_they_were_sampled_at(tmp_path, suite):
+    out = tmp_path / "run.jsonl"
+    runner.run(
+        suite[:1], scripted(default=GOOD_REPLY), out, cost_ceiling=1.25, temperature=0.7
+    )
+    assert runner.load_records(out)[0]["temperature"] == 0.7
+
+
+def test_a_file_cannot_mix_two_temperatures(tmp_path, suite):
+    # Five decodes at one temperature and three at another is not a
+    # sample of anything, and no later reader could separate them.
+    out = tmp_path / "run.jsonl"
+    runner.run(
+        suite[:2], scripted(default=GOOD_REPLY), out, cost_ceiling=1.25, temperature=0.7
+    )
+    with pytest.raises(ValueError, match="refusing to mix them"):
+        runner.run(
+            suite, scripted(default=GOOD_REPLY), out, cost_ceiling=1.25, temperature=0.0
+        )
+    with pytest.raises(ValueError, match="refusing to mix them"):
+        runner.run(
+            suite, scripted(default=GOOD_REPLY), out, cost_ceiling=1.5, temperature=0.7
+        )
+
+
+def test_a_record_cannot_claim_a_temperature_the_model_did_not_send(tmp_path, suite):
+    model = adapter.RemoteModel(
+        alias="local_qwen",
+        api_model="qwen2.5:7b-instruct",
+        backend="openai_chat",
+        base_url="https://example.invalid/v1",
+        temperature=0.0,
+    )
+    with pytest.raises(ValueError, match="the record must say what was actually"):
+        runner.run(
+            suite[:1], model, tmp_path / "run.jsonl", cost_ceiling=1.25, temperature=0.7
+        )
+
+
+def test_records_written_before_a_field_existed_still_resume(tmp_path, suite):
+    out = tmp_path / "run.jsonl"
+    out.write_text(
+        json.dumps({"scenario_id": suite[0].id, "run_alias": "local_qwen"}) + "\n",
+        encoding="utf-8",
+    )
+    attempted, skipped = runner.run(
+        suite[:2], scripted(default=GOOD_REPLY), out, cost_ceiling=1.25, temperature=0.7
+    )
+    assert (attempted, skipped) == (1, 1)
+
+
 def test_every_committed_record_file_is_complete_and_scoreable(suite):
     # The record files are the evidence. A committed run that had lost a
     # scenario, or that named a checkpoint the manifest does not know,

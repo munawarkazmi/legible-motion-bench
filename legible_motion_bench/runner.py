@@ -48,6 +48,35 @@ def existing_scenarios(path) -> set:
     return done
 
 
+def check_resumable(path, alias: str, cost_ceiling: float, temperature) -> None:
+    """Refuse to append to a file that was produced under other settings.
+
+    A file mixing two temperatures, two cost ceilings or two models is not
+    a run, and no later reader could separate them. Resuming is meant to
+    continue yesterday's run, not to blend it with a different one.
+
+    A field absent from a record is not checked, so a file written before
+    that field existed still resumes rather than being condemned for a
+    schema change.
+    """
+    path = Path(path)
+    if not path.exists():
+        return
+    missing = object()
+    for number, record in enumerate(load_records(path), start=1):
+        for field, expected in (
+            ("run_alias", alias),
+            ("cost_ceiling", cost_ceiling),
+            ("temperature", temperature),
+        ):
+            found = record.get(field, missing)
+            if found is not missing and found != expected:
+                raise ValueError(
+                    f"{path}: record {number} has {field}={found!r} but this "
+                    f"run uses {expected!r}; refusing to mix them in one file"
+                )
+
+
 def build_record(
     scenario: Scenario,
     model,
@@ -55,6 +84,7 @@ def build_record(
     prompt: str,
     reply: str | None,
     error: str | None,
+    temperature=None,
 ) -> dict:
     extraction = (
         extract(reply)
@@ -67,6 +97,7 @@ def build_record(
         "api_model": model.api_model,
         "scenario_id": scenario.id,
         "cost_ceiling": cost_ceiling,
+        "temperature": temperature,
         "prompt_sha256": prompts.digest(prompt),
         "request_error": error,
         "raw_response": reply,
@@ -91,6 +122,7 @@ def run(
     model,
     out_path,
     cost_ceiling: float,
+    temperature=None,
     on_record=None,
 ) -> tuple[int, int]:
     """Ask `model` for a trajectory in each scenario, appending as it goes.
@@ -101,8 +133,17 @@ def run(
     response would be worse than a gap in a column that says why it is
     there.
     """
+    declared = getattr(model, "temperature", None)
+    if declared is not None and declared != temperature:
+        raise ValueError(
+            f"model {model.alias!r} will send temperature {declared!r} but "
+            f"the run would record {temperature!r}; the record must say what "
+            f"was actually asked"
+        )
+
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
+    check_resumable(out_path, model.alias, cost_ceiling, temperature)
     already = existing_scenarios(out_path)
 
     attempted = 0
@@ -120,7 +161,7 @@ def run(
             except Exception as exc:  # noqa: BLE001
                 error = f"{type(exc).__name__}: {exc}"
             record = build_record(
-                scenario, model, cost_ceiling, prompt, reply, error
+                scenario, model, cost_ceiling, prompt, reply, error, temperature
             )
             handle.write(json.dumps(record) + "\n")
             handle.flush()

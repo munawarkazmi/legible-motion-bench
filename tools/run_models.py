@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -33,6 +34,18 @@ def main(argv=None) -> int:
     parser.add_argument("--out", default="results")
     parser.add_argument("--ceiling", type=float, default=1.25)
     parser.add_argument("--only", action="append", help="run only this alias")
+    parser.add_argument(
+        "--k",
+        type=int,
+        default=1,
+        help="how many independent samples per scenario, each to its own file",
+    )
+    parser.add_argument(
+        "--temperature",
+        type=float,
+        default=None,
+        help="sampling temperature; defaults to whatever the config says",
+    )
     parser.add_argument(
         "--limit",
         type=int,
@@ -59,38 +72,62 @@ def main(argv=None) -> int:
 
     ceiling_tag = f"c{args.ceiling:g}".replace(".", "p")
     for model in models:
-        out = Path(args.out) / f"{model.alias}_{ceiling_tag}.jsonl"
-        done = runner.existing_scenarios(out)
-        pending = [s for s in scenarios if s.id not in done]
-        if args.limit is not None:
-            pending = pending[: args.limit]
-
-        print(
-            f"{model.alias} ({model.api_model}) -> {out}: "
-            f"{len(done)} already answered, {len(pending)} to ask"
+        temperature = (
+            model.temperature if args.temperature is None else args.temperature
         )
-        if args.dry_run or not pending:
-            continue
-
-        def report(record):
-            state = (
-                "error" if record["request_error"]
-                else "parsed" if record["parsed"]
-                else "unparsed"
+        if args.k > 1 and not temperature:
+            # At temperature zero a resend is a replay. Five identical
+            # decodes would measure the sampler's determinism, not the
+            # model's variability, and reporting them as five samples
+            # would overstate what was observed five times over.
+            raise SystemExit(
+                f"--k {args.k} needs a sampling temperature above zero; "
+                f"{model.alias} would send {temperature!r}. Pass "
+                f"--temperature explicitly."
             )
-            print(f"  {record['scenario_id']:<20} {state}")
+        model = replace(model, temperature=temperature)
 
-        attempted, skipped = runner.run(
-            pending, model, out, cost_ceiling=args.ceiling, on_record=report
-        )
-        print(f"  {attempted} asked, {skipped} skipped")
+        for index in range(1, args.k + 1):
+            suffix = "" if args.k == 1 else f"_k{index}"
+            out = Path(args.out) / f"{model.alias}_{ceiling_tag}{suffix}.jsonl"
+            done = runner.existing_scenarios(out)
+            pending = [s for s in scenarios if s.id not in done]
+            if args.limit is not None:
+                pending = pending[: args.limit]
 
-        remaining = [s for s in scenarios if s.id not in runner.existing_scenarios(out)]
-        if remaining:
             print(
-                f"  {len(remaining)} still unanswered: "
-                f"{', '.join(s.id for s in remaining)}"
+                f"{model.alias} ({model.api_model}, temperature {temperature}) "
+                f"-> {out}: {len(done)} already answered, {len(pending)} to ask"
             )
+            if args.dry_run or not pending:
+                continue
+
+            def report(record):
+                state = (
+                    "error" if record["request_error"]
+                    else "parsed" if record["parsed"]
+                    else "unparsed"
+                )
+                print(f"  {record['scenario_id']:<20} {state}")
+
+            attempted, skipped = runner.run(
+                pending,
+                model,
+                out,
+                cost_ceiling=args.ceiling,
+                temperature=temperature,
+                on_record=report,
+            )
+            print(f"  {attempted} asked, {skipped} skipped")
+
+            unanswered = [
+                s for s in scenarios if s.id not in runner.existing_scenarios(out)
+            ]
+            if unanswered:
+                print(
+                    f"  {len(unanswered)} still unanswered: "
+                    f"{', '.join(s.id for s in unanswered)}"
+                )
     return 0
 
 
