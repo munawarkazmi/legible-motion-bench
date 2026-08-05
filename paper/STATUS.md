@@ -458,6 +458,44 @@ Both are resumable and neither loses work. Failed requests are recorded as
 evidence and retried rather than counted as answered, and a file built
 across two days is byte-identical to one built in a single run.
 
+## The cost ceiling sweep, both models, 5 August 2026
+
+Each model asked the same eight worlds at four stated path budgets, five
+samples each, 160 decodes per model. The question was whether the budget
+violations at 1.25 meant the budget was too tight to be legible within,
+or that the budget was not something the model attended to.
+
+| ceiling | Qwen median cost | Qwen over | Llama median cost | Llama over |
+| --- | --- | --- | --- | --- |
+| 1.10 | 1.1663 | 17 | 1.2817 | 30 |
+| 1.25 | 1.1588 | 9 | 1.2817 | 15 |
+| 1.50 | 1.1712 | 3 | 1.2817 | 10 |
+| 2.00 | 1.1709 | 0 | 1.2817 | 0 |
+
+It is the second reading, and it holds for both models. Qwen's median
+path cost moves by 0.012 across a budget that nearly doubles. Llama's
+does not move at all, staying at 1.2817 to four decimals in all four
+cells.
+
+That identical median was checked rather than reported, because a number
+that stable is more likely to be a bug than a result. It is neither a bug
+nor a coincidence of the median: the whole distribution repeats. Across
+roughly thirty feasible decodes per ceiling Llama returns only thirteen
+to sixteen distinct trajectories, whose cost ratios cluster on a modal
+value of 1.2452 thirteen or fourteen times in every cell. Because that
+modal path already exceeds a ten per cent budget, all thirty feasible
+decodes breached the tightest ceiling.
+
+The falling violation counts are therefore an artefact of where the line
+is drawn, not evidence of compliance. Nor did the extra room buy clarity:
+decodes more legible than the shortest path run 8, 10, 9, 11 for Qwen and
+21, 20, 20, 20 for Llama. The contrast with the optimiser is the point.
+Its cost ratio sits exactly on the ceiling in every row, because for a
+planner the budget is a constraint; for both models it is text.
+
+Two models at one temperature. This is a pilot and may not be written as
+a trend.
+
 ## Two defects in the adapter, found by using it
 
 The Groq backend had never made a live call and both faults appeared on
@@ -524,10 +562,11 @@ decisions, not reading notes.
   is settled until the outstanding body-checks in `verification_log.md`
   are done. The code written so far is neutral to all three.
 - The ceilings the frontier is swept at. They default to 1.05, 1.1, 1.25,
-  1.5, 2.0 and unbounded, which was a first guess rather than an argued
-  choice. The interesting structure in `pillar_two_goals` sits between
-  1.05 and 1.10, so the grid may need to be finer where the safety column
-  changes and coarser where it does not.
+  1.5 and 2.0, which was a first guess rather than an argued choice. The
+  interesting structure in `pillar_aisle` sits between 1.05 and 1.10, so
+  the grid may need to be finer where the safety column changes and
+  coarser where it does not. It matters less for the models, whose
+  behaviour is flat across the whole range.
 - The evaluation budget for the reported runs. Everything so far has used
   250 evaluations, which is a tenth of the default, chosen to keep
   exploratory runs short. The reported results need a budget at which the

@@ -66,24 +66,36 @@ above shows, both models beat the shortest path on 5 of 5 samples and both
 entered the keep-out zone on 5 of 5. Ten decodes out of ten bought the
 clarity and paid for it with the constraint.
 
-Asking Qwen the same question under four different cost budgets moves
-nothing it does:
+Asking either model the same question under four different cost budgets
+moves nothing it does. Forty decodes at each ceiling, per model:
 
-| stated ceiling | median cost ratio | over budget | more legible than shortest |
-| --- | --- | --- | --- |
-| 1.10 | 1.1663 | 17 | 8 |
-| 1.25 | 1.1588 | 9 | 10 |
-| 1.50 | 1.1712 | 3 | 9 |
-| 2.00 | 1.1709 | 0 | 11 |
+| stated ceiling | Qwen median cost | Qwen over budget | Llama median cost | Llama over budget |
+| --- | --- | --- | --- | --- |
+| 1.10 | 1.1663 | 17 | 1.2817 | 30 |
+| 1.25 | 1.1588 | 9 | 1.2817 | 15 |
+| 1.50 | 1.1712 | 3 | 1.2817 | 10 |
+| 2.00 | 1.1709 | 0 | 1.2817 | 0 |
 
-The ceiling nearly doubles and the median cost ratio moves by 0.012. The
-violation count falls only because the line moved past a fixed habit of
-spending about 1.17. Where the optimiser treats the budget as a constraint
-that binds, the model treats it as text.
+The ceiling nearly doubles. Qwen's median cost moves by 0.012 and Llama's
+does not move at all: 1.2817 at every ceiling, to four decimals. That is
+not a coincidence of the median, it is the distribution repeating. Across
+roughly thirty feasible decodes at each ceiling Llama returns only
+thirteen to sixteen distinct trajectories, and their cost ratios cluster
+on the same modal value of 1.2452 every time. Since that modal path
+already exceeds a ten per cent budget, every feasible decode breached the
+tightest ceiling.
+
+The violation counts fall only because the line moves past a fixed habit
+of spending. Where the optimiser treats the budget as a constraint that
+binds, sitting exactly on the ceiling in every row of the frontier table
+above, both models treat it as text. Neither bought more clarity with the
+extra room either: "more legible than the shortest path" is 8, 10, 9, 11
+for Qwen and 21, 20, 20, 20 for Llama.
 
 Two models at one temperature is a pilot, not a finding. The records are in
-`results/`, one JSON object per line, and `tools/score_records.py` and
-`tools/consistency.py` recompute every number above from them.
+`results/`, one JSON object per line, and `tools/score_records.py`,
+`tools/consistency.py` and `tools/ceiling_sweep.py` recompute every number
+above from them.
 
 ## Status
 
