@@ -54,7 +54,7 @@ inspected.
   token budget defect of ours and is being repeated; no Gemini record is
   committed yet, and what was discarded and why is below. Qwen and Llama
   are complete at k = 5 across all four cost ceilings, 160 decodes each.
-  A 241-test suite in CI, which also re-checks every scenario property
+  A 244-test suite in CI, which also re-checks every scenario property
   against the committed code and every committed record file for
   completeness)
 - [x] Scenario suite (eight worlds, 46 machine-checked facts carried
@@ -523,6 +523,41 @@ This is the third time a defect in this pipeline presented as a finding
 about a model. The user agent rejection looked like an API outage, the
 rate limit looked like a daily quota, and this looked like a model that
 could not handle obstacles.
+
+## A retry storm, 5 August 2026
+
+The repeat Gemini run was stopped after seven records in its first file:
+two decodes answered and parsed, which is the token budget fix holding,
+and five scenarios recording HTTP 429 with "Quota exceeded for metric:
+generativelanguage.googleapis.com/generate_content_free_tier_requests,
+limit: 20", asking to be retried in between 4.8 and 58 seconds.
+
+The interesting part is our own arithmetic. `retries` was 6, so a
+scenario that keeps being refused issues seven requests before it gives
+up, and five refused scenarios plus two answered ones is 37 requests
+against a limit reported as 20. Where a provider counts requests rather
+than tokens, the retries hold open the limit they are waiting on.
+
+`_retry_after` preferred the `retry-after` header and otherwise backed
+off 2, 4, 8, 16, 32 and 60 seconds. Google states its interval in the
+response body instead, once in a RetryInfo detail and again in the prose
+of the message. The records do not show whether a header was sent as
+well, only what the body asked for. Two changes followed: the interval
+is read out of the body when the header does not supply one, and the
+Gemini backend gives up after one retry rather than six, so a refused
+scenario costs two requests instead of seven. Three tests hold it, one
+on the parsed interval, one on the order of preference, and one that
+drives a 429 shaped like the real one through the adapter and counts two
+requests and a single wait of 43.5 seconds.
+
+Nothing was lost. A recorded error is not an answer, so the resume guard
+will ask those five scenarios again, and no Gemini record is committed.
+
+This is the fourth defect in this pipeline to arrive dressed as a
+finding about a model. The user agent rejection looked like an API
+outage, the rate limit looked like a daily quota, the token truncation
+looked like a model that could not handle obstacles, and this looked
+like an exhausted daily allowance.
 
 ## Two defects in the adapter, found by using it
 

@@ -37,9 +37,39 @@ DEFAULT_TIMEOUT = 180
 # what a user agent is for.
 USER_AGENT = "legible-motion-bench/0.0.1"
 
+DEFAULT_RETRIES = 6
+RETRY_CAP = 90.0
+
+# Where a provider counts requests rather than tokens, retrying into the
+# limit makes it worse, because every attempt counts against the same cap:
+# six retries spend seven requests on one scenario and hold the limit open
+# for the scenarios behind it. Google's free tier counts requests, so ask
+# twice and move on. Nothing is lost by giving up early, since the resume
+# guard comes back to whatever went unanswered.
+RETRIES_BY_BACKEND = {"gemini": 1}
+
+# Google states its retry interval twice, in a RetryInfo detail and in the
+# prose of the message. The structured field is tried first and the prose
+# is the fallback, because the shape of an error message is the provider's
+# to change.
+RETRY_DELAY_FIELD = re.compile(r'"retryDelay"\s*:\s*"([0-9.]+)s"')
+RETRY_DELAY_PROSE = re.compile(r"retry in ([0-9.]+)\s*s", re.IGNORECASE)
+
 
 class AdapterError(RuntimeError):
     """Raised when a model cannot be reached or is configured inconsistently."""
+
+
+def stated_delay(body: str) -> float | None:
+    """The interval the provider asked for in its response body, if any."""
+    for pattern in (RETRY_DELAY_FIELD, RETRY_DELAY_PROSE):
+        match = pattern.search(body or "")
+        if match:
+            try:
+                return float(match.group(1))
+            except ValueError:
+                continue
+    return None
 
 
 def redact(text: str) -> str:
@@ -86,7 +116,7 @@ class RemoteModel:
     temperature: float | None = 0.0
     max_tokens: int = 2000
     timeout: int = DEFAULT_TIMEOUT
-    retries: int = 6
+    retries: int = DEFAULT_RETRIES
 
     def _key(self) -> str:
         if not self.api_key_env:
@@ -117,14 +147,18 @@ class RemoteModel:
                 with urllib.request.urlopen(request, timeout=self.timeout) as response:
                     return json.loads(response.read().decode("utf-8"))
             except urllib.error.HTTPError as exc:
-                detail = exc.read().decode("utf-8", errors="replace")[:500]
+                # The whole body is read to find the interval and only the
+                # first 500 characters are kept for the message, because
+                # Google states the interval past where that cut falls.
+                document = exc.read().decode("utf-8", errors="replace")
+                detail = document[:500]
                 # A 429 is the provider saying "not yet", not "no". Waiting
                 # and asking again is not a retry of a bad answer, because
                 # no answer was produced; the model never saw the prompt.
                 # Retrying a reply we did not like would be a different
                 # thing entirely and nothing here does it.
                 if exc.code == 429 and attempt < self.retries:
-                    time.sleep(self._retry_after(exc, attempt))
+                    time.sleep(self._retry_after(exc, attempt, document))
                     continue
                 raise AdapterError(
                     redact(f"{self.alias}: HTTP {exc.code} from {url}: {detail}")
@@ -135,14 +169,24 @@ class RemoteModel:
                 ) from exc
         raise AdapterError(f"{self.alias}: gave up after {self.retries} retries")
 
-    def _retry_after(self, exc, attempt: int) -> float:
-        """How long to wait, preferring what the provider asked for."""
+    def _retry_after(self, exc, attempt: int, body: str = "") -> float:
+        """How long to wait, preferring what the provider asked for.
+
+        The two providers here ask in two different places. Groq sets the
+        retry-after header. Google states the interval in the response
+        body and leaves the header off, so a client that reads only the
+        header waits two seconds when it was asked for fifty, and goes on
+        spending requests inside the window it was told to sit out.
+        """
         header = exc.headers.get("retry-after") if exc.headers else None
         if header:
             try:
-                return min(float(header) + 0.5, 90.0)
+                return min(float(header) + 0.5, RETRY_CAP)
             except ValueError:
                 pass
+        stated = stated_delay(body)
+        if stated is not None:
+            return min(stated + 0.5, RETRY_CAP)
         return min(2.0 * (2**attempt), 60.0)
 
     def _openai_chat(self, prompt: str) -> str:
@@ -247,6 +291,7 @@ def build(entry: dict, manifest: dict | None = None) -> RemoteModel:
         api_key_env=entry.get("api_key_env"),
         temperature=entry.get("temperature", 0.0),
         max_tokens=entry.get("max_tokens", 2000),
+        retries=RETRIES_BY_BACKEND.get(entry["backend"], DEFAULT_RETRIES),
     )
 
 

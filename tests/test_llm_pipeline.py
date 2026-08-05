@@ -6,9 +6,11 @@ only thing not covered is the HTTP call itself, which is marked untested in
 the status file rather than pretended about.
 """
 
+import io
 import json
 import re
 import subprocess
+import urllib.error
 from pathlib import Path
 
 import pytest
@@ -503,3 +505,92 @@ def test_a_missing_key_is_reported_before_the_request(monkeypatch):
     )
     with pytest.raises(adapter.AdapterError, match="GROQ_API_KEY"):
         model.complete("hello", "open_pair")
+
+
+GEMINI_429 = json.dumps(
+    {
+        "error": {
+            "code": 429,
+            "message": (
+                "You exceeded your current quota.\n* Quota exceeded for "
+                "metric: generativelanguage.googleapis.com/"
+                "generate_content_free_tier_requests, limit: 20, model: "
+                "gemini-3.6-flash\nPlease retry in 43.754765001s."
+            ),
+            "status": "RESOURCE_EXHAUSTED",
+            "details": [
+                {
+                    "@type": "type.googleapis.com/google.rpc.RetryInfo",
+                    "retryDelay": "43s",
+                }
+            ],
+        }
+    }
+)
+
+
+def test_the_interval_a_provider_asks_for_is_read_out_of_the_body():
+    # Google states it in the body rather than in a retry-after header,
+    # and states it twice. Either statement will do.
+    assert adapter.stated_delay(GEMINI_429) == 43.0
+    assert adapter.stated_delay('{"error": {"message": "Please retry in 7.5s"}}') == 7.5
+    assert adapter.stated_delay('{"error": {"code": 429}}') is None
+    assert adapter.stated_delay("") is None
+
+
+def test_a_stated_interval_is_waited_out_and_a_header_still_wins():
+    class Failure:
+        def __init__(self, headers):
+            self.headers = headers
+
+    model = adapter.RemoteModel(
+        alias="gemini_flash",
+        api_model="models/gemini-3.6-flash",
+        backend="gemini",
+        base_url="https://example.invalid/v1beta",
+    )
+    # Without the body this backs off two seconds, which is the defect:
+    # the provider asked for forty-three.
+    assert model._retry_after(Failure(None), 0, "") == 2.0
+    assert model._retry_after(Failure(None), 0, GEMINI_429) == 43.5
+    assert model._retry_after(Failure({"retry-after": "12"}), 0, GEMINI_429) == 12.5
+
+
+def test_a_request_limited_backend_spends_two_requests_and_not_seven(monkeypatch):
+    # The arithmetic this pins down: with six retries one stuck scenario
+    # issues seven requests against a cap that counts requests, so the
+    # retries hold open the limit they are waiting on. Two is enough to
+    # ride out a momentary limit and the resume guard recovers the rest.
+    monkeypatch.setenv("GEMINI_API_KEY", "AQ.EXAMPLEnotarealkey000")
+    asked, slept = [], []
+
+    def fake_urlopen(request, timeout=None):
+        asked.append(request.full_url)
+        raise urllib.error.HTTPError(
+            request.full_url,
+            429,
+            "Too Many Requests",
+            {},
+            io.BytesIO(GEMINI_429.encode("utf-8")),
+        )
+
+    monkeypatch.setattr(adapter.urllib.request, "urlopen", fake_urlopen)
+    monkeypatch.setattr(adapter.time, "sleep", slept.append)
+
+    entries = json.loads(
+        (Path(__file__).resolve().parents[1] / "configs" / "models.example.json")
+        .read_text(encoding="utf-8")
+    )
+    gemini = adapter.build(
+        next(e for e in entries if e["backend"] == "gemini"), adapter.load_manifest()
+    )
+    hosted = adapter.build(
+        next(e for e in entries if e["name"] == "groq_llama70b"), adapter.load_manifest()
+    )
+    assert gemini.retries == 1
+    assert hosted.retries == adapter.DEFAULT_RETRIES
+
+    with pytest.raises(adapter.AdapterError, match="429"):
+        gemini.complete("hello", "open_pair")
+    assert len(asked) == 2
+    assert slept == [43.5]
