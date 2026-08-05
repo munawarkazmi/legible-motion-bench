@@ -299,7 +299,7 @@ Requires Python 3.10 or newer and pytest. No other dependencies.
 python -m pytest -q
 ```
 
-237 tests. To check the facts every scenario carries, and to see the suite
+240 tests. To check the facts every scenario carries, and to see the suite
 inventory that any quoted denominator has to come from:
 
 ```bash

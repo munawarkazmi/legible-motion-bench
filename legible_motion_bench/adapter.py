@@ -161,11 +161,32 @@ class RemoteModel:
             f"{self.base_url.rstrip('/')}/chat/completions", payload, headers
         )
         try:
-            return document["choices"][0]["message"]["content"]
+            choice = document["choices"][0]
+            self._refuse_if_truncated(choice.get("finish_reason"), "length")
+            return choice["message"]["content"]
         except (KeyError, IndexError, TypeError) as exc:
             raise AdapterError(
                 f"{self.alias}: unexpected response shape: {str(document)[:300]}"
             ) from exc
+
+    def _refuse_if_truncated(self, reason, truncated_value: str) -> None:
+        """Treat a generation cut off by the token budget as a failed request.
+
+        A truncated reply is not a decode. Left alone it arrives as an
+        ordinary unparsable response and is indistinguishable from a model
+        that would not answer, which would report our own configuration as
+        a finding about the model. Raising instead makes it a recorded
+        error, and the resume guard retries errors rather than counting
+        them as answered.
+        """
+        if reason is None:
+            return
+        if str(reason).lower() == truncated_value.lower():
+            raise AdapterError(
+                f"{self.alias}: generation stopped at the token budget of "
+                f"{self.max_tokens} before the answer was complete. This is a "
+                f"configuration limit, not a refusal; raise max_tokens."
+            )
 
     def _gemini(self, prompt: str) -> str:
         payload = {
@@ -186,7 +207,9 @@ class RemoteModel:
             {"Content-Type": "application/json", "x-goog-api-key": self._key()},
         )
         try:
-            parts = document["candidates"][0]["content"]["parts"]
+            candidate = document["candidates"][0]
+            self._refuse_if_truncated(candidate.get("finishReason"), "MAX_TOKENS")
+            parts = candidate["content"]["parts"]
             return "".join(part.get("text", "") for part in parts)
         except (KeyError, IndexError, TypeError) as exc:
             raise AdapterError(

@@ -322,6 +322,52 @@ def test_the_gemini_backend_sends_its_key_in_a_header(monkeypatch):
     assert seen["headers"]["x-goog-api-key"] == "AQ.testkeyvalue123456"
 
 
+@pytest.mark.parametrize(
+    "backend,field,value",
+    [("openai_chat", "finish_reason", "length"), ("gemini", "finishReason", "MAX_TOKENS")],
+)
+def test_a_truncated_generation_is_an_error_not_a_bad_answer(
+    monkeypatch, backend, field, value
+):
+    # A reply cut off by the token budget is not a decode. If it were
+    # recorded as an unparsable answer it would be indistinguishable from
+    # a model that would not answer, and our own configuration would be
+    # reported as a finding about the model.
+    monkeypatch.setenv("GEMINI_API_KEY", "AQ.EXAMPLEnotarealkey000")
+    model = adapter.RemoteModel(
+        alias="gemini_flash" if backend == "gemini" else "groq_llama70b",
+        api_model="models/gemini-3.6-flash" if backend == "gemini" else "llama-3.3-70b-versatile",
+        backend=backend,
+        base_url="https://example.invalid/v1",
+        api_key_env="GEMINI_API_KEY" if backend == "gemini" else None,
+        max_tokens=2000,
+    )
+
+    def fake_post(self, url, payload, headers):
+        if backend == "gemini":
+            return {"candidates": [{field: value, "content": {"parts": [{"text": "half an ans"}]}}]}
+        return {"choices": [{field: value, "message": {"content": "half an ans"}}]}
+
+    monkeypatch.setattr(adapter.RemoteModel, "_post", fake_post)
+    with pytest.raises(adapter.AdapterError, match="token budget of 2000"):
+        model.complete("hello", "open_pair")
+
+
+def test_a_complete_generation_is_returned_normally(monkeypatch):
+    model = adapter.RemoteModel(
+        alias="groq_llama70b",
+        api_model="llama-3.3-70b-versatile",
+        backend="openai_chat",
+        base_url="https://example.invalid/v1",
+    )
+
+    def fake_post(self, url, payload, headers):
+        return {"choices": [{"finish_reason": "stop", "message": {"content": GOOD_REPLY}}]}
+
+    monkeypatch.setattr(adapter.RemoteModel, "_post", fake_post)
+    assert model.complete("hello", "open_pair") == GOOD_REPLY
+
+
 def test_a_rate_limited_scenario_is_retried_not_skipped(tmp_path, suite):
     # The failure this guards against costs a day: a run stopped by a rate
     # limit records the error, and if the resume guard counted that as an

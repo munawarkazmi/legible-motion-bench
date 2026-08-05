@@ -24,6 +24,6 @@
     "model": "models/gemini-3.6-flash",
     "api_key_env": "GEMINI_API_KEY",
     "temperature": 0.0,
-    "max_tokens": 2000
+    "max_tokens": 8000
   }
 ]

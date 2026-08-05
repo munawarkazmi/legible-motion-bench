@@ -50,13 +50,11 @@ inspected.
   temperature zero, all committed and summarised below. A file cannot mix
   temperatures or cost ceilings, and a rate-limited request is retried
   rather than counted as answered. The Gemini backend is written but has
-  now been run and its backend worked on the first live call, unlike
-  Groq's. Two runs are part finished and stopped by daily limits rather
-  than by anything going wrong: Llama at cost ceiling 2.0, 26 of 40
-  replies, and Gemini 3.6 Flash at ceiling 1.25, 16 of 40 over two
-  complete samples. Both resume where they stopped, and their partial
-  files are deliberately untracked until they are whole. A 237-test suite
-  in CI,
+  now been run, and its backend worked on the first live call unlike
+  Groq's, but its first full run was discarded for a token budget defect
+  of ours and has to be repeated; see below. Qwen and Llama are complete
+  at k = 5 across all four cost ceilings, 160 decodes each. A 240-test
+  suite in CI,
   which also re-checks every scenario property against the committed code
   and every committed record file for completeness)
 - [x] Scenario suite (eight worlds, 46 machine-checked facts carried
@@ -495,6 +493,34 @@ planner the budget is a constraint; for both models it is text.
 
 Two models at one temperature. This is a pilot and may not be written as
 a trend.
+
+## A run discarded for a defect of ours, 5 August 2026
+
+The first Gemini 3.6 Flash run produced 37 replies of which 26 could not
+be parsed, and the pattern was suspicious rather than interesting: the
+four worlds with obstacles failed on every sample while the simpler ones
+mostly succeeded. Inspection showed the replies cut off mid-word, one
+ending "remaining well under the" and another mid-arithmetic at
+"sqrt(64.36) =". They were truncated by our token budget of 2000, which
+this model exhausts on reasoning before it answers.
+
+Reporting that as a model failure would have been reporting our own
+configuration as a finding, so the whole run was deleted rather than
+salvaged. The budget for this model is now 8000.
+
+Two things were checked before deleting. The other two models are
+unaffected: Qwen parsed 168 of 168 replies and Llama 160 of 160, with
+longest replies of 283 and 423 characters, nowhere near the limit. And
+the failure mode itself is now caught rather than left to inspection: a
+generation whose finish reason reports the token budget raises instead of
+returning a partial answer, so it is recorded as a failed request and
+retried by the resume guard rather than counted as a decode the model
+declined to complete. A parametrised test covers both backends.
+
+This is the third time a defect in this pipeline presented as a finding
+about a model. The user agent rejection looked like an API outage, the
+rate limit looked like a daily quota, and this looked like a model that
+could not handle obstacles.
 
 ## Two defects in the adapter, found by using it
 
