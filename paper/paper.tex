@@ -1,0 +1,194 @@
+% legible-motion-bench: HRI Late-Breaking Report.
+%
+% ACM sigconf, the format the HRI LBR call requires. The class is
+% vendored: acmart.cls is generated from acmart.ins by the Makefile, so
+% the build does not depend on the local TeX distribution shipping it.
+%
+% Working builds use [sigconf,nonacm]: named authors and no ACM rights
+% block, which a draft has no business claiming. The submission build
+% swaps to [sigconf,anonymous,review], which anonymises the author block
+% and adds line numbers. HRI requires submissions to be fully anonymised.
+%
+% Two to four pages excluding references. Every number below comes from
+% paper/generated/, written by tools/build_paper_results.py from the
+% committed records. None of them is typed by hand. See paper/STATUS.md
+% for the honest state of each section.
+
+\documentclass[sigconf,nonacm]{acmart}
+
+\settopmatter{printacmref=false}
+\renewcommand\footnotetextcopyrightpermission[1]{}
+
+\usepackage{booktabs}
+
+\begin{document}
+
+\title{What Clarity Costs: Measuring Legible Robot Motion Against Path
+Cost and Constraint Satisfaction}
+
+\author{Munawar Kazmi}
+\affiliation{%
+  \institution{Independent}
+  \country{United Kingdom}
+}
+\email{munawarsaeedkazmi1@gmail.com}
+
+\begin{abstract}
+A robot moving towards one of several possible goals is unreadable for
+the first seconds of its motion, which is when a person nearby hesitates
+or steps into its path. Legible motion deviates early to resolve that
+ambiguity, and the deviation costs path length. What it can also cost is
+the constraint the robot was supposed to respect. We present a small
+judge-free benchmark that measures the three together: legibility in the
+form of Dragan et al., path cost against the exact optimum, and
+satisfaction of stated keep-out constraints. Eight worlds each carry
+machine-checked facts about their own geometry, optimal cost-to-go is
+computed exactly over a visibility graph, and no human rater or model
+judge appears anywhere in the scoring loop. Asked to produce legible
+motion under a stated path budget, two language models called all 80 of
+their trajectories legible; 25 of those were not physically possible. In
+the world built so that the clearest signal is the one the robot is not
+allowed to send, both models bought the clarity and entered the keep-out
+zone on every one of ten samples. Given four different path budgets, one
+model's median path cost moved by 0.012 and the other's did not move at
+all.
+\end{abstract}
+
+\keywords{legibility, human-robot interaction, motion planning,
+benchmarking, language models}
+
+\maketitle
+
+\section{Introduction}
+
+Legibility is not ours. Dragan et al.~\cite{dragan2013legibility}
+formalised it: a legible trajectory is one that departs from the
+efficient path early enough for an observer to infer the goal sooner
+than efficiency alone would allow. What is missing from that literature
+is a price. Deviating for clarity moves the robot somewhere it would not
+otherwise go, and in a real room that somewhere is occupied.
+
+The founding paper notices this. It reports that legibility will move a
+trajectory much closer to an obstacle in order to disambiguate between
+goals~\cite{dragan2013generating}. It does not measure it: obstacles
+enter as a soft term inside the objective, clearance is never reported,
+and constraint satisfaction is not an axis of any result. Legible
+navigation among moving agents does report proximity and time to
+collision beside legibility~\cite{bastarache2023legible}, but as
+properties of a policy rather than as a curve against a path budget.
+
+This report contributes an instrument rather than a planner: a
+reproducible way to ask what a given trajectory pays, in path and in
+constraint satisfaction, for the clarity it buys. We use it to ask
+whether language models produce legible motion when told to.
+
+\section{The instrument}
+
+Everything is 2D and kinematic. A trajectory is a sequence of positions
+traversed at constant speed. There is no physics engine, which is a
+scope decision: physics would improve the pictures and change none of
+the numbers.
+
+The observer is Boltzmann-rational in exactly the form of
+\cite{dragan2013legibility}, equation~8, and our legibility metric is
+their equation~9 including the weighting $f(t) = T - t$. Both were
+compared line by line against the implementation. Our only addition is an
+inverse temperature, which is recorded in the observer's name in every
+result.
+
+That posterior rests on the optimal cost-to-go, so we compute it exactly
+rather than approximately. Obstacles are convex polygons, the shortest
+obstacle-avoiding path is a polyline through their vertices, and the
+optimum comes from search over the visibility graph: no grid, no
+resolution to defend. The geometric predicate underneath is guarded, decided
+in floating point wherever an error bound proves the sign cannot have
+changed and in exact rational arithmetic otherwise. On 20{,}000
+near-collinear cases an unguarded floating point determinant returns the
+wrong sign on more than a tenth of them; the guarded predicate matches
+rational arithmetic on all of them, and the test suite asserts both
+halves so the corpus cannot quietly become easy.
+
+Keep-out zones do not block motion. A trajectory may cross one and is
+scored for having done so. If they blocked motion there would be no
+trade to measure.
+
+Legibility optimisation is bounded by a ceiling on the cost ratio. That
+bound is not our idea: \cite{dragan2013legibility} adds a cost
+regulariser and \cite{dragan2013generating} a hard trust region, both
+because a robot can otherwise make a trajectory ever more legible at ever
+greater cost. Sweeping the ceiling turns a single trajectory into a
+frontier.
+
+\section{What language models do}
+
+The prompt states the room, the goals, which goal the robot is going to,
+the obstacles, the keep-out zones, and a path budget in absolute units.
+It asks for a trajectory that makes the destination clear as early as
+possible, and asks the model to judge its own answer. Temperature 0.7,
+five samples per world, eight worlds.
+
+\begin{table}[t]
+\centering
+\small
+\input{generated/model_table}
+\caption{Counts at a stated path budget of 25 per cent. Every decode
+claimed to be legible, including those that were not physically
+possible.}
+\label{tab:models}
+\end{table}
+
+Three patterns repeat across both models. Every one of the 80 decodes
+claimed legibility. In the world built so that the clearest signal and
+the keep-out zone conflict, both models beat the shortest path on five of
+five samples and both entered the zone on five of five: ten decodes out
+of ten bought the clarity and paid the constraint for it. And in the
+world with three goals where the true one lies between the others,
+neither model beat the shortest path on any sample, which is what
+\cite{dragan2013legibility} predicts when exaggeration towards a middle
+goal points at a different goal.
+
+\begin{table}[t]
+\centering
+\small
+\input{generated/ceiling_table}
+\caption{Forty decodes at each stated budget, per model. The budget
+nearly doubles and the cost actually paid does not follow it.}
+\label{tab:ceilings}
+\end{table}
+
+Table~\ref{tab:ceilings} asks whether the budget violations mean the
+budget was too tight or that the budget was not attended to. It is the
+second. One model's median cost moves by 0.012 across a budget that
+nearly doubles and the other's does not move at all. The falling
+violation counts are the line moving, not the models complying. Where the
+optimiser sits exactly on the budget in every row, because for a planner
+it is a constraint, for both models it is text.
+
+\section{Limitations}
+
+The metric is exactly specified and exactly reproducible, which is not
+the same as validated. Nobody has looked at these trajectories. The
+guidelines for evaluating social navigation ask that objective metrics be
+shown to measure what they purport to~\cite{francis2025principles}, and
+the only validity anchor available is the original user studies, which
+their authors bound to inside the trust region. Judge-free is not
+judge-proof. Comparing legibility frameworks against human observers
+remains the harder and more informative
+experiment~\cite{wallkotter2022evaluating}.
+
+Three narrower limits. With more than one goal the legibility score
+cannot reach 1, so a value of 0.93 is not 93 per cent of anything. Our
+observer has no option for a goal outside the declared set, though real
+observers form exactly that belief when motion becomes strange enough.
+And time to confidence, the one metric here with a free parameter, is
+stable in aggregate across admissible thresholds but not per trajectory,
+so no claim above rests on it.
+
+Two models at one temperature over eight worlds is a pilot. The records
+are committed, one JSON object per line, and every number here is
+recomputed from them by a committed tool.
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{references}
+
+\end{document}

@@ -5,6 +5,19 @@ __pycache__/
 venv/
 configs/models.json
 
+# LaTeX build products. acmart.cls is generated from the vendored
+# acmart.ins and acmart.dtx by paper/Makefile, so the sources are
+# committed and the derived class is not.
+paper/acmart.cls
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.bbl
+paper/*.blg
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.synctex.gz
+
 # Rendered animations are derived from committed scenarios and committed
 # code, weigh about a megabyte each, and their bytes move with the
 # matplotlib version. They are committed deliberately at milestones rather
