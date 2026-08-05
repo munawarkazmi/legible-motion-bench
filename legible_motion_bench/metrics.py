@@ -243,6 +243,20 @@ def evaluate(
         raise MetricError(
             f"confidence threshold must lie in (0, 1], found {threshold!r}"
         )
+    # A threshold at or below the observer's prior is satisfied before the
+    # robot has moved, so time to confidence is zero for every trajectory
+    # including the shortest path, and no motion can improve on it. That is
+    # a degenerate measurement rather than a hard one, and returning zero
+    # would hide it. With two equally likely goals the prior is a half, so
+    # a threshold of a half is meaningless in most of this suite.
+    prior = observer.prior_for(scenario)[scenario.true_goal]
+    if threshold <= prior:
+        raise MetricError(
+            f"confidence threshold {threshold!r} is at or below the observer's "
+            f"prior of {prior!r} for the true goal in scenario "
+            f"{scenario.id!r}, so it is satisfied before the robot moves; "
+            f"choose a threshold above the prior"
+        )
 
     path = [(float(x), float(y)) for x, y in points]
     reasons = feasibility(scenario, path)

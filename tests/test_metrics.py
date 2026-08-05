@@ -239,6 +239,22 @@ def test_finer_sampling_does_not_move_the_metrics_much():
     assert fine.samples > coarse.samples
 
 
+def test_a_threshold_at_or_below_the_prior_is_refused():
+    # With two equally likely goals the prior is a half, so a threshold of
+    # a half is satisfied before the robot moves: every trajectory scores
+    # zero and no motion can improve on it. Returning zero would hide a
+    # degenerate measurement behind a plausible number.
+    open_world = scenario("open_two_goals")
+    with pytest.raises(metrics.MetricError, match="at or below the observer's prior"):
+        metrics.evaluate(open_world, Observer(), DIRECT, threshold=0.5)
+    with pytest.raises(metrics.MetricError, match="at or below the observer's prior"):
+        metrics.evaluate(open_world, Observer(), DIRECT, threshold=0.4)
+    # Just above the prior is admissible, and three goals lower the bar.
+    assert metrics.evaluate(
+        open_world, Observer(), DIRECT, threshold=0.51
+    ).time_to_confidence is not None
+
+
 def test_malformed_measurement_settings_are_rejected():
     open_world = scenario("open_two_goals")
     with pytest.raises(metrics.MetricError, match="speed must be positive"):

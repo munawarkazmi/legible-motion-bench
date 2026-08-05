@@ -109,6 +109,15 @@ class Observer:
             return geodesic_cost(position, goal_position, obstacles)
         return index.cost_to(position, goal_position)
 
+    def prior_for(self, scenario: Scenario) -> dict:
+        """The normalised prior over this scenario's goals.
+
+        Public because the metrics need it: a confidence threshold at or
+        below the prior is satisfied before the robot moves, and that has
+        to be refused rather than silently scored as instant confidence.
+        """
+        return self._prior_for(scenario)
+
     def _prior_for(self, scenario: Scenario) -> dict:
         if self.prior is None:
             share = 1.0 / len(scenario.goals)

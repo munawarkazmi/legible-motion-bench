@@ -53,7 +53,7 @@ inspected.
   now been run, and its backend worked on the first live call unlike
   Groq's, but its first full run was discarded for a token budget defect
   of ours and has to be repeated; see below. Qwen and Llama are complete
-  at k = 5 across all four cost ceilings, 160 decodes each. A 240-test
+  at k = 5 across all four cost ceilings, 160 decodes each. A 241-test
   suite in CI,
   which also re-checks every scenario property against the committed code
   and every committed record file for completeness)
@@ -602,6 +602,50 @@ decisions, not reading notes.
   the results have to be shown stable across a range of it or the number
   is a number about the threshold. A submission blocker rather than a
   nicety, now that there is a submission.
+
+## The confidence threshold, checked 5 August 2026
+
+Time to confidence is the only metric here with a free parameter. It was
+set to 0.8 by nobody's argument. `tools/threshold_sensitivity.py` sweeps
+it over the 80 committed model trajectories at ceiling 1.25 and asks, at
+each level, how many reach confidence earlier than the shortest path in
+the same world.
+
+The first result was a defect in the measurement, not in the models. At a
+threshold of 0.5 the count collapsed to 8 of 55. Six of the eight worlds
+have two goals, so the prior is a half, and a threshold of a half is
+satisfied before the robot moves: the shortest path scores a time to
+confidence of exactly 0.00 and nothing can beat zero. A threshold at or
+below the prior is now refused with an error rather than scored, since a
+silent zero is worse than a stop, and a test covers it.
+
+Inside the admissible band the metric behaves like this:
+
+| threshold | reach confidence sooner than the baseline | verdicts unchanged from 0.8 |
+| --- | --- | --- |
+| 0.55 | 25 of 55 | 43 of 55 |
+| 0.60 | 25 of 55 | 43 of 55 |
+| 0.70 | 25 of 55 | 43 of 55 |
+| 0.80 | 23 of 55 | reference |
+| 0.90 | 21 of 55 | 53 of 55 |
+
+Two conclusions, and they point opposite ways.
+
+The aggregate is stable. Between 0.55 and 0.90 the count moves only from
+25 to 21 of 55, so a claim of the form "about a quarter of model
+trajectories reach confidence sooner than the shortest path" survives any
+admissible threshold and may be written.
+
+Individual verdicts are not stable. Twelve of 55 flip between 0.7 and
+0.8, roughly balanced in both directions, which is why the aggregate holds
+while the constituents churn. So no claim about a particular trajectory or
+a particular world may rest on time to confidence without stating the
+threshold and showing this sweep.
+
+For the report this argues for keeping time to confidence out of the
+headline. Legibility, cost ratio, keep-out entries and clearance have no
+free parameter at all, and the strongest results already rest only on
+those.
 
 ## Target venue, decided 5 August 2026
 
