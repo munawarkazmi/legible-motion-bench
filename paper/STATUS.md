@@ -77,10 +77,8 @@ inspected.
   instrument, what language models do, and limitations. Two pages in
   `sigconf`, no undefined references and no errors, with both results
   tables and the figure pulled from `paper/generated/` rather than typed.
-  Related work is not drafted, the validity paragraph is not agreed, the
-  third model is not in the counts, and the build warns that libertine,
-  inconsolata and newtxmath are missing, so it is not yet set in the
-  fonts the class asks for)
+  Related work is not drafted, the validity paragraph is not agreed, and
+  the third model is not in the counts)
 
 ## Decisions taken
 
@@ -783,13 +781,32 @@ cross-release install, so the class is vendored as `acmart.ins` and
 `acmart.cls` is gitignored, so a fresh checkout has to run make and
 cannot run latexmk directly.
 
+The class also wants Libertine, Inconsolata and newtx, which the
+distribution does not ship either. They are installed into the user tree
+at `~/texmf`, which needs no root, from the frozen 2025 repository,
+since the current repository is 2026 and tlmgr will not install across
+releases:
+
+    tlmgr --usermode --repository \
+      https://ftp.math.utah.edu/pub/tex/historic/systems/texlive/2025/tlnet-final \
+      install libertine inconsolata newtx
+
+Installed 5 August 2026. Before that the class fell back to Computer
+Modern and said so three times in the log. The PDF now embeds
+LinLibertine and the newtx maths fonts as Type 1, which `pdffonts
+paper.pdf` will show.
+
 The tables and the figure under `paper/generated/` are written by
 `tools/build_paper_results.py` and `tools/build_paper_figures.py` from
 the committed records, so both are rerun before the paper after any
 completed run. Nothing under `paper/generated/` is edited by hand.
 
-As of 5 August 2026 the build is two pages with seven warnings. Three are
-the missing font packages, two are the one figure lacking a description,
-one is the absent city on an anonymised affiliation, and one is
-`\balance` being called in the second column. None is an error and no
-reference is undefined.
+As of 5 August 2026 the build is two pages with four warnings: two are
+the one figure lacking a description, one is the absent city on an
+anonymised affiliation, and one is `\balance` being called in the second
+column. None is an error and no reference is undefined.
+
+One thing the warnings do not catch. The figure carries DejaVu Sans as a
+Type 3 font, because Type 3 is what matplotlib writes into a PDF unless
+told otherwise, and publishers commonly refuse Type 3. `pdffonts
+paper.pdf` shows it. Not yet fixed.
