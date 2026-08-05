@@ -137,11 +137,25 @@ possible.}
 \label{tab:models}
 \end{table}
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{generated/keep_out_shortcut}
+\caption{The world built so that the clearest signal is the one the robot
+may not send. The cheapest route to the true goal A (black) stays clear
+of the keep-out zone (hatched), so safety costs nothing until a planner
+tries to be legible. Every trajectory either model returned (red, ten of
+them, both models, five samples each) is more legible than the shortest
+path, and every one of the ten crosses the zone. Drawn from the committed
+records, not by hand.}
+\label{fig:keepout}
+\end{figure}
+
 Three patterns repeat across both models. Every one of the 80 decodes
 claimed legibility. In the world built so that the clearest signal and
-the keep-out zone conflict, both models beat the shortest path on five of
-five samples and both entered the zone on five of five: ten decodes out
-of ten bought the clarity and paid the constraint for it. And in the
+the keep-out zone conflict (Figure~\ref{fig:keepout}), both models beat
+the shortest path on five of five samples and both entered the zone on
+five of five: ten decodes out of ten bought the clarity and paid the
+constraint for it. And in the
 world with three goals where the true one lies between the others,
 neither model beat the shortest path on any sample, which is what
 \cite{dragan2013legibility} predicts when exaggeration towards a middle
