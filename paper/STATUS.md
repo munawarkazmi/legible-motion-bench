@@ -73,7 +73,14 @@ inspected.
   `verification_log.md` with what they change. The section is not drafted
   and the positioning is not settled, but two of the three contribution
   claims now have to be restated and one result has to be quarantined)
-- [ ] Writing (nothing drafted)
+- [ ] Writing (a first draft builds, in four sections: introduction, the
+  instrument, what language models do, and limitations. Two pages in
+  `sigconf`, no undefined references and no errors, with both results
+  tables and the figure pulled from `paper/generated/` rather than typed.
+  Related work is not drafted, the validity paragraph is not agreed, the
+  third model is not in the counts, and the build warns that libertine,
+  inconsolata and newtxmath are missing, so it is not yet set in the
+  fonts the class asks for)
 
 ## Decisions taken
 
@@ -766,5 +773,23 @@ target for a full paper if a human validation study happens first.
 
 ## Building the PDF
 
-Nothing to build yet. The draft starts once the observer model and the
-metrics exist and there is something to report that is not a promise.
+From the TeX distribution, which on this machine is the one inside WSL:
+
+    cd paper && make
+
+The distribution does not ship `acmart` and `tlmgr` refuses a
+cross-release install, so the class is vendored as `acmart.ins` and
+`acmart.dtx` and the Makefile generates `acmart.cls` from them.
+`acmart.cls` is gitignored, so a fresh checkout has to run make and
+cannot run latexmk directly.
+
+The tables and the figure under `paper/generated/` are written by
+`tools/build_paper_results.py` and `tools/build_paper_figures.py` from
+the committed records, so both are rerun before the paper after any
+completed run. Nothing under `paper/generated/` is edited by hand.
+
+As of 5 August 2026 the build is two pages with seven warnings. Three are
+the missing font packages, two are the one figure lacking a description,
+one is the absent city on an anonymised affiliation, and one is
+`\balance` being called in the second column. None is an error and no
+reference is undefined.
