@@ -560,10 +560,28 @@ decisions, not reading notes.
   unbounded row reaches a cost ratio near 3.6. It is not the far end of
   the frontier and it must not be reported as a legibility result.
 - Contribution claim (a), legibility under safety constraints, is a
-  narrowing rather than a gap. The founding paper states that legibility
-  moves the trajectory closer to obstacles. It does not measure it, uses a
-  soft cost rather than a constraint, and never reports clearance. The
-  claim becomes: noticed, left qualitative, now measured.
+  narrowing rather than a gap, and the reading of 5 August 2026 narrowed
+  it again. The founding paper states that legibility moves the
+  trajectory closer to obstacles without measuring it. Bastarache et al.
+  go further and already report minimum separation and minimum
+  time-to-collision beside legibility. So the claim is not that safety
+  goes unreported next to legibility. What is left, and it is defensible,
+  is that the safety quantity here is satisfaction of a stated static
+  constraint rather than proximity to moving agents, that it is traced as
+  a curve against a path cost budget rather than compared between
+  policies, and that it comes with proof-carrying scenarios and released
+  records rather than inside a policy paper.
+- The cost ceiling is doubly prior art. The HRI paper bounds cost softly
+  with a regulariser and the RSS paper bounds it hard with a trust
+  region, and the HRI paper states the reason as a robot making a
+  trajectory ever more legible at ever greater cost. That is precisely
+  the runaway to a cost ratio near 3.6 that we removed from the reported
+  frontier. The sweep must cite this rather than present a ceiling as an
+  idea of ours.
+- Legibility cannot reach 1 when there is more than one goal, by the
+  founding paper's own statement. A score of 0.93 is therefore not
+  ninety-three per cent of the way to perfect and must never be worded
+  that way.
 - Contribution claim (b), the judge-free instrument, is strengthened in
   its framing and weakened in one respect. Francis et al. ask for exactly
   this kind of instrument and endorse computed metrics for
@@ -713,7 +731,12 @@ target for a full paper if a human validation study happens first.
   three models rather than two.
 - The confidence threshold sensitivity check, listed above.
 - The optimiser evaluation budget convergence check, listed above.
-- The three literature reads still outstanding in `verification_log.md`.
+- The literature reads are done as far as they can be. Dragan, Lee and
+  Srinivasa HRI 2013 and Bastarache et al. ICRA 2023 were read in full on
+  5 August 2026 and both change what may be claimed; the 2010 hand-over
+  paper is unreachable from here and the recommendation is to drop it
+  rather than cite it from a summary. Details in
+  `verification_log.md`.
 - A `paper/` build: there is a STATUS file and a verification log but no
   `paper.tex`, no `references.bib`, no generated tables. The ACM
   `sigconf` template has to be vendored the way the NeurIPS style was for
