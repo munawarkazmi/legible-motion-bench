@@ -22,7 +22,7 @@ down.
 | Francis et al., Principles and Guidelines for Evaluating Social Robot Navigation Algorithms | body checked 4 August 2026 | Read from the arXiv version, 2306.16740v4. It calls for runnable instruments explicitly and endorses computed metrics for reproducibility, so it is cited as motivation and not positioned around. It names legibility as principle P3 and attributes it to Dragan rather than proposing a computed metric of its own. It also sets a condition this project has not met, recorded below. |
 | Shi, Grislain, Sigaud and Chetouani, Controlling Intent Expressiveness in Robot Motion with Diffusion Models, 2025 | metadata only | Controllable legibility across a spectrum using an Information Potential Field. Abstract does not mention obstacles or constraint satisfaction; that absence is not yet confirmed from the body. |
 | Mahadevan et al., Generative Expressive Robot Behaviors using Large Language Models, HRI 2024 | metadata only | Closest existing work on language models and expressive motion. Needs a read before the language model framing is written. |
-| Mainprice, Sisbot, Simeon and Alami, Planning Safe and Legible Hand-over Motions for Human-Robot Interaction, 2010 | blocked | Cannot be read from here: HAL returns 403 behind anti-bot protection and Semantic Scholar returns nothing. Only a search summary is available, which is not a source. Recommendation is to drop it rather than cite it; see below. |
+| Mainprice, Sisbot, Simeon and Alami, Planning Safe and Legible Hand-over Motions for Human-Robot Interaction, 2010 | body checked 5 August 2026 | Read from a copy supplied by hand after the online sources refused. It is not about legibility in this project's sense at all; see below. |
 
 ## Dragan and Srinivasa, RSS 2013, read in full 4 August 2026
 
@@ -168,20 +168,35 @@ policies rather than tracing a curve against a path cost budget; and they
 present a navigation policy, not an instrument with proof-carrying
 scenarios and released records.
 
-## Mainprice, Sisbot, Simeon and Alami, 2010: not read, and blocked
+## Mainprice, Sisbot, Simeon and Alami, 2010, read in full 5 August 2026
 
-The safe and legible hand-over paper cannot be read with the tools here.
-The HAL record returns HTTP 403 behind anti-bot protection and the
-Semantic Scholar page returns nothing. What is known comes from a search
-summary: a workshop paper at IARP/IEEE-RAS/EURON 2010 in Toulouse,
-handling three constraints named as safety, visibility and arm comfort.
+Both online routes refused, HAL with a 403 behind anti-bot protection and
+Semantic Scholar with nothing, so the paper was supplied by hand. Reading
+it settles the question the summary could only raise.
 
-That is not enough to cite under the rules this project works to, and the
-summary suggests its "legible" is the human-aware costmap sense rather
-than Dragan's goal-inference sense, which would make it a different
-subject wearing the same word. The recommendation is to drop it rather
-than cite it from a summary. If it is wanted, it needs fetching by hand
-or through institutional access, and then reading.
+The word "legible" occurs exactly twice in the paper: once in the title,
+and once in a sentence saying that planning with their constraints
+results in safe, legible and socially acceptable behaviour. It is never
+defined, never measured, and never operationalised. The words "intent",
+"infer" and "goal inference" do not occur at all, and neither does any
+citation of Dragan, which is unsurprising since this is 2010 and the
+formalism is 2013.
+
+What the paper actually does is human-aware motion planning for object
+hand-over under three cost fields: safety as distance from the human,
+visibility as keeping the robot inside the human's field of view, and arm
+comfort. It computes where to transfer the object and how to move the
+whole robot.
+
+So it is a different subject wearing the same word, exactly as suspected,
+and citing it as prior work on legibility would misrepresent it. It is
+dropped. If a sentence on human-aware planning with safety cost fields is
+ever wanted it could be cited for that, but it is not load bearing here
+and an LBR has no room for it.
+
+The general lesson is worth keeping: "legible" in the pre-2013 HRI
+literature often means socially acceptable or comfortable rather than
+intent-expressive, and a title match is not a topic match.
 
 ## Outstanding obligations
 
@@ -190,9 +205,7 @@ or through institutional access, and then reading.
    guideline B6 and the bound Dragan places on their own user studies.
    This is a writing obligation rather than a reading one and it cannot
    be discharged by more citation. It is the largest open item.
-2. Decide whether to cite the 2010 hand-over paper at all. It cannot be
-   read from here and must not be cited from a summary.
-3. Read Amirian, Abrini and Chetouani's Legibot and Shi et al.'s
+2. Read Amirian, Abrini and Chetouani's Legibot and Shi et al.'s
    diffusion work in the body before either is cited for a finding.
    Both are currently at body checked and metadata only respectively,
    and neither is load bearing yet.

@@ -731,12 +731,11 @@ target for a full paper if a human validation study happens first.
   three models rather than two.
 - The confidence threshold sensitivity check, listed above.
 - The optimiser evaluation budget convergence check, listed above.
-- The literature reads are done as far as they can be. Dragan, Lee and
-  Srinivasa HRI 2013 and Bastarache et al. ICRA 2023 were read in full on
-  5 August 2026 and both change what may be claimed; the 2010 hand-over
-  paper is unreachable from here and the recommendation is to drop it
-  rather than cite it from a summary. Details in
-  `verification_log.md`.
+- The three literature reads are done, all three in the body, on 5 August
+  2026. Dragan, Lee and Srinivasa HRI 2013 and Bastarache et al. ICRA
+  2023 both change what may be claimed. The 2010 hand-over paper turned
+  out not to be about legibility in this sense at all and is dropped.
+  Details in `verification_log.md`.
 - A `paper/` build: there is a STATUS file and a verification log but no
   `paper.tex`, no `references.bib`, no generated tables. The ACM
   `sigconf` template has to be vendored the way the NeurIPS style was for
