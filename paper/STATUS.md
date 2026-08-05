@@ -599,12 +599,53 @@ decisions, not reading notes.
   answer has stopped moving, and that has to be shown rather than assumed.
 - The confidence threshold. It defaults to 0.8 and is recorded in every
   metrics record, but no value has been argued for. Whichever is chosen,
-  the results have to be shown to be stable across a range of it or the
-  number is a number about the threshold.
-- The confidence threshold, still at 0.8 and still unargued, is the only
-  measurement parameter left open.
-- Target venue. An HRI late-breaking report or an HRI or RO-MAN workshop.
-  Not written into the paper until it is decided.
+  the results have to be shown stable across a range of it or the number
+  is a number about the threshold. A submission blocker rather than a
+  nicety, now that there is a submission.
+
+## Target venue, decided 5 August 2026
+
+An HRI 2027 Late-Breaking Report. Santa Clara, 8 to 12 March 2027. Terms
+read from the HRI 2026 LBR call, which is the most recent published:
+
+- Two to four pages excluding references.
+- ACM `sigconf`, double column. On Overleaf the class must be set to
+  `sigconf` rather than the default `manuscript,screen,review`.
+- Fully anonymised at submission, under mutual blind review.
+- Archival: accepted LBRs appear in the ACM Digital Library and IEEE
+  Xplore. This is a citable publication, not a poster abstract.
+- Camera-ready quality at submission. Non-conforming submissions can be
+  rejected outright.
+- At least one author must agree to review three other LBRs.
+- A video figure of at most two minutes is encouraged, which the
+  renderer already produces.
+
+The HRI 2027 LBR deadline is not published yet. HRI 2026's was 8
+December 2025 with notification 12 January 2026, so early December 2026
+is the working assumption and must be confirmed from the 2027 call
+before anything is planned around it.
+
+Two deliberate non-choices. The HRI 2027 full paper deadline of 18
+September 2026 is not being pursued: the metric is reproducible but not
+validated against people, and no amount of engineering answers that
+objection in six weeks. RO-MAN 2027 in Waterloo, whose call is not yet
+published and whose deadline is expected around March 2027, is the
+target for a full paper if a human validation study happens first.
+
+## What the LBR needs before it can be written
+
+- Gemini 3.6 Flash at k = 5, ceiling 1.25, so the headline count covers
+  three models rather than two.
+- The confidence threshold sensitivity check, listed above.
+- The optimiser evaluation budget convergence check, listed above.
+- The three literature reads still outstanding in `verification_log.md`.
+- A `paper/` build: there is a STATUS file and a verification log but no
+  `paper.tex`, no `references.bib`, no generated tables. The ACM
+  `sigconf` template has to be vendored the way the NeurIPS style was for
+  plan-failure-bench.
+- A decision on what two to four pages can hold. The instrument and the
+  frontier and the model finding will not all fit; the model finding is
+  the one worth the space.
 
 ## Ground rules for this draft
 
