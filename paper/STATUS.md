@@ -49,14 +49,14 @@ inspected.
   Ollama and Llama 3.3 70B through Groq, plus one single decode of Qwen at
   temperature zero, all committed and summarised below. A file cannot mix
   temperatures or cost ceilings, and a rate-limited request is retried
-  rather than counted as answered. The Gemini backend is written but has
-  now been run, and its backend worked on the first live call unlike
-  Groq's, but its first full run was discarded for a token budget defect
-  of ours and has to be repeated; see below. Qwen and Llama are complete
-  at k = 5 across all four cost ceilings, 160 decodes each. A 241-test
-  suite in CI,
-  which also re-checks every scenario property against the committed code
-  and every committed record file for completeness)
+  rather than counted as answered. The Gemini backend worked on its first
+  live call, unlike Groq's, but its first full run was discarded for a
+  token budget defect of ours and is being repeated; no Gemini record is
+  committed yet, and what was discarded and why is below. Qwen and Llama
+  are complete at k = 5 across all four cost ceilings, 160 decodes each.
+  A 241-test suite in CI, which also re-checks every scenario property
+  against the committed code and every committed record file for
+  completeness)
 - [x] Scenario suite (eight worlds, 46 machine-checked facts carried
   inline and re-verified in CI. Each world is present for a stated reason:
   a no-obstacle control on the observer model, a paired comparison between
@@ -66,9 +66,6 @@ inspected.
   shaves clearance rather than crossing a line, and a low ambiguity world
   where the cheapest route is already fairly legible. `tests/test_suite.py`
   asserts the coverage claims no single scenario can make)
-- [ ] Rendering (not started)
-- [ ] Language model evaluation (not started; the model manifest and the
-  example config land with it rather than as empty scaffolding now)
 - [ ] Literature review (first pass 4 August 2026; the two body checks
   that were blocking the scenario suite are done the same day, Dragan and
   Srinivasa RSS 2013 read in full and Francis et al. read for whether it
