@@ -118,11 +118,10 @@ and this section will say so until it is.
   re-checked in CI
 - [ ] Language model evaluation: the prompt, the extraction, the record
   format, the resume guard and the scoring are built and tested. Two
-  models are complete at k = 5, Qwen 2.5 7B on a local Ollama across four
-  cost ceilings and Llama 3.3 70B through Groq across three. Llama's
-  fourth ceiling and a first Gemini 3.6 Flash run are part finished,
-  stopped by daily token limits rather than by anything going wrong, and
-  resume where they stopped
+  models are complete at k = 5 across all four cost ceilings, Qwen 2.5 7B
+  on a local Ollama and Llama 3.3 70B through Groq, 160 decodes each. A
+  first Gemini 3.6 Flash run was discarded because our token budget
+  truncated it, and has to be repeated
 
 ## What is here
 
