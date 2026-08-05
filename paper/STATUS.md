@@ -836,10 +836,11 @@ The tables and the figure under `paper/generated/` are written by
 the committed records, so both are rerun before the paper after any
 completed run. Nothing under `paper/generated/` is edited by hand.
 
-As of 5 August 2026 the build is two pages with four warnings: two are
-the one figure lacking a description, one is the absent city on an
-anonymised affiliation, and one is `\balance` being called in the second
-column. None is an error and no reference is undefined.
+As of 5 August 2026 the build is two pages with two warnings: the absent
+city on an anonymised affiliation, and `\balance` being called in the
+second column. Neither is an error and no reference is undefined. The
+figure carries a `\Description` for a reader who cannot see it, which is
+what cleared the other two.
 
 One thing the warnings do not catch, fixed the same day. The figure
 carried DejaVu Sans as a Type 3 font, because Type 3 is what matplotlib
