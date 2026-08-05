@@ -593,15 +593,11 @@ decisions, not reading notes.
   the grid may need to be finer where the safety column changes and
   coarser where it does not. It matters less for the models, whose
   behaviour is flat across the whole range.
-- The evaluation budget for the reported runs. Everything so far has used
-  250 evaluations, which is a tenth of the default, chosen to keep
-  exploratory runs short. The reported results need a budget at which the
-  answer has stopped moving, and that has to be shown rather than assumed.
-- The confidence threshold. It defaults to 0.8 and is recorded in every
-  metrics record, but no value has been argued for. Whichever is chosen,
-  the results have to be shown stable across a range of it or the number
-  is a number about the threshold. A submission blocker rather than a
-  nicety, now that there is a submission.
+- The confidence threshold and the evaluation budget are no longer open.
+  Both were checked on 5 August 2026 and the results are recorded below:
+  the threshold stays at 0.8, its admissible range is now enforced in
+  code, and what may be claimed from it is bounded. Reported optimiser
+  runs move from 250 evaluations to 500.
 
 ## The confidence threshold, checked 5 August 2026
 
@@ -646,6 +642,41 @@ For the report this argues for keeping time to confidence out of the
 headline. Legibility, cost ratio, keep-out entries and clearance have no
 free parameter at all, and the strongest results already rest only on
 those.
+
+## The optimiser's evaluation budget, checked 5 August 2026
+
+Every optimiser number reported so far came from a search of 250
+evaluations. A budget too small does not report the frontier, it reports
+how far the search got, and nothing in the number itself distinguishes
+the two. `tools/budget_convergence.py` reruns all eight worlds at 100,
+250, 500 and 1000 at ceiling 1.25 and prints what the extra effort bought.
+
+| scenario | 100 | 250 | 500 | 1000 |
+| --- | --- | --- | --- | --- |
+| door_pair | 0.8042 | 0.8042 | 0.8042 | 0.8042 |
+| fan_middle | 0.4351 | 0.4821 | 0.4829 | 0.4829 |
+| fan_outer | 0.6813 | 0.6817 | 0.6817 | 0.6817 |
+| keep_out_shortcut | 0.8326 | 0.8327 | 0.8327 | 0.8327 |
+| narrow_gap | 0.6623 | 0.6667 | 0.6879 | 0.6879 |
+| open_pair | 0.8326 | 0.8327 | 0.8327 | 0.8327 |
+| pillar_aisle | 0.8428 | 0.8429 | 0.8429 | 0.8429 |
+| wall_choice | 0.6076 | 0.6076 | 0.6076 | 0.6076 |
+
+The reported budget is enough almost everywhere. Six of the eight worlds
+gain exactly nothing between 250 and 1000, and `fan_middle` gains 0.0008.
+The exception is `narrow_gap`, which gains 0.0212 by 500 and nothing
+after: on that world 250 evaluations were reporting the search rather
+than the frontier, and a gain of that size is comparable to a whole step
+of the cost ceiling elsewhere, so it is not negligible.
+
+One hundred evaluations is too few: `fan_middle` is 0.0478 short there,
+which is larger than several ceiling steps.
+
+Consequences. The frontier table in the README and on the portfolio is
+`pillar_aisle`, which gains nothing past 250, so those published numbers
+stand unchanged. Reported runs from here on use 500, which costs little
+and removes the caveat entirely. The library default of 2000 was already
+above the converged point and is unchanged.
 
 ## Target venue, decided 5 August 2026
 
