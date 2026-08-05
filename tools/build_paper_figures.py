@@ -21,6 +21,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import matplotlib  # noqa: E402
 
 matplotlib.use("Agg")
+# Matplotlib writes Type 3 fonts into a PDF unless told otherwise, and
+# publishers commonly refuse Type 3. 42 is TrueType, which embeds a
+# subset the reader can search and select. Nothing about the figure
+# changes except how its glyphs are stored.
+matplotlib.rcParams["pdf.fonttype"] = 42
 import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib.patches import Polygon  # noqa: E402
 

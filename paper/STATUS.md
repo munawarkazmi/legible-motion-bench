@@ -54,7 +54,7 @@ inspected.
   token budget defect of ours and is being repeated; no Gemini record is
   committed yet, and what was discarded and why is below. Qwen and Llama
   are complete at k = 5 across all four cost ceilings, 160 decodes each.
-  A 244-test suite in CI, which also re-checks every scenario property
+  A 245-test suite in CI, which also re-checks every scenario property
   against the committed code and every committed record file for
   completeness)
 - [x] Scenario suite (eight worlds, 46 machine-checked facts carried
@@ -841,7 +841,13 @@ the one figure lacking a description, one is the absent city on an
 anonymised affiliation, and one is `\balance` being called in the second
 column. None is an error and no reference is undefined.
 
-One thing the warnings do not catch. The figure carries DejaVu Sans as a
-Type 3 font, because Type 3 is what matplotlib writes into a PDF unless
-told otherwise, and publishers commonly refuse Type 3. `pdffonts
-paper.pdf` shows it. Not yet fixed.
+One thing the warnings do not catch, fixed the same day. The figure
+carried DejaVu Sans as a Type 3 font, because Type 3 is what matplotlib
+writes into a PDF unless told otherwise, and publishers commonly refuse
+Type 3. `tools/build_paper_figures.py` now sets `pdf.fonttype` to 42 and
+the glyphs are embedded as a TrueType subset, which `pdffonts paper.pdf`
+shows. What CI checks is the committed figure rather than the setting
+that produces it, since a setting can be right in a tool nobody has
+rerun. Nothing in the figure moved: the same ten model trajectories are
+plotted and all ten still enter the keep-out zone the shortest path
+avoids.
