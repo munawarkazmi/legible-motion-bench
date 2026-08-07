@@ -238,14 +238,27 @@ it is a constraint, for both models it is text.
 
 \section{Limitations}
 
-The metric is exactly specified and exactly reproducible, which is not
-the same as validated. Nobody has looked at these trajectories. The
-guidelines for evaluating social navigation ask that objective metrics be
-shown to measure what they purport to~\cite{francis2025principles}, and
-the only validity anchor available is the original user studies, which
-their authors bound to inside the trust region. Judge-free is not
-judge-proof. Comparing legibility frameworks against human observers
-remains the harder and more informative
+Validity is the limitation that matters, so it goes first. The metric
+here is not a new claim about people. It is equation~9 of
+\cite{dragan2013legibility} computed exactly rather than approximately,
+so whatever validity it has is inherited from that paper's user studies,
+and it is bounded where those authors bounded it, inside the trust
+region. That is why nothing outside a stated cost ceiling is reported
+here. What this instrument adds is reproducibility, not correspondence.
+Judge-free is not judge-proof.
+
+Two statements have to be kept apart, and only the first is supported by
+anything here: that a trajectory scores higher under the stated observer
+model, and that a person would read it sooner. Nobody has watched these
+trajectories. The guidelines for social navigation put the same order on
+it, recommending algorithmic metrics first and asking that objective
+metrics later be validated empirically~\cite{francis2025principles}; this
+report is at the first step and not the second. What would settle it is a
+study in which people see these trajectories and say which goal they
+believe, set against the posterior that scored them. Every trajectory is
+committed, one JSON object per line, so that study needs participants
+rather than a reimplementation. Comparing legibility frameworks against
+human observers remains the harder and more informative
 experiment~\cite{wallkotter2022evaluating}.
 
 Three narrower limits. With more than one goal the legibility score

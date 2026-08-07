@@ -251,17 +251,55 @@ from ours in the model, the temperature, the presence of a human in the
 loop and the baseline, so no result of theirs may be compared with any
 result of ours, and the citation is for the pairing and not for a number.
 
+## The validity position, drafted 6 August 2026
+
+The largest open item, written rather than read. What the limitations now
+claim, and the three judgements behind it, recorded here so the wording
+can be argued with later rather than reconstructed.
+
+**The metric is not a new claim about people.** It is equation 9 of the
+HRI 2013 paper computed exactly, so its validity is inherited and not
+asserted, and it is bounded where those authors bounded it. That is the
+whole of the defence and it is a narrow one. It is also the reason the
+unbounded sweep point stays out of everything reported: outside the trust
+region there is no inherited validity left to rely on.
+
+**Two statements are separated explicitly.** That a trajectory scores
+higher under the stated observer model, which is exact and checkable from
+the committed records, and that a person would read it sooner, which is
+not tested anywhere here. Keeping them apart is what protects every other
+claim in the report, because a reader who runs them together will read
+the model counts as claims about human perception.
+
+**Francis is cited for the sequence, not only for the objection.**
+Guideline M2 recommends validating first with algorithmic metrics and
+guideline B6 asks that objective metrics be validated empirically. Those
+are an order, not a contradiction, and this report is at the first step.
+Citing only B6 would concede more than the guidelines actually say.
+
+Three judgements were made and any of them can be reversed.
+
+1. Validity leads the limitations rather than sitting third. A reviewer
+   weighs this paragraph hardest, and burying it reads as hoping they
+   miss it.
+2. The paragraph states what would settle the question, a study in which
+   people see these trajectories and report which goal they believe, set
+   against the posterior that scored them, and points out that the
+   records make it a matter of finding participants rather than
+   reimplementing anything. The risk is that it reads as conceding the
+   report is unfinished. The judgement is that a reviewer raising B6 is
+   disarmed by being told what would answer it.
+3. "Judge-free is not judge-proof" is kept. It concedes the point in one
+   line and in the author's own voice.
+
 ## Outstanding obligations
 
-1. Establish what, if anything, can be said about the validity of the
-   legibility metric in this instrument, in the light of Francis
-   guideline B6 and the bound Dragan places on their own user studies.
-   This is a writing obligation rather than a reading one and it cannot
-   be discharged by more citation. It is the largest open item.
-2. Shi et al.'s diffusion work is still metadata only and is not cited
+1. Shi et al.'s diffusion work is still metadata only and is not cited
    for any finding. Read it in the body before it is. Legibot was body
    checked on the first pass and is now cited in the draft, and
    Mahadevan et al. was read on 6 August 2026 and is now cited for the
    pairing of language models with expressive motion.
-3. A search for work newer than 6 August 2026 immediately before
+2. A search for work newer than 6 August 2026 immediately before
    submission.
+3. Confirm the validity wording above, which is the one paragraph in the
+   report that was written rather than derived.

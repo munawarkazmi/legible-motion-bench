@@ -82,7 +82,9 @@ inspected.
   both results tables and the figure pulled from `paper/generated/` rather
   than typed. Every claim in related work traces to a row in
   `verification_log.md` that says the body was checked. The validity
-  paragraph is not agreed and the third model is not in the counts)
+  paragraph is drafted as of 6 August 2026 and awaits confirmation, with
+  the position and the three judgements behind it recorded in
+  `verification_log.md`. The third model is not in the counts)
 
 ## Decisions taken
 
