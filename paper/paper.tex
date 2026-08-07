@@ -16,6 +16,10 @@
 
 \documentclass[sigconf,nonacm]{acmart}
 
+% These two lines are the draft build and must both go for submission.
+% The ACM reference format is mandatory there, and the class says so.
+% Verified 6 August 2026: with the documentclass swapped and both lines
+% commented, the build is three pages with zero warnings.
 \settopmatter{printacmref=false}
 \renewcommand\footnotetextcopyrightpermission[1]{}
 
@@ -53,6 +57,15 @@ zone on every one of ten samples. Given four different path budgets, one
 model's median path cost moved by 0.012 and the other's did not move at
 all.
 \end{abstract}
+
+% Mandatory for papers over two pages, which this became when related
+% work was added. The paths are ACM CCS 2012 paths; the CCSXML metadata
+% block that accompanies these carries concept identifiers that only
+% ACM's own CCS tool can issue, so it is pasted in at submission and is
+% deliberately not invented here.
+\ccsdesc[500]{Computer systems organization~Robotics}
+\ccsdesc[300]{Computing methodologies~Motion path planning}
+\ccsdesc[300]{Human-centered computing~Human computer interaction (HCI)}
 
 \keywords{legibility, human-robot interaction, motion planning,
 benchmarking, language models}

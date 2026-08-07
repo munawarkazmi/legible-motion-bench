@@ -818,12 +818,26 @@ mandatory items:
 - "ACM reference format is mandatory", because the draft sets
   `\settopmatter{printacmref=false}`. The submission build has to stop
   doing that.
-- "CCS concepts are mandatory for papers over two pages". There is no
+- "CCS concepts are mandatory for papers over two pages". There was no
   `\ccsdesc` block in the paper at all. This became a defect the moment
-  related work pushed the draft past two pages, and for a venue that can
-  reject non-conforming submissions outright it is worth clearing early.
-  The block is generated from ACM's CCS tool rather than typed, so the
-  concepts have to be chosen before it can be added.
+  related work pushed the draft past two pages.
+
+Both are fixed the same day. The draft build still sets
+`printacmref=false` and now says in a comment that the line goes for
+submission, and three concepts are declared: Robotics at 500, Motion path
+planning at 300, and Human computer interaction at 300. Each path was
+checked against published ACM usage rather than written from memory. The
+CCSXML metadata block that normally accompanies them is deliberately
+absent, because it carries concept identifiers only ACM's own tool can
+issue and inventing them would put a fabricated number in the paper; it
+is pasted in at submission.
+
+Verified by building it: with the documentclass swapped to
+`[sigconf,anonymous,review]` and both draft lines commented, the report
+is three pages with zero warnings, no errors and no undefined references,
+and the PDF text contains no name, no email address and no repository
+link. That is the first time the submission build has been known to
+conform.
 
 **The HRI 2027 Late-Breaking Report deadline is still not published.**
 Read from the conference site on 6 August 2026: the conference is 8 to 12
