@@ -792,6 +792,47 @@ target for a full paper if a human validation study happens first.
   frontier and the model finding will not all fit; the model finding is
   the one worth the space.
 
+## Three checks made while the quota was spent, 6 August 2026
+
+None of these needed a request. All three were worth making.
+
+**The unequal-n guard fires, and it was verified rather than assumed.**
+`build_paper_results.py` now exits 1 with "models were not asked the same
+number of times: {'gemini_flash': 24, 'groq_llama70b': 40, 'local_qwen':
+40}" and writes nothing at all, so a partial third model cannot reach a
+table. `build_paper_figures.py` has no such guard and does not need one,
+but it does already pick the three complete Gemini files up: run today it
+plots 13 trajectories rather than 10, of which 10 enter the keep-out zone
+and 13 beat the shortest path. The committed figure was restored
+afterwards. That is the caption's "every one of the ten crosses the zone"
+becoming false, confirmed rather than predicted.
+
+**The anonymised submission build had never been run, and it is not
+conforming.** Building with `[sigconf,anonymous,review]` succeeds at three
+pages with no errors, and the anonymisation itself is sound: the PDF text
+contains no name, no email address and no repository link, and the only
+matches for "independent" are both the word inside the Wallkotter title.
+But two warnings appear that the draft build never shows, and both are
+mandatory items:
+
+- "ACM reference format is mandatory", because the draft sets
+  `\settopmatter{printacmref=false}`. The submission build has to stop
+  doing that.
+- "CCS concepts are mandatory for papers over two pages". There is no
+  `\ccsdesc` block in the paper at all. This became a defect the moment
+  related work pushed the draft past two pages, and for a venue that can
+  reject non-conforming submissions outright it is worth clearing early.
+  The block is generated from ACM's CCS tool rather than typed, so the
+  concepts have to be chosen before it can be added.
+
+**The HRI 2027 Late-Breaking Report deadline is still not published.**
+Read from the conference site on 6 August 2026: the conference is 8 to 12
+March 2027 in Santa Clara, full papers close 18 September 2026 AoE with
+abstracts on 11 September, and workshops and alt.HRI are marked TBD. Late
+-Breaking Reports do not appear on the page at all. So early December 2026
+remains an assumption carried from the 2026 call and nothing may be
+planned around it yet.
+
 ## What the third model changes, listed 6 August 2026
 
 Written down before the last 14 decodes land, so the pass that rewrites
