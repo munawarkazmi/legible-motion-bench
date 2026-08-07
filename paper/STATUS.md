@@ -70,20 +70,19 @@ inspected.
   that were blocking the scenario suite are done the same day, Dragan and
   Srinivasa RSS 2013 read in full and Francis et al. read for whether it
   calls for runnable instruments, both recorded in
-  `verification_log.md` with what they change. Six works are body checked
-  and all six are now cited. The section is drafted as of 6 August 2026
-  and one obligation blocks it: Mahadevan et al., HRI 2024, is the closest
-  work on language models and expressive motion and is still at metadata
-  only, so the paragraph a reviewer will look for is missing rather than
-  wrong)
+  `verification_log.md` with what they change. Seven works are body
+  checked and all seven are cited. The section is drafted as of 6 August
+  2026, in four paragraphs, and nothing in it rests on a paper that has
+  not been read in the body. Mahadevan et al., HRI 2024, was the last
+  blocking read and it is done: it turns out never to use the word
+  legible, which makes the contrast cleaner than expected)
 - [ ] Writing (a first draft builds, in five sections: introduction,
   related work, the instrument, what language models do, and limitations.
   Three pages in `sigconf`, no undefined references and no errors, with
   both results tables and the figure pulled from `paper/generated/` rather
   than typed. Every claim in related work traces to a row in
   `verification_log.md` that says the body was checked. The validity
-  paragraph is not agreed, the language model paragraph of related work is
-  not written, and the third model is not in the counts)
+  paragraph is not agreed and the third model is not in the counts)
 
 ## Decisions taken
 
