@@ -70,15 +70,20 @@ inspected.
   that were blocking the scenario suite are done the same day, Dragan and
   Srinivasa RSS 2013 read in full and Francis et al. read for whether it
   calls for runnable instruments, both recorded in
-  `verification_log.md` with what they change. The section is not drafted
-  and the positioning is not settled, but two of the three contribution
-  claims now have to be restated and one result has to be quarantined)
-- [ ] Writing (a first draft builds, in four sections: introduction, the
-  instrument, what language models do, and limitations. Two pages in
-  `sigconf`, no undefined references and no errors, with both results
-  tables and the figure pulled from `paper/generated/` rather than typed.
-  Related work is not drafted, the validity paragraph is not agreed, and
-  the third model is not in the counts)
+  `verification_log.md` with what they change. Six works are body checked
+  and all six are now cited. The section is drafted as of 6 August 2026
+  and one obligation blocks it: Mahadevan et al., HRI 2024, is the closest
+  work on language models and expressive motion and is still at metadata
+  only, so the paragraph a reviewer will look for is missing rather than
+  wrong)
+- [ ] Writing (a first draft builds, in five sections: introduction,
+  related work, the instrument, what language models do, and limitations.
+  Three pages in `sigconf`, no undefined references and no errors, with
+  both results tables and the figure pulled from `paper/generated/` rather
+  than typed. Every claim in related work traces to a row in
+  `verification_log.md` that says the body was checked. The validity
+  paragraph is not agreed, the language model paragraph of related work is
+  not written, and the third model is not in the counts)
 
 ## Decisions taken
 
@@ -836,11 +841,12 @@ The tables and the figure under `paper/generated/` are written by
 the committed records, so both are rerun before the paper after any
 completed run. Nothing under `paper/generated/` is edited by hand.
 
-As of 5 August 2026 the build is two pages with two warnings: the absent
-city on an anonymised affiliation, and `\balance` being called in the
-second column. Neither is an error and no reference is undefined. The
-figure carries a `\Description` for a reader who cannot see it, which is
-what cleared the other two.
+As of 6 August 2026, with related work drafted, the build is three pages
+with one warning, the absent city on an anonymised affiliation. It is not
+an error and no reference is undefined. Six references are cited and six
+are printed, with nothing orphaned. The figure carries a `\Description`
+for a reader who cannot see it, and the `\balance` warning went when the
+extra section balanced the columns.
 
 One thing the warnings do not catch, fixed the same day. The figure
 carried DejaVu Sans as a Type 3 font, because Type 3 is what matplotlib

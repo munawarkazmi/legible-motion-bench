@@ -205,9 +205,15 @@ intent-expressive, and a title match is not a topic match.
    guideline B6 and the bound Dragan places on their own user studies.
    This is a writing obligation rather than a reading one and it cannot
    be discharged by more citation. It is the largest open item.
-2. Read Amirian, Abrini and Chetouani's Legibot and Shi et al.'s
-   diffusion work in the body before either is cited for a finding.
-   Both are currently at body checked and metadata only respectively,
-   and neither is load bearing yet.
+2. Read Mahadevan et al., Generative Expressive Robot Behaviors using
+   Large Language Models, HRI 2024, in the body. It is at metadata only
+   and it is now blocking: the draft asks whether language models
+   produce legible motion and this is the closest existing work on that
+   pairing, at the same venue. Related work has no paragraph on language
+   models until it is read, and an absent paragraph is the first thing a
+   reviewer will look for.
+3. Shi et al.'s diffusion work is still metadata only and is not cited
+   for any finding. Read it in the body before it is. Legibot was body
+   checked on the first pass and is now cited in the draft.
 4. A search for work newer than 5 August 2026 immediately before
    submission.

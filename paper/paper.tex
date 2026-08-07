@@ -68,19 +68,56 @@ than efficiency alone would allow. What is missing from that literature
 is a price. Deviating for clarity moves the robot somewhere it would not
 otherwise go, and in a real room that somewhere is occupied.
 
-The founding paper notices this. It reports that legibility will move a
-trajectory much closer to an obstacle in order to disambiguate between
-goals~\cite{dragan2013generating}. It does not measure it: obstacles
-enter as a soft term inside the objective, clearance is never reported,
-and constraint satisfaction is not an axis of any result. Legible
-navigation among moving agents does report proximity and time to
-collision beside legibility~\cite{bastarache2023legible}, but as
-properties of a policy rather than as a curve against a path budget.
+The literature notices this and leaves it qualitative: what a legible
+trajectory costs in satisfaction of a stated constraint is not an axis of
+any reported result.
 
 This report contributes an instrument rather than a planner: a
 reproducible way to ask what a given trajectory pays, in path and in
 constraint satisfaction, for the clarity it buys. We use it to ask
 whether language models produce legible motion when told to.
+
+\section{Related work}
+
+Legibility in the sense used here is Dragan et al.'s: an observer with a
+Boltzmann-rational model of the robot infers the goal from motion, and a
+legible trajectory is one that raises that inference early
+\cite{dragan2013legibility}. Both founding papers bound what the robot may
+spend on it. The HRI paper subtracts a cost regulariser from the objective
+and the RSS paper constrains the trajectory to a trust region, in both
+cases because a robot can otherwise make a trajectory ever more legible at
+ever greater cost \cite{dragan2013generating}. The ceiling we sweep is the
+hard variant of that bound, expressed as a ratio against the optimal path
+rather than as an absolute in a cost functional.
+
+What legibility does to the space around the robot is stated in that
+literature before it is measured. The RSS paper reports that legibility
+moves the trajectory much closer to an obstacle in order to disambiguate
+between two goals, and leaves it there: obstacles enter as a soft penalty
+inside the objective, clearance is never reported as a number, and
+constraint satisfaction is not an axis of any result
+\cite{dragan2013generating}. Legibot likewise carries obstacle distance
+and rate of approach as terms in a task cost, reports legibility scores
+from a user study, and gives no quantitative comparison of path cost
+against the baseline \cite{amirian2024legibot}. Closest to this report is
+legible navigation among moving agents, which does put a safety quantity
+beside legibility in one table, reporting minimum separation and minimum
+time to collision \cite{bastarache2023legible}. What differs here is which
+quantity and in what form: satisfaction of a stated static constraint
+rather than proximity to moving agents, traced as a curve against a path
+budget rather than compared between policies.
+
+On evaluation, the guidelines for social robot navigation call for
+repeatable benchmarking criteria, endorse algorithmic metrics as cheap to
+compute and reproducible, name legibility as a principle, and point at
+Dragan for its definition rather than stating a computed metric of their
+own \cite{francis2025principles}. They also set the condition this
+instrument does not meet, that objective metrics be validated empirically,
+which the limitations take up. The alternative is to evaluate legibility
+frameworks against human observers on framework-independent trajectories
+\cite{wallkotter2022evaluating}. That is the harder experiment and it
+measures something this one does not: an exactly computed observer is
+reproducible rather than right.
 
 \section{The instrument}
 
