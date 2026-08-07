@@ -792,6 +792,29 @@ target for a full paper if a human validation study happens first.
   frontier and the model finding will not all fit; the model finding is
   the one worth the space.
 
+## What the third model changes, listed 6 August 2026
+
+Written down before the last 14 decodes land, so the pass that rewrites
+these does not have to rediscover them. Every one of these places states
+a count or a claim that Gemini contradicts or extends.
+
+- The abstract. "Two language models called all 80 of their trajectories
+  legible" and the two sentences after it.
+- The figure caption. It says every trajectory crosses the zone. Gemini's
+  did not, on three of three so far, while still beating the baseline.
+- The three patterns paragraph in "What language models do", all three of
+  which were stated over two models.
+- The budget paragraph after the ceiling table. Gemini stayed under the
+  stated budget on every decode so far, so "for both models it is text"
+  cannot stand as written, and Gemini has been run at one ceiling only.
+- The last paragraph of the limitations. "Two models at one temperature
+  over eight worlds is a pilot" becomes three. While that paragraph is
+  being touched, drop its "one JSON object per line", which now repeats
+  the validity paragraph above it.
+- `tools/threshold_sensitivity.py` has to be rerun with the Gemini files
+  named, since it takes explicit paths. Its committed table reads "of
+  55", which is Qwen's 26 feasible plus Llama's 29.
+
 ## Ground rules for this draft
 
 - Results tables and figures are generated from committed records by a
