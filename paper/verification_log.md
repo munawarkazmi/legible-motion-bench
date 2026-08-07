@@ -21,7 +21,7 @@ down.
 | Wallkotter, Chetouani and Castellano, A new approach to evaluating legibility, arXiv 2022 | body checked | Compares ten legibility frameworks on framework-independent trajectories across two scenarios, evaluated by human observers. The honest contrast for the judge-free claim: they evaluate frameworks against people, this benchmark evaluates planners against an exactly computed observer. The difference has to be argued rather than assumed to be an improvement. |
 | Francis et al., Principles and Guidelines for Evaluating Social Robot Navigation Algorithms | body checked 4 August 2026 | Read from the arXiv version, 2306.16740v4. It calls for runnable instruments explicitly and endorses computed metrics for reproducibility, so it is cited as motivation and not positioned around. It names legibility as principle P3 and attributes it to Dragan rather than proposing a computed metric of its own. It also sets a condition this project has not met, recorded below. |
 | Shi, Grislain, Sigaud and Chetouani, Controlling Intent Expressiveness in Robot Motion with Diffusion Models, 2025 | metadata only | Controllable legibility across a spectrum using an Information Potential Field. Abstract does not mention obstacles or constraint satisfaction; that absence is not yet confirmed from the body. |
-| Mahadevan et al., Generative Expressive Robot Behaviors using Large Language Models, HRI 2024 | metadata only | Closest existing work on language models and expressive motion. Needs a read before the language model framing is written. |
+| Mahadevan et al., Generative Expressive Robot Behaviors using Large Language Models, HRI 2024 | body checked 6 August 2026 | Closest existing work on language models and expressive motion, and it turns out not to measure legibility at all; see below. |
 | Mainprice, Sisbot, Simeon and Alami, Planning Safe and Legible Hand-over Motions for Human-Robot Interaction, 2010 | body checked 5 August 2026 | Read from a copy supplied by hand after the online sources refused. It is not about legibility in this project's sense at all; see below. |
 
 ## Dragan and Srinivasa, RSS 2013, read in full 4 August 2026
@@ -198,6 +198,59 @@ The general lesson is worth keeping: "legible" in the pre-2013 HRI
 literature often means socially acceptable or comfortable rather than
 intent-expressive, and a title match is not a topic match.
 
+## Mahadevan et al., HRI 2024, read in full 6 August 2026
+
+Ten pages, read from arXiv 2401.14673. Karthik Mahadevan, Jonathan Chien,
+Noah Brown, Zhuo Xu, Carolina Parada, Fei Xia, Andy Zeng, Leila Takayama
+and Dorsa Sadigh, eight of the nine at Google DeepMind. Published at HRI
+2024, which is the venue this report is aimed at, so it had to be read
+before the language model framing was written.
+
+**It never mentions legibility.** The words "legible" and "legibility"
+occur zero times in ten pages. "Dragan" occurs four times and all four are
+bibliography entries, none of them the 2013 legibility paper: the cited
+ones are expressing robot incapability, grounded social reasoning,
+functional expressive motion, and cost functions for motion style. The
+word "infer" does not occur in the body either. So the formalism this
+project measures is not engaged anywhere in the closest existing work on
+language models and robot motion.
+
+**What it does.** GenEM takes a desired expressive behaviour or a social
+context as language instructions, reasons about human social norms, and
+generates control code against the robot's existing APIs, using several
+language model agents in a modular pipeline. The model is GPT-4,
+`gpt-4-0613`, sampled at temperature 0. A second variant, GenEM++, adds
+live feedback from a non-expert user. The behaviours are social and
+single-turn, such as nodding, acknowledging a passer-by or excusing
+itself, expressed through speech, body movement and a light strip, on a
+mobile robot and a simulated quadruped.
+
+**Evaluation is entirely human.** Two within-subjects online video
+studies, thirty participants in the first and twenty four in the second,
+one incomplete response dropped from each. Three conditions in a balanced
+Latin square: an oracle animator, meaning behaviours designed by a
+professional character animator and implemented by a software developer,
+against GenEM and GenEM++. The measures are three seven-point Likert items
+on confidence in understanding the behaviour, difficulty in understanding
+what the robot is doing, and the robot's competency, plus free text. No
+computed metric is reported. The only computed quantity in the paper is in
+the problem statement, where expressiveness is defined as a distance to an
+expert trajectory with dynamic time warping named as an example, and that
+distance is never measured in the results.
+
+**No path cost and no constraints.** "Obstacle" and "path length" occur
+zero times. Nothing in the paper measures efficiency, clearance or
+constraint satisfaction.
+
+So the contrast is clean and it strengthens rather than threatens the
+framing. Language models have been asked for expressive robot behaviour at
+this venue; what has not been asked is whether they produce motion that is
+legible in the measurable sense, under a stated budget, in a world where
+the optimum is computed exactly. One caution to carry: their setup differs
+from ours in the model, the temperature, the presence of a human in the
+loop and the baseline, so no result of theirs may be compared with any
+result of ours, and the citation is for the pairing and not for a number.
+
 ## Outstanding obligations
 
 1. Establish what, if anything, can be said about the validity of the
@@ -205,15 +258,10 @@ intent-expressive, and a title match is not a topic match.
    guideline B6 and the bound Dragan places on their own user studies.
    This is a writing obligation rather than a reading one and it cannot
    be discharged by more citation. It is the largest open item.
-2. Read Mahadevan et al., Generative Expressive Robot Behaviors using
-   Large Language Models, HRI 2024, in the body. It is at metadata only
-   and it is now blocking: the draft asks whether language models
-   produce legible motion and this is the closest existing work on that
-   pairing, at the same venue. Related work has no paragraph on language
-   models until it is read, and an absent paragraph is the first thing a
-   reviewer will look for.
-3. Shi et al.'s diffusion work is still metadata only and is not cited
+2. Shi et al.'s diffusion work is still metadata only and is not cited
    for any finding. Read it in the body before it is. Legibot was body
-   checked on the first pass and is now cited in the draft.
-4. A search for work newer than 5 August 2026 immediately before
+   checked on the first pass and is now cited in the draft, and
+   Mahadevan et al. was read on 6 August 2026 and is now cited for the
+   pairing of language models with expressive motion.
+3. A search for work newer than 6 August 2026 immediately before
    submission.
