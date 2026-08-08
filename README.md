@@ -48,26 +48,45 @@ per cent does it buy its way out.
 
 ## What language models do with the same question
 
-Two models, eight scenarios, five samples each at temperature 0.7, the same
-cost ceiling of 1.25 stated in the prompt. Counts over 40 decodes each:
+Three models, eight scenarios, five samples each at temperature 0.7, the
+same cost ceiling of 1.25 stated in the prompt, and the same prompt
+SHA-256 in every record so the comparison is of models and not of prompts.
+Counts over 40 decodes each:
 
-| | Qwen 2.5 7B | Llama 3.3 70B |
-| --- | --- | --- |
-| parsed | 40 | 40 |
-| feasible | 26 | 29 |
-| more legible than the shortest path | 10 | 20 |
-| exceeded the stated cost budget | 9 | 15 |
-| entered a keep-out zone | 7 | 7 |
-| called legible by the model | 40 | 40 |
+| | Qwen 2.5 7B | Llama 3.3 70B | Gemini 3.6 Flash |
+| --- | --- | --- | --- |
+| parsed | 40 | 40 | 40 |
+| feasible | 26 | 29 | 40 |
+| more legible than the shortest path | 10 | 20 | 30 |
+| exceeded the stated cost budget | 9 | 15 | 0 |
+| entered a keep-out zone | 7 | 7 | 0 |
+| called legible by the model | 40 | 40 | 36 |
 
-Every one of the 80 decodes claimed legibility, including the 25 that were
-not feasible at all. In `keep_out_shortcut`, the scenario the animation
-above shows, both models beat the shortest path on 5 of 5 samples and both
-entered the keep-out zone on 5 of 5. Ten decodes out of ten bought the
-clarity and paid for it with the constraint.
+What they share is thin and what separates them is not.
 
-Asking either model the same question under four different cost budgets
-moves nothing it does. Forty decodes at each ceiling, per model:
+They agree in `fan_middle`, where the true goal lies between the other
+two: all 15 decodes were feasible and none beat the shortest path, which
+is what Dragan and Srinivasa predict when exaggerating towards a middle
+goal points at a different goal.
+
+They part in `keep_out_shortcut`, the scenario the animation above shows.
+All three beat the shortest path on 5 of 5. Qwen and Llama entered the
+keep-out zone on 5 of 5 each. Gemini entered on none, threading a route
+under the boundary at cost ratios between 1.0819 and 1.1057 against a
+stated ceiling of 1.25. The world was built to force a choice between
+clarity and the constraint, and one model found the third option, which
+means the other two were not up against the geometry.
+
+The claim behaves the same way. 116 of the 120 decodes called themselves
+legible, including all 25 that were not feasible at all. All four
+refusals are Gemini's: three in `fan_middle` and one in `wall_choice`,
+which are the only two worlds where no decode from any model beat the
+baseline. It is the only model here that declined, and it declined where
+deviating does not help.
+
+Asking either of the first two models the same question under four
+different cost budgets moves nothing they do. Forty decodes at each
+ceiling, per model:
 
 | stated ceiling | Qwen median cost | Qwen over budget | Llama median cost | Llama over budget |
 | --- | --- | --- | --- | --- |
@@ -88,12 +107,17 @@ tightest ceiling.
 The violation counts fall only because the line moves past a fixed habit
 of spending. Where the optimiser treats the budget as a constraint that
 binds, sitting exactly on the ceiling in every row of the frontier table
-above, both models treat it as text. Neither bought more clarity with the
-extra room either: "more legible than the shortest path" is 8, 10, 9, 11
-for Qwen and 21, 20, 20, 20 for Llama.
+above, both of these models treat it as text. Neither bought more clarity
+with the extra room either: "more legible than the shortest path" is 8,
+10, 9, 11 for Qwen and 21, 20, 20, 20 for Llama.
 
-Two models at one temperature is a pilot, not a finding. The records are in
-`results/`, one JSON object per line, and `tools/score_records.py`,
+Gemini has been run at 1.25 only. It never exceeded that budget and sat at
+a median cost ratio of 1.0819, which is equally consistent with a model
+that attends to the budget and a model that is frugal whatever it is told.
+Nothing here separates those two, and the sweep that would is not yet run.
+
+Three models at one temperature is a pilot, not a finding. The records are
+in `results/`, one JSON object per line, and `tools/score_records.py`,
 `tools/consistency.py` and `tools/ceiling_sweep.py` recompute every number
 above from them.
 
@@ -117,11 +141,11 @@ and this section will say so until it is.
 - [x] Scenario suite: eight worlds, each carrying its facts inline and
   re-checked in CI
 - [ ] Language model evaluation: the prompt, the extraction, the record
-  format, the resume guard and the scoring are built and tested. Two
-  models are complete at k = 5 across all four cost ceilings, Qwen 2.5 7B
-  on a local Ollama and Llama 3.3 70B through Groq, 160 decodes each. A
-  first Gemini 3.6 Flash run was discarded because our token budget
-  truncated it, and has to be repeated
+  format, the resume guard and the scoring are built and tested. Three
+  models are committed. Qwen 2.5 7B on a local Ollama and Llama 3.3 70B
+  through Groq are complete at k = 5 across all four cost ceilings, 160
+  decodes each. Gemini 3.6 Flash is complete at k = 5 at ceiling 1.25
+  only, 40 decodes; the other three ceilings have not been run
 
 ## What is here
 
