@@ -173,7 +173,9 @@ def ceiling_table(scenarios, groups, observer, baselines) -> str:
         for alias in aliases:
             runs = sampled.get((alias, ceiling))
             if not runs:
-                cells.extend(["--", "--"])
+                # A single hyphen, not "--". LaTeX sets "--" as an en
+                # dash, which is not allowed anywhere in this project.
+                cells.extend(["-", "-"])
                 continue
             ratios, over = [], 0
             for records in runs:
@@ -183,7 +185,7 @@ def ceiling_table(scenarios, groups, observer, baselines) -> str:
                     ratios.append(result.cost_ratio)
                     if result.cost_ratio > ceiling + 1e-9:
                         over += 1
-            cells.append(f"{statistics.median(ratios):.4f}" if ratios else "--")
+            cells.append(f"{statistics.median(ratios):.4f}" if ratios else "-")
             cells.append(str(over))
         lines.append(f"{ceiling:.2f} & " + " & ".join(cells) + " \\\\")
     lines.append("\\bottomrule")
