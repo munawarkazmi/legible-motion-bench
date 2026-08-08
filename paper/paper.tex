@@ -49,13 +49,18 @@ satisfaction of stated keep-out constraints. Eight worlds each carry
 machine-checked facts about their own geometry, optimal cost-to-go is
 computed exactly over a visibility graph, and no human rater or model
 judge appears anywhere in the scoring loop. Asked to produce legible
-motion under a stated path budget, two language models called all 80 of
-their trajectories legible; 25 of those were not physically possible. In
-the world built so that the clearest signal is the one the robot is not
-allowed to send, both models bought the clarity and entered the keep-out
-zone on every one of ten samples. Given four different path budgets, one
-model's median path cost moved by 0.012 and the other's did not move at
-all.
+motion under a stated path budget, three language models returned 120
+trajectories, and they differ exactly where it matters. Two of them
+called all 80 of their trajectories legible, including the 25 that were
+not physically possible, and broke the stated budget 24 times between
+them; in the world built so that the clearest signal is the one the robot
+is not allowed to send, both entered the keep-out zone on every one of
+ten samples. The third stayed inside the budget and outside the zone on
+all 40, beat the shortest path in that same world on five of five without
+entering it, and declined to call four of its trajectories legible, all
+four of them in the two worlds where no deviation helps. Given four
+different path budgets, the first two moved the cost they actually paid
+by 0.012 and by nothing at all.
 \end{abstract}
 
 % Mandatory for papers over two pages, which this became when related
@@ -193,9 +198,9 @@ five samples per world, eight worlds.
 \centering
 \small
 \input{generated/model_table}
-\caption{Counts at a stated path budget of 25 per cent. Every decode
-claimed to be legible, including those that were not physically
-possible.}
+\caption{Counts at a stated path budget of 25 per cent. Of 120 decodes,
+116 claimed to be legible, including the 25 that were not physically
+possible. All four refusals came from one model.}
 \label{tab:models}
 \end{table}
 
@@ -205,49 +210,76 @@ possible.}
 \caption{The world built so that the clearest signal is the one the robot
 may not send. The cheapest route to the true goal A (black) stays clear
 of the keep-out zone (hatched), so safety costs nothing until a planner
-tries to be legible. Every trajectory either model returned (red, ten of
-them, both models, five samples each) is more legible than the shortest
-path, and every one of the ten crosses the zone. Drawn from the committed
-records, not by hand.}
+tries to be legible. All fifteen trajectories the three models returned
+(red, five samples each) are more legible than the shortest path. Ten of
+them cross the zone and five do not, and the five that stay out are one
+model's, on five of five samples. Drawn from the committed records, not
+by hand.}
 \Description{Plan view of an empty room twelve units wide and ten deep.
 The robot starts at the middle of the left edge. On the right are two
 goals: the true goal A, marked with a star, above, and goal B, marked
 with a small circle, below. A hatched rectangle across the upper left of
 the room is the keep-out zone. A thick black line, the shortest path,
 runs straight from the start to A and passes just under the hatched
-rectangle without touching it. Ten thin red lines, the model
-trajectories, leave the start on a higher course, cross the hatched
-rectangle, and come down to A.}
+rectangle without touching it. Fifteen thin red lines, the model
+trajectories, leave the start on a higher course and come down to A. Ten
+of them pass through the hatched rectangle and five bend just under its
+lower edge without entering it.}
 \label{fig:keepout}
 \end{figure}
 
-Three patterns repeat across both models. Every one of the 80 decodes
-claimed legibility. In the world built so that the clearest signal and
-the keep-out zone conflict (Figure~\ref{fig:keepout}), both models beat
-the shortest path on five of five samples and both entered the zone on
-five of five: ten decodes out of ten bought the clarity and paid the
-constraint for it. And in the
-world with three goals where the true one lies between the others,
-neither model beat the shortest path on any sample, which is what
-\cite{dragan2013legibility} predicts when exaggeration towards a middle
-goal points at a different goal.
+What the three models share is thin, and what separates them is not.
+
+They agree in one world. Where the true goal lies between the other two,
+all fifteen decodes were physically possible and none beat the shortest
+path, which is what \cite{dragan2013legibility} predicts when
+exaggeration towards a middle goal points at a different goal.
+
+Elsewhere the differences are the result. In the world with a wall to
+round, one model returned a physically impossible trajectory on all five
+samples, one on one of five, and one on none. In the world built so that
+the clearest signal and the keep-out zone conflict
+(Figure~\ref{fig:keepout}), all three beat the shortest path on five of
+five. Two of them entered the zone on five of five; the third entered on
+none, threading a route under the boundary at a cost ratio between 1.0819
+and 1.1057. The constraint was satisfiable with the clarity still
+available, and the first two give no sign of having looked for that.
+
+The claim behaves the same way. Two models called every one of their 80
+trajectories legible, including 25 that were not physically possible. The
+third declined four times, three in the middle-goal world and one in the
+world with the wall. It is the only model here that declined, and both
+worlds it declined in are worlds where no decode from any model beat the
+baseline.
 
 \begin{table}[t]
 \centering
 \small
 \input{generated/ceiling_table}
-\caption{Forty decodes at each stated budget, per model. The budget
-nearly doubles and the cost actually paid does not follow it.}
+\caption{Forty decodes at each stated budget, per model. For the two
+models swept across all four, the budget nearly doubles and the cost
+actually paid does not follow it. The third was run at 1.25 only, and a
+dash is a cell that was not run rather than a cell with nothing in it.}
 \label{tab:ceilings}
 \end{table}
 
 Table~\ref{tab:ceilings} asks whether the budget violations mean the
-budget was too tight or that the budget was not attended to. It is the
-second. One model's median cost moves by 0.012 across a budget that
-nearly doubles and the other's does not move at all. The falling
-violation counts are the line moving, not the models complying. Where the
-optimiser sits exactly on the budget in every row, because for a planner
-it is a constraint, for both models it is text.
+budget was too tight or that the budget was not attended to. For the two
+models swept across all four budgets it is the second. One model's median
+cost moves by 0.012 across a budget that nearly doubles and the other's
+does not move at all, so the falling violation counts are the line
+moving, not the models complying. Where the optimiser sits exactly on the
+budget in every row, because for a planner it is a constraint, for those
+two it is text.
+
+The third model was run at one budget only and never exceeded it, at a
+median cost ratio of 1.0819 against a stated 1.25. That is consistent
+with two different explanations, and this report cannot separate them: a
+model that treats the budget as a constraint, and a model that is simply
+frugal and would look identical whatever budget it was given. Sweeping it
+across the same four budgets would decide it, and until that is run the
+compliance in Table~\ref{tab:models} must be read as compliance at one
+budget rather than as attention to the budget.
 
 \section{Limitations}
 
@@ -278,13 +310,15 @@ Three narrower limits. With more than one goal the legibility score
 cannot reach 1, so a value of 0.93 is not 93 per cent of anything. Our
 observer has no option for a goal outside the declared set, though real
 observers form exactly that belief when motion becomes strange enough.
-And time to confidence, the one metric here with a free parameter, is
-stable in aggregate across admissible thresholds but not per trajectory,
-so no claim above rests on it.
+And time to confidence, the one metric here with a free parameter, is not
+stable: across the admissible band the count of trajectories reaching
+confidence sooner than the baseline runs from 55 of 95 down to 31 of 95,
+and individual verdicts move with it. It is reported nowhere above and no
+claim here rests on it.
 
-Two models at one temperature over eight worlds is a pilot. The records
-are committed, one JSON object per line, and every number here is
-recomputed from them by a committed tool.
+Three models at one temperature over eight worlds is a pilot, and one of
+the three was swept across a single budget. Every number here is
+recomputed by a committed tool from committed records.
 
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{references}

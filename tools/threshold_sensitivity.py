@@ -29,7 +29,11 @@ from legible_motion_bench import metrics, runner, world  # noqa: E402
 from legible_motion_bench.observer import Observer  # noqa: E402
 from legible_motion_bench.planners import ShortestPathPlanner  # noqa: E402
 
-DEFAULT_THRESHOLDS = (0.5, 0.6, 0.7, 0.8, 0.9, 0.95)
+# 0.5 was in this list until the metric began refusing a threshold at or
+# below the observer's prior, which for a two goal world is exactly 0.5.
+# The default has to stay inside the admissible band or the documented
+# invocation of this tool cannot run at all.
+DEFAULT_THRESHOLDS = (0.55, 0.6, 0.7, 0.8, 0.9, 0.95)
 
 
 def main(argv=None) -> int:

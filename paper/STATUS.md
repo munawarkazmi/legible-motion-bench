@@ -45,18 +45,16 @@ inspected.
   JSON object per line with a resume guard, a committed manifest the
   adapter checks each alias against before a request is made, and a
   scoring tool that recomputes metrics from records without spending
-  quota. Two models have been run at k = 5, Qwen 2.5 7B through a local
-  Ollama and Llama 3.3 70B through Groq, plus one single decode of Qwen at
-  temperature zero, all committed and summarised below. A file cannot mix
-  temperatures or cost ceilings, and a rate-limited request is retried
-  rather than counted as answered. The Gemini backend worked on its first
-  live call, unlike Groq's, but its first full run was discarded for a
-  token budget defect of ours and is being repeated; no Gemini record is
-  committed yet, and what was discarded and why is below. Qwen and Llama
-  are complete at k = 5 across all four cost ceilings, 160 decodes each.
-  A 245-test suite in CI, which also re-checks every scenario property
-  against the committed code and every committed record file for
-  completeness)
+  quota. Three models have been run at k = 5 and all are committed: Qwen
+  2.5 7B through a local Ollama, Llama 3.3 70B through Groq and Gemini
+  3.6 Flash, plus one single decode of Qwen at temperature zero. A file
+  cannot mix temperatures or cost ceilings, and a rate-limited request is
+  retried rather than counted as answered. Qwen and Llama are complete
+  across all four cost ceilings, 160 decodes each; Gemini is complete at
+  1.25 only, 40 decodes, which is the one gap left in the grid and the
+  one experiment still worth quota. A 245-test suite in CI, which also
+  re-checks every scenario property against the committed code and every
+  committed record file for completeness)
 - [x] Scenario suite (eight worlds, 46 machine-checked facts carried
   inline and re-verified in CI. Each world is present for a stated reason:
   a no-obstacle control on the observer model, a paired comparison between
@@ -84,7 +82,8 @@ inspected.
   `verification_log.md` that says the body was checked. The validity
   paragraph is drafted as of 6 August 2026 and awaits confirmation, with
   the position and the three judgements behind it recorded in
-  `verification_log.md`. The third model is not in the counts)
+  `verification_log.md`. The third model is in every count as of 8 August
+  2026 and the eight places it changed are done)
 
 ## Decisions taken
 
@@ -704,6 +703,11 @@ headline. Legibility, cost ratio, keep-out entries and clearance have no
 free parameter at all, and the strongest results already rest only on
 those.
 
+**Superseded on 8 August 2026 by the rerun over three models.** The
+stability conclusion above does not survive the third model; see below.
+The decision it led to, keeping time to confidence out of the headline,
+survives and is now better supported.
+
 ## The optimiser's evaluation budget, checked 5 August 2026
 
 Every optimiser number reported so far came from a search of 250
@@ -869,6 +873,69 @@ a count or a claim that Gemini contradicts or extends.
 - `tools/threshold_sensitivity.py` has to be rerun with the Gemini files
   named, since it takes explicit paths. Its committed table reads "of
   55", which is Qwen's 26 feasible plus Llama's 29.
+
+## The third model, and what it broke, 8 August 2026
+
+Gemini 3.6 Flash at ceiling 1.25, k = 5, temperature 0.7, 40 decodes,
+committed. The prompt SHA-256 is identical to the other two models in all
+eight worlds, so the comparison is of models and not of prompts.
+
+| Over 40 decodes each | Gemini 3.6 Flash | Llama 3.3 70B | Qwen 2.5 7B |
+| --- | --- | --- | --- |
+| replies that parsed | 40 | 40 | 40 |
+| called legible by the model | 36 | 40 | 40 |
+| physically possible | 40 | 29 | 26 |
+| clearer than the shortest path | 30 | 20 | 10 |
+| over the stated path budget | 0 | 15 | 9 |
+| entered a keep-out zone | 0 | 7 | 7 |
+
+Three claims in the draft died and were rewritten the same day.
+
+**"Every one of the 80 decodes claimed legibility" is now 116 of 120.**
+All four refusals are Gemini's, three in `fan_middle` and one in
+`wall_choice`. Those are the only two worlds where no decode from any
+model beat the baseline, so the refusals land exactly where deviating
+does not help. Nothing here says the model reasoned its way there, only
+that the refusals and the failures coincide.
+
+**`keep_out_shortcut` is no longer unanimous.** All three models beat the
+shortest path on five of five. Qwen and Llama entered the zone on five of
+five each; Gemini entered on none, at cost ratios between 1.0819 and
+1.1057 against a stated ceiling of 1.25. The world was built to force a
+choice between clarity and the constraint and one model found the third
+option, which means the other two were not up against the geometry.
+
+**"For both models the budget is text" now needs its qualifier.** It
+holds for the two swept across all four budgets. Gemini was run at one
+budget, never exceeded it, and sat at a median of 1.0819. That is equally
+consistent with a model that attends to the budget and a model that is
+frugal by default, and this report cannot separate them. The draft says
+so. Sweeping Gemini at 2.00 would decide it in 40 decodes.
+
+**The threshold sweep was rerun over all 120 trajectories and its old
+conclusion did not survive.** `tools/threshold_sensitivity.py` also had a
+defect: its default threshold list began at 0.5, which the metric has
+refused since the guard of 5 August, so the documented invocation could
+not run. The default now begins at 0.55.
+
+| threshold | sooner than the baseline | verdicts unchanged from 0.8 |
+| --- | --- | --- |
+| 0.55 | 55 of 95 | 76 of 95 |
+| 0.60 | 55 of 95 | 76 of 95 |
+| 0.70 | 55 of 95 | 76 of 95 |
+| 0.80 | 46 of 95 | reference |
+| 0.90 | 31 of 95 | 80 of 95 |
+
+At two models the count moved from 25 to 21 of 55 and the aggregate was
+called stable. At three it moves from 55 to 31 of 95, which is not
+stable, so no aggregate claim about time to confidence may be written
+either. The limitations now say that plainly. The metric is reported
+nowhere in the draft and no claim rests on it, so nothing else changes.
+
+Two places needed changing that the 6 August list missed: both table
+captions. The model table caption asserted that every decode claimed
+legibility, and the ceiling table caption did not say that a dash is a
+cell that was not run.
 
 ## Ground rules for this draft
 
