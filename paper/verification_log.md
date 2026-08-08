@@ -251,11 +251,13 @@ from ours in the model, the temperature, the presence of a human in the
 loop and the baseline, so no result of theirs may be compared with any
 result of ours, and the citation is for the pairing and not for a number.
 
-## The validity position, drafted 6 August 2026
+## The validity position, drafted 6 August 2026, confirmed 8 August 2026
 
-The largest open item, written rather than read. What the limitations now
-claim, and the three judgements behind it, recorded here so the wording
-can be argued with later rather than reconstructed.
+The largest open item, written rather than read, and now agreed. What the
+limitations claim, and the three judgements behind it, recorded here so
+the wording can be argued with later rather than reconstructed. All three
+judgements stand as drafted, including citing Francis for the sequence
+rather than only for the objection.
 
 **The metric is not a new claim about people.** It is equation 9 of the
 HRI 2013 paper computed exactly, so its validity is inherited and not
@@ -301,5 +303,5 @@ Three judgements were made and any of them can be reversed.
    pairing of language models with expressive motion.
 2. A search for work newer than 6 August 2026 immediately before
    submission.
-3. Confirm the validity wording above, which is the one paragraph in the
-   report that was written rather than derived.
+3. Done on 8 August 2026: the validity wording is confirmed, and it was
+   the one paragraph in the report written rather than derived.

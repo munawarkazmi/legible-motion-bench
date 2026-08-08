@@ -80,10 +80,11 @@ inspected.
   both results tables and the figure pulled from `paper/generated/` rather
   than typed. Every claim in related work traces to a row in
   `verification_log.md` that says the body was checked. The validity
-  paragraph is drafted as of 6 August 2026 and awaits confirmation, with
-  the position and the three judgements behind it recorded in
-  `verification_log.md`. The third model is in every count as of 8 August
-  2026 and the eight places it changed are done)
+  paragraph was confirmed on 8 August 2026, with the position and the
+  three judgements behind it recorded in `verification_log.md`. The third
+  model is in every count as of 8 August 2026 and the eight places it
+  changed are done. Both results tables span the page, because at three
+  models neither fits a column)
 
 ## Decisions taken
 
@@ -936,6 +937,25 @@ Two places needed changing that the 6 August list missed: both table
 captions. The model table caption asserted that every decode claimed
 legibility, and the ceiling table caption did not say that a dash is a
 cell that was not run.
+
+## Both tables ran off the column, 8 August 2026
+
+Found by looking at the rendered page rather than at the log. With a third
+model column, Table 1 overran the column by 36.0pt and Table 2 by 34.6pt
+against a column of roughly 240pt, so the ceiling table printed on top of
+the body text beside it. The paper had been built and read six times in
+this state.
+
+The build check is why it survived. It grepped the log for errors and for
+undefined references and never for "Overfull", and an overfull box is not
+an error: LaTeX sets the text past the margin and carries on. The check
+now reports overfull boxes explicitly.
+
+Both tables are now `table*` and span the page. The alternative was
+shrinking the type or the column padding, which would have kept them
+inside a column at the cost of making a reviewer squint at the one thing
+the report is about. Three pages either way, and the rebuild reports no
+overfull boxes at all.
 
 ## Ground rules for this draft
 

@@ -194,7 +194,9 @@ It asks for a trajectory that makes the destination clear as early as
 possible, and asks the model to judge its own answer. Temperature 0.7,
 five samples per world, eight worlds.
 
-\begin{table}[t]
+% Both results tables are wider than one column at three models. They
+% span the page rather than being shrunk below what a reviewer can read.
+\begin{table*}[t]
 \centering
 \small
 \input{generated/model_table}
@@ -202,7 +204,7 @@ five samples per world, eight worlds.
 116 claimed to be legible, including the 25 that were not physically
 possible. All four refusals came from one model.}
 \label{tab:models}
-\end{table}
+\end{table*}
 
 \begin{figure}[t]
 \centering
@@ -252,7 +254,7 @@ world with the wall. It is the only model here that declined, and both
 worlds it declined in are worlds where no decode from any model beat the
 baseline.
 
-\begin{table}[t]
+\begin{table*}[t]
 \centering
 \small
 \input{generated/ceiling_table}
@@ -261,7 +263,7 @@ models swept across all four, the budget nearly doubles and the cost
 actually paid does not follow it. The third was run at 1.25 only, and a
 dash is a cell that was not run rather than a cell with nothing in it.}
 \label{tab:ceilings}
-\end{table}
+\end{table*}
 
 Table~\ref{tab:ceilings} asks whether the budget violations mean the
 budget was too tight or that the budget was not attended to. For the two
