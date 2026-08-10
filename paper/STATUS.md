@@ -1011,6 +1011,33 @@ ending on page three and a single line of the last reference spilling
 over. The limit is two to four pages excluding references, so it
 conforms, and chasing the spill was not worth more of the layout budget.
 
+## Switched to the submission build, 10 August 2026
+
+`paper.tex` now carries `[sigconf,anonymous,review]` with both draft
+lines commented out, and the comment at the top says how to go back. The
+build is four pages with zero warnings, no errors, no undefined
+references and no overfull boxes, and the PDF text contains no name, no
+email address and no repository link. The affiliation warning that the
+draft build shows does not fire here, because the affiliation is
+anonymised.
+
+The CCSXML block is present but deliberately incomplete, and this is the
+one place in the paper where a number is missing rather than wrong. Two
+concept identifiers were confirmed against the metadata of published
+papers that declare the same concepts: Robotics is
+10010520.10010553.10010554 and Human computer interaction is
+10003120.10003121. The identifier for Motion path planning could not be
+sourced. A guess at it was checked before use and turned out to be
+Multi-agent systems, which is exactly why it was checked, so that concept
+is declared with `\ccsdesc` and left out of the XML rather than carry a
+fabricated number.
+
+All three concepts print in the rendered CCS Concepts line either way,
+because that line comes from `\ccsdesc` and not from the XML. Before
+submitting, replace the whole block with the output of ACM's tool at
+dl.acm.org/ccs, which emits the XML and the `\ccsdesc` lines together and
+takes about a minute.
+
 ## Ground rules for this draft
 
 - Results tables and figures are generated from committed records by a

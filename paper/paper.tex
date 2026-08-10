@@ -14,14 +14,14 @@
 % committed records. None of them is typed by hand. See paper/STATUS.md
 % for the honest state of each section.
 
-\documentclass[sigconf,nonacm]{acmart}
+\documentclass[sigconf,anonymous,review]{acmart}
 
-% These two lines are the draft build and must both go for submission.
-% The ACM reference format is mandatory there, and the class says so.
-% Verified 6 August 2026: with the documentclass swapped and both lines
-% commented, the build is three pages with zero warnings.
-\settopmatter{printacmref=false}
-\renewcommand\footnotetextcopyrightpermission[1]{}
+% Submission build as of 10 August 2026. To return to a working draft,
+% swap the class above to [sigconf,nonacm] and uncomment both lines
+% below. They must stay commented for submission: the ACM reference
+% format is mandatory there and the class says so.
+%\settopmatter{printacmref=false}
+%\renewcommand\footnotetextcopyrightpermission[1]{}
 
 \usepackage{booktabs}
 
@@ -66,10 +66,31 @@ budget and legible under a loose one.
 \end{abstract}
 
 % Mandatory for papers over two pages, which this became when related
-% work was added. The paths are ACM CCS 2012 paths; the CCSXML metadata
-% block that accompanies these carries concept identifiers that only
-% ACM's own CCS tool can issue, so it is pasted in at submission and is
-% deliberately not invented here.
+% work was added.
+%
+% The CCSXML block below is incomplete on purpose. Two of the three
+% concept identifiers were confirmed against the metadata of published
+% papers that use them: Robotics and Human computer interaction. The
+% identifier for Motion path planning could not be sourced, and a guess
+% at it was checked and turned out to be Multi-agent systems, so the
+% concept is declared with \ccsdesc and left out of the XML rather than
+% carry a fabricated number. Replace the whole block, XML and all, with
+% the output of ACM's CCS tool at dl.acm.org/ccs before submitting.
+\begin{CCSXML}
+<ccs2012>
+   <concept>
+       <concept_id>10010520.10010553.10010554</concept_id>
+       <concept_desc>Computer systems organization~Robotics</concept_desc>
+       <concept_significance>500</concept_significance>
+       </concept>
+   <concept>
+       <concept_id>10003120.10003121</concept_id>
+       <concept_desc>Human-centered computing~Human computer interaction (HCI)</concept_desc>
+       <concept_significance>300</concept_significance>
+       </concept>
+ </ccs2012>
+\end{CCSXML}
+
 \ccsdesc[500]{Computer systems organization~Robotics}
 \ccsdesc[300]{Computing methodologies~Motion path planning}
 \ccsdesc[300]{Human-centered computing~Human computer interaction (HCI)}
