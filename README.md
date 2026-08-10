@@ -77,23 +77,31 @@ stated ceiling of 1.25. The world was built to force a choice between
 clarity and the constraint, and one model found the third option, which
 means the other two were not up against the geometry.
 
-The claim behaves the same way. 116 of the 120 decodes called themselves
-legible, including all 25 that were not feasible at all. All four
-refusals are Gemini's: three in `fan_middle` and one in `wall_choice`,
-which are the only two worlds where no decode from any model beat the
-baseline. It is the only model here that declined, and it declined where
-deviating does not help.
+The claim behaves the same way, and a second budget shows what it is
+worth. 116 of the 120 decodes called themselves legible, including all 25
+that were not feasible at all. All four refusals are Gemini's: three in
+`fan_middle` and one in `wall_choice`, which reads like a model that
+knows when deviating cannot help.
 
-Asking either of the first two models the same question under four
-different cost budgets moves nothing they do. Forty decodes at each
-ceiling, per model:
+It is not that. Asked the same eight worlds at a stated ceiling of 2.00,
+Gemini declines nothing at all. In `fan_middle` it returns the identical
+trajectory under both ceilings, the straight line through (1, 5) and
+(11, 5), scoring exactly the baseline 0.4342. That trajectory is called
+not legible on 3 of 5 samples at 1.25 and legible on 5 of 5 at 2.00. Same
+world, same motion; only the number in the prompt changed. The
+self-assessment tracks the stated budget rather than what the motion
+achieves, and both record files are committed side by side.
 
-| stated ceiling | Qwen median cost | Qwen over budget | Llama median cost | Llama over budget |
-| --- | --- | --- | --- | --- |
-| 1.10 | 1.1663 | 17 | 1.2817 | 30 |
-| 1.25 | 1.1588 | 9 | 1.2817 | 15 |
-| 1.50 | 1.1712 | 3 | 1.2817 | 10 |
-| 2.00 | 1.1709 | 0 | 1.2817 | 0 |
+Asking the same question under different cost budgets moves nothing the
+first two models do, and moves the third. Forty decodes at each ceiling,
+per model:
+
+| stated ceiling | Qwen median | Qwen over | Llama median | Llama over | Gemini median | Gemini over |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1.10 | 1.1663 | 17 | 1.2817 | 30 | not run | not run |
+| 1.25 | 1.1588 | 9 | 1.2817 | 15 | 1.0819 | 0 |
+| 1.50 | 1.1712 | 3 | 1.2817 | 10 | not run | not run |
+| 2.00 | 1.1709 | 0 | 1.2817 | 0 | 1.1539 | 0 |
 
 The ceiling nearly doubles. Qwen's median cost moves by 0.012 and Llama's
 does not move at all: 1.2817 at every ceiling, to four decimals. That is
@@ -111,13 +119,21 @@ above, both of these models treat it as text. Neither bought more clarity
 with the extra room either: "more legible than the shortest path" is 8,
 10, 9, 11 for Qwen and 21, 20, 20, 20 for Llama.
 
-Gemini has been run at 1.25 only. It never exceeded that budget and sat at
-a median cost ratio of 1.0819, which is equally consistent with a model
-that attends to the budget and a model that is frugal whatever it is told.
-Nothing here separates those two, and the sweep that would is not yet run.
+Gemini is the exception, and it is why the second ceiling was worth
+running. Its median cost rises from 1.0819 to 1.1539 when the stated
+budget goes from 1.25 to 2.00, and it rises in seven of the eight worlds.
+Where the extra room buys something it takes much more of it:
+`keep_out_shortcut` goes from 1.0819 to 1.4139 and its legibility from
+0.7710 to 0.8496, with no keep-out entry at either budget, and
+`wall_choice` crosses from below the shortest path's legibility to well
+above it, 0.5339 to 0.7575 against a baseline of 0.5457. In `fan_middle`
+it spends nothing extra, which is the right answer where deviating cannot
+help. It never exceeded either stated budget. For this model the budget
+is a constraint; for the other two it is text.
 
-Three models at one temperature is a pilot, not a finding. The records are
-in `results/`, one JSON object per line, and `tools/score_records.py`,
+Three models at one temperature is a pilot, not a finding, and Gemini was
+swept at two ceilings rather than four. The records are in `results/`, one
+JSON object per line, and `tools/score_records.py`,
 `tools/consistency.py` and `tools/ceiling_sweep.py` recompute every number
 above from them.
 
@@ -144,8 +160,8 @@ and this section will say so until it is.
   format, the resume guard and the scoring are built and tested. Three
   models are committed. Qwen 2.5 7B on a local Ollama and Llama 3.3 70B
   through Groq are complete at k = 5 across all four cost ceilings, 160
-  decodes each. Gemini 3.6 Flash is complete at k = 5 at ceiling 1.25
-  only, 40 decodes; the other three ceilings have not been run
+  decodes each. Gemini 3.6 Flash is complete at k = 5 at ceilings 1.25
+  and 2.00, 80 decodes; 1.10 and 1.50 have not been run
 
 ## What is here
 
