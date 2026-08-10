@@ -56,11 +56,13 @@ not physically possible, and broke the stated budget 24 times between
 them; in the world built so that the clearest signal is the one the robot
 is not allowed to send, both entered the keep-out zone on every one of
 ten samples. The third stayed inside the budget and outside the zone on
-all 40, beat the shortest path in that same world on five of five without
-entering it, and declined to call four of its trajectories legible, all
-four of them in the two worlds where no deviation helps. Given four
-different path budgets, the first two moved the cost they actually paid
-by 0.012 and by nothing at all.
+all 40, and beat the shortest path in that same world on five of five
+without entering it. Given four different path budgets the first two
+moved the cost they actually paid by 0.012 and by nothing at all; given
+two, the third moved with the budget in seven of eight worlds. Its four
+refusals turn out to be about the stated budget rather than the motion:
+the same trajectory in the same world is called not legible under a tight
+budget and legible under a loose one.
 \end{abstract}
 
 % Mandatory for papers over two pages, which this became when related
@@ -202,7 +204,8 @@ five samples per world, eight worlds.
 \input{generated/model_table}
 \caption{Counts at a stated path budget of 25 per cent. Of 120 decodes,
 116 claimed to be legible, including the 25 that were not physically
-possible. All four refusals came from one model.}
+possible. All four refusals came from one model, and none of them
+survives raising the stated budget to 2.00.}
 \label{tab:models}
 \end{table*}
 
@@ -247,12 +250,17 @@ none, threading a route under the boundary at a cost ratio between 1.0819
 and 1.1057. The constraint was satisfiable with the clarity still
 available, and the first two give no sign of having looked for that.
 
-The claim behaves the same way. Two models called every one of their 80
-trajectories legible, including 25 that were not physically possible. The
-third declined four times, three in the middle-goal world and one in the
-world with the wall. It is the only model here that declined, and both
-worlds it declined in are worlds where no decode from any model beat the
-baseline.
+The claim behaves the same way, and a second budget shows what it is
+worth. Two models called every one of their 80 trajectories legible,
+including 25 that were not physically possible. The third declined four
+times at a stated budget of 1.25, three in the middle-goal world and one
+in the world with the wall, which reads like a model that knows when
+deviating cannot help. It is not that. In the middle-goal world it
+returns the identical trajectory under both budgets, the straight line
+through $(1,5)$ and $(11,5)$, scoring exactly the baseline. That
+trajectory is called not legible on three of five samples at 1.25 and
+legible on five of five at 2.0. Same world, same motion; only the number
+in the prompt changed.
 
 \begin{table*}[t]
 \centering
@@ -260,8 +268,9 @@ baseline.
 \input{generated/ceiling_table}
 \caption{Forty decodes at each stated budget, per model. For the two
 models swept across all four, the budget nearly doubles and the cost
-actually paid does not follow it. The third was run at 1.25 only, and a
-dash is a cell that was not run rather than a cell with nothing in it.}
+actually paid does not follow it. The third was run at 1.25 and 2.00,
+where it does follow. A dash is a cell that was not run rather than a
+cell with nothing in it.}
 \label{tab:ceilings}
 \end{table*}
 
@@ -274,14 +283,17 @@ moving, not the models complying. Where the optimiser sits exactly on the
 budget in every row, because for a planner it is a constraint, for those
 two it is text.
 
-The third model was run at one budget only and never exceeded it, at a
-median cost ratio of 1.0819 against a stated 1.25. That is consistent
-with two different explanations, and this report cannot separate them: a
-model that treats the budget as a constraint, and a model that is simply
-frugal and would look identical whatever budget it was given. Sweeping it
-across the same four budgets would decide it, and until that is run the
-compliance in Table~\ref{tab:models} must be read as compliance at one
-budget rather than as attention to the budget.
+The third model separates the two readings that compliance at a single
+budget cannot. Given 2.0 rather than 1.25 it spends more, in seven of the
+eight worlds, and its pooled median rises from 1.0819 to 1.1539. Where
+the extra room buys something it takes much more of it: in the keep-out
+world the median cost goes from 1.0819 to 1.4139 and legibility with it,
+0.7710 to 0.8496, without a single keep-out entry at either budget. In
+the world with a wall to round it crosses from below the shortest path's
+legibility to well above it, 0.5339 to 0.7575 against a baseline of
+0.5457. In the world where the true goal lies between the others it
+returns the same straight line under both budgets and spends nothing
+extra. It never exceeded either stated budget.
 
 \section{Limitations}
 
@@ -318,9 +330,9 @@ confidence sooner than the baseline runs from 55 of 95 down to 31 of 95,
 and individual verdicts move with it. It is reported nowhere above and no
 claim here rests on it.
 
-Three models at one temperature over eight worlds is a pilot, and one of
-the three was swept across a single budget. Every number here is
-recomputed by a committed tool from committed records.
+Three models at one temperature over eight worlds is a pilot, and one was
+swept at two budgets rather than four. Every number here is recomputed by
+a committed tool from committed records.
 
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{references}

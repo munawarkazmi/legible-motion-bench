@@ -51,8 +51,8 @@ inspected.
   cannot mix temperatures or cost ceilings, and a rate-limited request is
   retried rather than counted as answered. Qwen and Llama are complete
   across all four cost ceilings, 160 decodes each; Gemini is complete at
-  1.25 only, 40 decodes, which is the one gap left in the grid and the
-  one experiment still worth quota. A 245-test suite in CI, which also
+  1.25 and at 2.00, 80 decodes, which is the contrast that decides
+  whether it attends to the stated budget. A 245-test suite in CI, which also
   re-checks every scenario property against the committed code and every
   committed record file for completeness)
 - [x] Scenario suite (eight worlds, 46 machine-checked facts carried
@@ -956,6 +956,60 @@ shrinking the type or the column padding, which would have kept them
 inside a column at the cost of making a reviewer squint at the one thing
 the report is about. Three pages either way, and the rebuild reports no
 overfull boxes at all.
+
+## The second budget, and the refusal that was not one, 10 August 2026
+
+Gemini 3.6 Flash at ceiling 2.00, k = 5, 40 decodes, committed. All 40
+parsed, all 40 feasible, none over the stated budget, none entering a
+keep-out zone, 35 of 40 more legible than the shortest path.
+
+**It attends to the budget.** Given 2.00 rather than 1.25 its median cost
+rises in seven of the eight worlds and its pooled median goes from 1.0819
+to 1.1539. Qwen's pooled median moves 0.012 across a budget that nearly
+doubles and Llama's does not move at all, so this is the one model of the
+three for which the stated budget is a constraint rather than text.
+
+Per world, at 1.25 then 2.00:
+
+| scenario | cost 1.25 | cost 2.00 | legibility 1.25 | legibility 2.00 |
+| --- | --- | --- | --- | --- |
+| door_pair | 1.0327 | 1.0689 | 0.7726 | 0.7677 |
+| fan_middle | 1.0000 | 1.0000 | 0.4342 | 0.4342 |
+| fan_outer | 1.0653 | 1.1705 | 0.6150 | 0.6554 |
+| keep_out_shortcut | 1.0819 | 1.4139 | 0.7710 | 0.8496 |
+| narrow_gap | 1.0430 | 1.0486 | 0.6521 | 0.6555 |
+| open_pair | 1.1116 | 1.2006 | 0.8077 | 0.8141 |
+| pillar_aisle | 1.1279 | 1.1539 | 0.8243 | 0.8300 |
+| wall_choice | 1.1295 | 1.2793 | 0.5339 | 0.7575 |
+
+Two rows carry most of it. `keep_out_shortcut` spends 1.4139 where it
+spent 1.0819 and buys legibility 0.8496 against 0.7710, with zero
+keep-out entries at either budget. `wall_choice` crosses from below the
+shortest path's legibility to well above it, 0.5339 to 0.7575 against a
+baseline of 0.5457, so the extra room bought clarity that was not
+reachable inside the tighter budget. `fan_middle` is the control and it
+behaves: the same straight line under both budgets, nothing extra spent
+where deviating cannot help.
+
+**The refusal finding did not survive, and what replaced it is better.**
+At 1.25 this model declined four times, three in `fan_middle` and one in
+`wall_choice`, and the draft read that as a model that knows when
+deviating cannot help. At 2.00 it declines nothing at all. In
+`fan_middle` it returns the identical trajectory under both budgets, the
+straight line through (1, 5) and (11, 5), scoring exactly the baseline
+0.4342. That trajectory is called not legible on three of five samples at
+1.25 and legible on five of five at 2.00. Same world, same motion, and
+the only thing that changed is the number in the prompt.
+
+So the self-assessment tracks the stated budget rather than what the
+motion achieves. That is a sharper claim than the one it replaces and it
+is checkable from two committed record files side by side. The abstract,
+the results section and both table captions were rewritten the same day.
+
+One cosmetic consequence: the draft is four pages, with the content
+ending on page three and a single line of the last reference spilling
+over. The limit is two to four pages excluding references, so it
+conforms, and chasing the spill was not worth more of the layout budget.
 
 ## Ground rules for this draft
 
