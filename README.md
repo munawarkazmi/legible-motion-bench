@@ -238,6 +238,12 @@ the path clears the corner: the same motion reads as heading for the wrong
 goal. Both traces are asserted in
 `tests/test_observer.py::test_the_two_observers_disagree_when_the_room_is_not_visible`.
 
+The suite reproduces it. Along the cheapest route in `wall_choice` the
+informed observer holds at exactly 0.5000 while the naive one falls to
+0.3164, and legibility on that one path reads 0.5457 under the first and
+0.4370 under the second. Every number reported above is under the
+informed observer, and the paper says so.
+
 The rationality coefficient is exposed rather than absorbed, and travels in
 the observer's name, because a belief computed at one coefficient is not
 comparable with a belief computed at another. It defaults to one, which
@@ -361,6 +367,23 @@ A working draft lives in `paper/`, with its honest state in
 `paper/STATUS.md` and the record of what has been read and checked in
 `paper/verification_log.md`. Nothing is ticked there that cannot be
 inspected here.
+
+Two builds come from the one source, with no line edited between them:
+
+```bash
+cd paper && make both
+```
+
+`make` gives `paper.pdf`, the anonymised submission build with line
+numbers and the ACM reference format. `make named` gives
+`paper-named.pdf`, the preprint with the author block. The difference is
+whether `NAMEDBUILD` is defined before the class is read, which is a flag
+rather than an edit, because switching by hand is how a paper goes out
+under the wrong class.
+
+Both results tables and the figure in the paper are written by
+`tools/build_paper_results.py` and `tools/build_paper_figures.py` from the
+record files in `results/`. No number in the paper is typed.
 
 ## Licence
 
