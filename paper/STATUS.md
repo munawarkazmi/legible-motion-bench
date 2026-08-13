@@ -1100,6 +1100,30 @@ That warning is worth clearing before the preprint goes out, since a
 preprint is published rather than reviewed blind, and it needs a city
 that only Munawar can supply.
 
+## Table 2 printed after the references, 10 August 2026
+
+Found by looking at the built page. The three additions of the same day
+pushed enough text down that Table 2 no longer fitted on page three
+beside Table 1, so it floated to page four and printed above the tail of
+the bibliography. Both builds did it.
+
+The cause is the same rule that put both tables at the top of a page in
+the first place: a double column float cannot be set on the page that is
+current when it is declared, so declaring it at its point of discussion
+gives LaTeX no earlier page to use. Table 2's declaration now sits
+directly after Table 1's, well before the text that discusses it, and a
+comment there says why so nobody moves it back.
+
+Both tables now sit on page three and the references follow on page four,
+which is the order a reader expects. Both builds are four pages with the
+figure on page two.
+
+The named build reports one overfull vbox of 1.259pt, about four tenths
+of a millimetre of vertical overflow, which the anonymised build does not
+produce because line numbers change the layout. It is not text running
+past a margin and it is not visible on the rendered page, which was
+checked rather than assumed.
+
 ## Ground rules for this draft
 
 - Results tables and figures are generated from committed records by a

@@ -246,6 +246,22 @@ survives raising the stated budget to 2.00.}
 \label{tab:models}
 \end{table*}
 
+% Declared here rather than beside the text that discusses it. A double
+% column float cannot be set on the page that is current when it is
+% declared, so at its point of discussion it was deferred past the start
+% of the references and printed on a page of its own after them.
+\begin{table*}[t]
+\centering
+\small
+\input{generated/ceiling_table}
+\caption{Forty decodes at each stated budget, per model. For the two
+models swept across all four, the budget nearly doubles and the cost
+actually paid does not follow it. The third was run at 1.25 and 2.00,
+where it does follow. A dash is a cell that was not run rather than a
+cell with nothing in it.}
+\label{tab:ceilings}
+\end{table*}
+
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{generated/keep_out_shortcut}
@@ -299,17 +315,6 @@ trajectory is called not legible on three of five samples at 1.25 and
 legible on five of five at 2.0. Same world, same motion; only the number
 in the prompt changed.
 
-\begin{table*}[t]
-\centering
-\small
-\input{generated/ceiling_table}
-\caption{Forty decodes at each stated budget, per model. For the two
-models swept across all four, the budget nearly doubles and the cost
-actually paid does not follow it. The third was run at 1.25 and 2.00,
-where it does follow. A dash is a cell that was not run rather than a
-cell with nothing in it.}
-\label{tab:ceilings}
-\end{table*}
 
 Table~\ref{tab:ceilings} asks whether the budget violations mean the
 budget was too tight or that the budget was not attended to. For the two
