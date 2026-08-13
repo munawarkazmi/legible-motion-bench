@@ -4,24 +4,28 @@
 % vendored: acmart.cls is generated from acmart.ins by the Makefile, so
 % the build does not depend on the local TeX distribution shipping it.
 %
-% Working builds use [sigconf,nonacm]: named authors and no ACM rights
-% block, which a draft has no business claiming. The submission build
-% swaps to [sigconf,anonymous,review], which anonymises the author block
-% and adds line numbers. HRI requires submissions to be fully anonymised.
+% Two builds, one source. `make` produces the anonymised submission
+% build, which HRI requires: [sigconf,anonymous,review], line numbers on,
+% and the mandatory ACM reference format left in place. `make named`
+% defines NAMEDBUILD and produces paper-named.pdf with the author block
+% and no rights block, which is the preprint.
+%
+% Nobody edits a line to switch. Doing that by hand is how a submission
+% goes out with the wrong class, and it happened here often enough to be
+% worth removing as a possibility.
 %
 % Two to four pages excluding references. Every number below comes from
 % paper/generated/, written by tools/build_paper_results.py from the
 % committed records. None of them is typed by hand. See paper/STATUS.md
 % for the honest state of each section.
 
-\documentclass[sigconf,anonymous,review]{acmart}
-
-% Submission build as of 10 August 2026. To return to a working draft,
-% swap the class above to [sigconf,nonacm] and uncomment both lines
-% below. They must stay commented for submission: the ACM reference
-% format is mandatory there and the class says so.
-%\settopmatter{printacmref=false}
-%\renewcommand\footnotetextcopyrightpermission[1]{}
+\ifdefined\NAMEDBUILD
+  \documentclass[sigconf,nonacm]{acmart}
+  \settopmatter{printacmref=false}
+  \renewcommand\footnotetextcopyrightpermission[1]{}
+\else
+  \documentclass[sigconf,anonymous,review]{acmart}
+\fi
 
 \usepackage{booktabs}
 

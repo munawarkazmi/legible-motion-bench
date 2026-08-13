@@ -1076,6 +1076,30 @@ The style file is mandated by the venue, so the choice is between one en
 dash in a page range and patching a required bibliography style. It
 stays. Every dash in text this project wrote is a hyphen.
 
+## Two builds from one source, 10 August 2026
+
+The anonymised submission build and the named preprint are now both made
+from `paper.tex` with no line edited between them. `make` gives
+`paper.pdf`, anonymised, line numbers on, ACM reference format in place.
+`make named` defines `NAMEDBUILD` before the class is read and gives
+`paper-named.pdf` with the author block and no rights block. `make both`
+runs the pair.
+
+The reason is not convenience. Switching by hand meant commenting two
+lines and swapping a class option, which was done four times in five days
+and is exactly how a paper goes out under the wrong class. There is now
+no line to edit.
+
+Verified on the day: both are four pages with zero overfull boxes. The
+anonymised build has zero warnings and its text contains no name, no
+email and no repository link. The named build carries the author block
+and the one warning the anonymised build cannot produce, that the
+affiliation has no city.
+
+That warning is worth clearing before the preprint goes out, since a
+preprint is published rather than reviewed blind, and it needs a city
+that only Munawar can supply.
+
 ## Ground rules for this draft
 
 - Results tables and figures are generated from committed records by a
