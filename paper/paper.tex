@@ -186,6 +186,18 @@ compared line by line against the implementation. Our only addition is an
 inverse temperature, which is recorded in the observer's name in every
 result.
 
+Two observers are implemented and every number here uses the first. One
+takes cost-to-go to be the obstacle-aware geodesic; the other takes it to
+be the straight line, modelling someone who can see the robot and knows
+the candidate goals but not what stands between them. That is a
+measurement decision rather than an ablation, and it changes the
+measurement. Along the cheapest route in the world with a wall to round,
+the informed observer holds at the prior of exactly 0.5000 and learns
+nothing, while the naive one falls to 0.3164, because from a viewpoint
+that cannot see the wall the robot is walking away from the goal it is
+going to. Legibility on that one path is 0.5457 read the first way and
+0.4370 read the second.
+
 That posterior rests on the optimal cost-to-go, so we compute it exactly
 rather than approximately. Obstacles are convex polygons, the shortest
 obstacle-avoiding path is a polyline through their vertices, and the
@@ -354,6 +366,20 @@ claim here rests on it.
 Three models at one temperature over eight worlds is a pilot, and one was
 swept at two budgets rather than four. Every number here is recomputed by
 a committed tool from committed records.
+
+\section{Availability}
+
+The eight worlds and the facts each one carries, the prompt template,
+every record file behind the tables above, and the tools that recompute
+every table and the figure from those records, are public. The link is
+withheld here for anonymous review and will be given at camera-ready.
+Nothing reported above was produced by a step that is not in that
+repository.
+
+The instrument is not specific to language models. Anything that emits a
+trajectory can be scored by it, and the cost of adding a planner or a
+model is one record file. The worlds and the facts they carry are the
+fixed part; what gets measured against them is not.
 
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{references}

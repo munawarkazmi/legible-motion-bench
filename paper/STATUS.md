@@ -1038,6 +1038,44 @@ submitting, replace the whole block with the output of ACM's tool at
 dl.acm.org/ccs, which emits the XML and the `\ccsdesc` lines together and
 takes about a minute.
 
+## Three additions before submission, 10 August 2026
+
+**An availability statement.** The report's whole argument is that the
+instrument is reproducible, and it never said the worlds, the prompt, the
+records or the tools were available. A short section now says they are,
+that the link is withheld for anonymous review, and that nothing reported
+was produced by a step outside that repository. While writing it I nearly
+typed "all 120 record files": 120 is the decode count at one budget, and
+the repository holds 51 record files carrying 408 answered decodes, not
+all of which sit behind these tables. The sentence now carries no number
+rather than a wrong one.
+
+**The second observer, which the paper had never mentioned.** Two
+conditions are implemented and every reported number uses the geodesic
+one, and a reader had no way to know a choice had been made. The
+instrument section now states both and shows that the choice changes the
+measurement, using the world with a wall to round: along the cheapest
+route the informed observer holds at the prior of exactly 0.5000 while
+the naive one falls to 0.3164, and legibility on that one path reads
+0.5457 the first way and 0.4370 the second. Those figures were recomputed
+from a suite world rather than taken from the `wall_detour` fixture the
+first observation was recorded in, because the paper reports the suite.
+
+**A close.** The report used to end on its own pilot disclaimer. It now
+ends by saying the instrument is not specific to language models:
+anything that emits a trajectory can be scored, and adding a planner or a
+model costs one record file.
+
+## One en dash that stays, and why
+
+The submission build contains exactly one en dash, in the page range
+301-308 of the founding paper's entry. It is not ours. `references.bib`
+now writes that range with a plain hyphen, and `ACM-Reference-Format.bst`
+converts it back through its `n.dashify` function at lines 1478 and 1514.
+The style file is mandated by the venue, so the choice is between one en
+dash in a page range and patching a required bibliography style. It
+stays. Every dash in text this project wrote is a hyphen.
+
 ## Ground rules for this draft
 
 - Results tables and figures are generated from committed records by a
