@@ -294,14 +294,50 @@ Three judgements were made and any of them can be reversed.
 3. "Judge-free is not judge-proof" is kept. It concedes the point in one
    line and in the author's own voice.
 
+## The pre-submission sweep, first pass 2 September 2026
+
+Obligation 2 below asks for a search for work newer than 6 August 2026
+immediately before submission. This is a first pass rather than that
+search, made early because the venue question moved on 2 September 2026
+and the deadline may now be weeks rather than months away. It has to be
+repeated in the week of submission whatever it found here.
+
+Nothing dated after 6 August 2026 surfaced. What did surface is five
+adjacent works this log has never listed. They are recorded as
+candidates and deliberately not as `metadata only`, because that status
+means authors, venue and year were confirmed, and not one of these has
+been: this machine cannot reach arxiv.org, dl.acm.org, openreview.net or
+any publisher, so every line below comes from a search result rather than
+from the record itself. Confirm each before it is cited or dismissed.
+
+| Candidate, as search returned it | Why it is a candidate |
+| --- | --- |
+| Through the Clutter: Exploring the Impact of Complex Environments on the Legibility of Robot Motion, arXiv 2406.00119 | The nearest thing found to this project's own question. Legibility measured in cluttered worlds is what the geodesic observer condition exists for, and if it already reports what obstacles do to legibility, the second observer needs positioning against it rather than only against Dragan. |
+| SLOT-V: Supervised Learning of Observer Models for Legible Robot Motion Planning in Manipulation, arXiv 2210.01412 | Learns the observer model this benchmark fixes by construction. The judge-free claim is a claim about choosing an exactly computable observer over a learned one, and this is the work that took the other branch. |
+| Do Robots Need Body Language? Comparing Communication Modalities for Legible Motion Intent in Human-Shared Spaces, arXiv 2604.03451 | 2026, navigation rather than manipulation, and it compares motion against other modalities. Bears on the limitation paragraph, which says this instrument scores motion alone. |
+| Language Movement Primitives: Grounding Language Models in Robot Motion, arXiv 2602.02839 | A language model parameterising motion primitives rather than emitting waypoints. Closest 2026 work to the model finding, and the contrast is that it never asks whether the motion reads as intended. |
+| Legible Robot Motion from Conditional Generative Models, OpenReview lmQYABKsY0 | A generative legibility model. Same family as the Shi et al. work in obligation 1 and probably read alongside it. |
+
+The three works already body checked that these might have displaced were
+re-checked against nothing here, because nothing newer was found. No row
+in the table above changes a claim in the draft, and none may until it is
+read.
+
 ## Outstanding obligations
 
 1. Shi et al.'s diffusion work is still metadata only and is not cited
-   for any finding. Read it in the body before it is. Legibot was body
+   for any finding. Read it in the body before it is. Attempted on 2
+   September 2026 and not possible from this machine: search returns the
+   exact title at arXiv 2510.12370, and the network policy here blocks
+   arxiv.org, so even the identifier is unconfirmed against arXiv itself.
+   The status stays metadata only and the read still has to happen
+   somewhere with a browser. Legibot was body
    checked on the first pass and is now cited in the draft, and
    Mahadevan et al. was read on 6 August 2026 and is now cited for the
    pairing of language models with expressive motion.
 2. A search for work newer than 6 August 2026 immediately before
-   submission.
+   submission. A first pass was made on 2 September 2026 and is recorded
+   above; it found nothing newer and five unconfirmed adjacent
+   candidates. It does not discharge this obligation.
 3. Done on 8 August 2026: the validity wording is confirmed, and it was
    the one paragraph in the report written rather than derived.

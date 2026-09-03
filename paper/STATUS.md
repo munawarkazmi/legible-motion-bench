@@ -648,6 +648,11 @@ decisions, not reading notes.
   asked. The first is at risk and the third looks strongest, but nothing
   is settled until the outstanding body-checks in `verification_log.md`
   are done. The code written so far is neutral to all three.
+  **Reopened 2 September 2026** by the venue check below. A Short
+  Contributions code submission asks for the second framing, the
+  instrument, with the third as its demonstration. That is a swap of
+  which one leads, not a rewrite, and it is the decision to make once
+  the call page is confirmed.
 - The ceilings the frontier is swept at. They default to 1.05, 1.1, 1.25,
   1.5 and 2.0, which was a first guess rather than an argued choice. The
   interesting structure in `pillar_aisle` sits between 1.05 and 1.10, so
@@ -766,12 +771,63 @@ December 2025 with notification 12 January 2026, so early December 2026
 is the working assumption and must be confirmed from the 2027 call
 before anything is planned around it.
 
+**Overtaken on 2 September 2026.** The 2027 call is out, it shows no LBR
+track, and it carries a Short Contributions track that fits this work
+better. See below. Everything in this section about the LBR is kept as
+the reasoning that was current, not as the plan.
+
 Two deliberate non-choices. The HRI 2027 full paper deadline of 18
 September 2026 is not being pursued: the metric is reproducible but not
 validated against people, and no amount of engineering answers that
 objection in six weeks. RO-MAN 2027 in Waterloo, whose call is not yet
 published and whose deadline is expected around March 2027, is the
 target for a full paper if a human validation study happens first.
+
+## The venue moved, checked 2 September 2026
+
+The plan above assumes an HRI 2027 Late-Breaking Report with a deadline
+around early December 2026, extrapolated from the 2026 call because the
+2027 one was not published. The 2027 call is published now and two things
+in that assumption look wrong.
+
+**No Late-Breaking Reports track has appeared for HRI 2027.** The tracks
+that have pages are Full Papers, Short Contributions, and Workshops and
+Tutorials. That is not proof the track is gone, since calls appear at
+different times, but it is no longer safe to plan around an LBR.
+
+**Short Contributions is a better fit than the LBR ever was.** It is four
+pages excluding references, and it takes three kinds of submission:
+datasets, code, and replication studies. The code kind is short papers
+that give access to and a detailed description of code, tools and
+software of value to the HRI community. That is this project exactly, and
+it is a stronger claim than the LBR framing, which had to sell a pilot
+result: here the instrument is the contribution and the model finding is
+what the instrument was used to show. Submissions are fully reviewed and
+archived in the ACM Digital Library, and at camera ready the code has to
+be publicly available in a digital repository, which this repository
+already is once the anonymity period ends.
+
+**The deadline is 1 October 2026, with notification 2 December 2026.**
+That is four weeks from this check rather than three months. The draft is
+already four pages in `sigconf`, which is the Short Contributions limit,
+so the format cost of the change looks like nothing.
+
+What is not established, and cannot be from this machine. The network
+policy here blocks humanrobotinteraction.org, so every line above comes
+from search results rather than from the call page. Before anything is
+planned around it, open the Short Contributions page and confirm: the
+deadline and the notification date, whether submission is anonymised,
+which template and class options apply, whether a Late-Breaking Reports
+track exists for 2027 after all, and what the code kind requires in the
+paper itself beyond a link. Two independent searches agreed on the
+deadline and the notification date, which is corroboration and not
+confirmation.
+
+If it holds, the decision to make is not which venue but which framing.
+An LBR would have reported the model finding with the instrument as
+support. A code submission reports the instrument, with the model finding
+as the demonstration that it measures something. Most of the draft
+survives either way; the abstract and the introduction do not.
 
 ## What the LBR needs before it can be written
 
@@ -1037,6 +1093,14 @@ because that line comes from `\ccsdesc` and not from the XML. Before
 submitting, replace the whole block with the output of ACM's tool at
 dl.acm.org/ccs, which emits the XML and the `\ccsdesc` lines together and
 takes about a minute.
+
+Tried again on 2 September 2026 and it still cannot be done from here.
+The network policy on this machine blocks dl.acm.org and arxiv.org, so
+neither ACM's tool nor the metadata of a published paper that declares
+the concept can be reached, and search returns the concept name without
+the identifier behind it. The identifier is still missing rather than
+wrong, which is the state this was deliberately left in, and the minute
+at ACM's tool has to be spent somewhere with a browser.
 
 ## Three additions before submission, 10 August 2026
 
