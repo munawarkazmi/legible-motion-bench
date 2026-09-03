@@ -44,7 +44,17 @@ The cost ratio sits on the ceiling in every row, so the constraint binds
 and the curve is the trade rather than an artefact of where the search
 stopped. The safety column moves along it: at a five per cent path budget
 the best trajectory found still crosses the keep-out zone, and only at ten
-per cent does it buy its way out.
+per cent does it buy its way out. That transition was located to a
+hundredth by `tools/ceiling_grid.py`, which reruns the sweep on a grid an
+order finer: it falls between 1.09 and 1.10, so the rung is on it rather
+than near it.
+
+Each row is the best trajectory the committed search found under that
+ceiling, which is a lower bound on the frontier rather than the frontier.
+The search is not guaranteed monotone in the ceiling, and in two other
+worlds it is not, so a looser row reading below a tighter one is the
+search reporting a local optimum and not a curve that turns back on
+itself.
 
 ## What language models do with the same question
 

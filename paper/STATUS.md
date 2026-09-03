@@ -653,12 +653,18 @@ decisions, not reading notes.
   instrument, with the third as its demonstration. That is a swap of
   which one leads, not a rewrite, and it is the decision to make once
   the call page is confirmed.
-- The ceilings the frontier is swept at. They default to 1.05, 1.1, 1.25,
-  1.5 and 2.0, which was a first guess rather than an argued choice. The
-  interesting structure in `pillar_aisle` sits between 1.05 and 1.10, so
-  the grid may need to be finer where the safety column changes and
-  coarser where it does not. It matters less for the models, whose
-  behaviour is flat across the whole range.
+- The ceilings the frontier is swept at are no longer open. They were
+  checked at a grid a hundredth wide on 2 September 2026 and stay at
+  1.05, 1.1, 1.25, 1.5 and 2.0: the one safety transition in the suite
+  lands on a rung, the fine grid shows no structure between the rungs,
+  and every rung above 1.25 is still buying legibility. What replaced
+  this as an open question is the non-monotone sweep found while
+  checking it, recorded below.
+- Whether the sweep's non-monotonicity in `keep_out_shortcut` is a safe
+  pocket the grid steps over or a local optimum the seeding walks into.
+  Found 2 September 2026, unaffected by budget, and not decidable from
+  the runs made so far. It bears on nothing published today and on any
+  frontier claim made tomorrow.
 - The confidence threshold and the evaluation budget are no longer open.
   Both were checked on 5 August 2026 and the results are recorded below:
   the threshold stays at 0.8, its admissible range is now enforced in
@@ -828,6 +834,75 @@ An LBR would have reported the model finding with the instrument as
 support. A code submission reports the instrument, with the model finding
 as the demonstration that it measures something. Most of the draft
 survives either way; the abstract and the introduction do not.
+
+## The ceiling grid, settled 2 September 2026, and a sweep that is not monotone
+
+The grid the frontier is swept at was a first guess and has sat in the
+open decisions since. `tools/ceiling_grid.py` settles it: it runs the
+same sweep at a grid a hundredth wide from 1.02 to 1.20 and then at the
+default rungs with one step between each, on all eight worlds, at 500
+evaluations. It answered the question that was asked and turned up a
+larger one on the way.
+
+**The grid stays as it is, and the hunch that put it here was wrong.**
+The suspicion was that the structure in `pillar_aisle` sits between 1.05
+and 1.10 and the grid is too coarse to see it. It is not. The keep-out
+column changes between 1.09 and 1.10, so the 1.10 rung lands on the
+transition, and the README's claim that only at ten per cent does the
+best trajectory buy its way out of the zone is right to the hundredth.
+Between 1.05 and 1.09 legibility climbs from 0.7995 to 0.8154 with no
+kink in it, about 0.004 a hundredth. There is nothing there a finer grid
+would show.
+
+**The loose rungs are not waste either.** Above a 1.25 ceiling legibility
+is still bought in every world, from 0.0162 in `door_pair` to 0.0943 in
+`fan_middle`. Nothing argues for trimming the top of the grid.
+
+**What the fine grid actually exposed is that the sweep is not monotone
+in the ceiling, and it has to be.** Each ceiling is planned
+independently, on purpose, so that no ceiling inherits another's answer.
+That makes the feasible set at a looser ceiling a superset of the
+tighter one's, so a looser ceiling can never do worse at the frontier
+itself. It does:
+
+| world | tighter ceiling | looser ceiling | what the search returned |
+| --- | --- | --- | --- |
+| door_pair | 1.50 gives 0.8204 at ratio 1.4999 | 1.75 and 2.00 | 0.8193 at ratio 1.4210, both, identically |
+| door_pair | 1.02 gives 0.7633 | 1.03 | 0.7561 |
+| door_pair | 1.07 gives 0.7748 | 1.08 | 0.7683 |
+| narrow_gap | 1.25 gives 0.6879 | 1.30 | 0.6829 |
+| narrow_gap | 1.40 gives 0.6997 | 1.50 | 0.6978 |
+
+**It is not the budget.** Rerunning `door_pair` at 1.50, 1.75 and 2.00
+with the budget raised from 500 to 2000 returns the same three numbers to
+four places and spends the same 389, 450 and 450 evaluations. The search
+stops because it has converged, not because it ran out, so this is a
+local optimum the seeding walks into at some ceilings and not others.
+`tools/budget_convergence.py` could not have found this, because it
+varies the budget and the budget is not what binds.
+
+**No published number moves.** The README frontier table is
+`pillar_aisle`, which is monotone at every rung, and the paper carries no
+frontier table at all. What has to change is what a sweep row is said to
+be. A row is the best trajectory the committed search found under that
+ceiling, which is a lower bound on the frontier and not the frontier, and
+a looser row reading below a tighter one is the search saying so out
+loud. That is the same discipline `not_found` already carries, applied
+to the rows that did find something.
+
+**One thing this leaves genuinely open**, and it is not a wording
+problem. In `keep_out_shortcut` the keep-out column goes 1 at 1.50, 0 at
+1.75, 1 at 2.00, and the 1.75 trajectory is both safer and more legible
+than the 1.50 one, 0.8719 against 0.8571 with no entry against one.
+Reproduced exactly at budget 2000. Either there is a safe pocket at a
+75 per cent budget that the default grid steps over, which is a result,
+or it is the same local-optimum artefact, which is a defect. The data
+here cannot tell those apart and raising the budget does not separate
+them. Deciding it needs a change to how the search is seeded, and the
+obvious fix, seeding each ceiling from the answer at the ceiling below,
+is the one the sweep deliberately refuses, because it would let a
+tighter ceiling's answer be reported as a looser one's. So it needs
+thought rather than a patch.
 
 ## What the LBR needs before it can be written
 
