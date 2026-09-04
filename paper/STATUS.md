@@ -824,16 +824,16 @@ That is four weeks from this check rather than three months. The draft is
 already four pages in `sigconf`, which is the Short Contributions limit,
 so the format cost of the change looks like nothing.
 
-What is not established, and cannot be from this machine. The network
-policy here blocks humanrobotinteraction.org, so every line above comes
-from search results rather than from the call page. Before anything is
-planned around it, open the Short Contributions page and confirm: the
-deadline and the notification date, whether submission is anonymised,
-which template and class options apply, whether a Late-Breaking Reports
-track exists for 2027 after all, and what the code kind requires in the
-paper itself beyond a link. Two independent searches agreed on the
-deadline and the notification date, which is corroboration and not
-confirmation.
+**Confirmed on the call page on 4 September 2026.** The deadline is 1
+October 2026. Twenty-seven days from the confirmation.
+
+What was not established from this machine, because the network policy
+here blocks humanrobotinteraction.org, was everything above: it came
+from search results rather than from the call page. The deadline was
+confirmed on the page itself on 4 September 2026 and it holds. Still to
+read off that page when it is next open: whether submission is
+anonymised, which template and class options apply, and what the code
+kind requires in the paper beyond a link.
 
 If it holds, the decision to make is not which venue but which framing.
 An LBR would have reported the model finding with the instrument as
@@ -1175,13 +1175,23 @@ submitting, replace the whole block with the output of ACM's tool at
 dl.acm.org/ccs, which emits the XML and the `\ccsdesc` lines together and
 takes about a minute.
 
-Tried again on 2 September 2026 and it still cannot be done from here.
-The network policy on this machine blocks dl.acm.org and arxiv.org, so
+Tried again on 2 September 2026 and it could not be done from here: the
+network policy on this machine blocks dl.acm.org and arxiv.org, so
 neither ACM's tool nor the metadata of a published paper that declares
-the concept can be reached, and search returns the concept name without
-the identifier behind it. The identifier is still missing rather than
-wrong, which is the state this was deliberately left in, and the minute
-at ACM's tool has to be spent somewhere with a browser.
+the concept could be reached, and search returns the concept name
+without the identifier behind it.
+
+**Done on 4 September 2026**, at the tool, in a browser. Motion path
+planning is 10010147.10010178.10010213.10010215: Computing
+methodologies, Artificial intelligence, Control methods, Motion path
+planning. Four levels rather than the three the sourced concepts have,
+which is part of why guessing at it went wrong. The whole block was
+pasted from the tool's output rather than edited by hand, and the two
+identifiers that had been sourced by hand came back unchanged, character
+for character, including their significances. That is the part worth
+recording: the hand sourcing was sound, and the one that could not be
+sourced was correctly left blank rather than filled in. There is now no
+missing number anywhere in the paper.
 
 ## Three additions before submission, 10 August 2026
 
