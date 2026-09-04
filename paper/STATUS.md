@@ -1407,6 +1407,40 @@ it pass, which is the only way that kind of dead test gets found. It now
 runs at the settings the defect was measured at and takes a few seconds,
 which is what a regression test for this is worth.
 
+## The rewrite builds, and a line ending incident, 4 September 2026
+
+Both builds are four pages with zero overfull boxes, no undefined
+references and nothing missing. That is the whole of the format question
+settled: the limit is four pages excluding references, the content ends
+on page three and the bibliography takes page four, so the instrument-led
+rewrite fits with a page in hand rather than by a line.
+
+The named build's one overfull vbox of 1.259pt, recorded on 10 August as
+not worth chasing, is gone. Nothing was done to it; the rewrite moved
+enough text that it stopped happening.
+
+One thing the rewrite broke and the build caught. Pasting ACM's block
+whole meant taking its ordering for the three `\ccsdesc` lines as well as
+for the XML, and those lines are what print the CCS Concepts line. In the
+tool's order that line ran 12.41pt past the column, and the anonymised
+build reported an overfull hbox where it had never reported one. The XML
+is still the tool's output exactly; only the printed order goes back to
+what it was, which is a typesetting choice because those lines carry no
+identifiers.
+
+**A line ending incident, same day.** Every tracked text file showed as
+wholly modified at once, 436 phantom line changes in `paper.tex` alone,
+and a pull refused to run. Nothing had been edited: something in the
+Windows working tree, an editor or the syncing client the repository
+lives under, had rewritten the tree as CRLF. `git diff
+--ignore-cr-at-eol` showed the only real changes were the two rebuilt
+PDFs.
+
+It cost twenty minutes and it was noise, but the next one would not
+necessarily be: a real edit sitting among 436 phantom ones is invisible,
+and the resolution for noise is to discard the working tree. A
+`.gitattributes` now pins the repository to LF, so this cannot recur.
+
 ## Ground rules for this draft
 
 - Results tables and figures are generated from committed records by a

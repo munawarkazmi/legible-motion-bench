@@ -1,0 +1,14 @@
+# Line endings are LF in the repository whatever the working tree is on.
+#
+# Without this, an editor or a syncing client rewriting the tree as CRLF
+# makes every text file show as wholly modified. That happened on 4
+# September 2026: 436 phantom line changes in paper.tex alone, across
+# every tracked text file at once, which stopped a pull and would have
+# hidden a real change had there been one among them.
+* text=auto eol=lf
+
+# Declared rather than detected, so a heuristic cannot decide otherwise
+# on a file that happens to start with printable bytes.
+*.pdf binary
+*.gif binary
+*.png binary
