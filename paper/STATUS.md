@@ -26,8 +26,11 @@ inspected.
   ceiling on the cost ratio, seeded structurally to both sides of the
   start-to-goal line and run under a recorded evaluation budget; its
   safety-constrained variant, which is the same search with a single added
-  refusal so the gap between them measures the constraint and not two
-  different optimisers; and a sweep over ceilings that traces the frontier
+  refusal, and which on 4 September 2026 turned out not to be the same
+  optimiser in effect: it misses safe trajectories the unconstrained
+  search finds, by up to 0.08 legibility, so the gap between the two does
+  not currently measure the constraint alone. See below; and a sweep over
+  ceilings that traces the frontier
   and records a ceiling it found nothing under as a search outcome rather
   than as an error. A 159-test suite in CI, which also re-checks every
   scenario property against the committed code)
@@ -660,11 +663,16 @@ decisions, not reading notes.
   and every rung above 1.25 is still buying legibility. What replaced
   this as an open question is the non-monotone sweep found while
   checking it, recorded below.
-- Whether the sweep's non-monotonicity in `keep_out_shortcut` is a safe
-  pocket the grid steps over or a local optimum the seeding walks into.
-  Found 2 September 2026, unaffected by budget, and not decidable from
-  the runs made so far. It bears on nothing published today and on any
-  frontier claim made tomorrow.
+- Whether to seed the safety-constrained search from the unconstrained
+  answer at the same ceiling when that answer is already safe. Raised 4
+  September 2026 by the probe below, which found the constrained search
+  returning less than trajectories it is obliged to accept, in five rows
+  out of five, by up to 0.08 legibility. Until it is decided, the gap
+  between the two planners is not a measurement of the constraint and
+  the safety-constrained frontier cannot be a contribution. The earlier
+  question, whether `keep_out_shortcut` has a safe pocket at 1.75, is
+  answered: the safe trajectory exists and the constrained search does
+  not find it.
 - The confidence threshold and the evaluation budget are no longer open.
   Both were checked on 5 August 2026 and the results are recorded below:
   the threshold stays at 0.8, its admissible range is now enforced in
@@ -1262,6 +1270,82 @@ of a millimetre of vertical overflow, which the anonymised build does not
 produce because line numbers change the layout. It is not text running
 past a margin and it is not visible on the rendered page, which was
 checked rather than assumed.
+
+## The safety-constrained variant is a different optimiser, 4 September 2026
+
+Yesterday's grid check left one thing open: in `keep_out_shortcut` the
+sweep is safer and more legible at a 1.75 ceiling than at 1.50, and
+violates again at 2.00. Safe pocket or local optimum, and budget could
+not tell them apart. The instrument can, because it already ships the
+planner that answers it: the safety-constrained variant maximises
+legibility subject to never entering a keep-out zone, so it is the
+search whose whole feasible set is safe trajectories.
+
+`tools/ceiling_grid.py --respect-keep-out` runs it. The answer is worse
+than the question.
+
+**A trajectory the constrained search is obliged to accept, it does not
+find.** At a 1.75 ceiling the unconstrained search returns a trajectory
+scoring 0.8719 at cost ratio 1.7495 with zero keep-out entries. That
+trajectory is safe and inside the ceiling, so it lies in the constrained
+search's feasible set at 1.75 and at 2.00. A correct optimiser could
+therefore never return less than 0.8719 at either. The constrained
+search returns 0.8353 at 1.75 and 0.8497 at 2.00.
+
+It happens wherever it can happen. Every row below is one where the
+unconstrained answer is itself safe, which is exactly when the
+constrained search must be able to match it:
+
+| world | ceiling | unconstrained | constrained | shortfall |
+| --- | --- | --- | --- | --- |
+| keep_out_shortcut | 1.75 | 0.8719 | 0.8353 | 0.0366 |
+| pillar_aisle | 1.10 | 0.8180 | 0.7374 | 0.0806 |
+| pillar_aisle | 1.25 | 0.8429 | 0.8420 | 0.0010 |
+| pillar_aisle | 1.50 | 0.8658 | 0.8621 | 0.0037 |
+| pillar_aisle | 2.00 | 0.8937 | 0.8921 | 0.0017 |
+
+Five rows out of five, always in the same direction, never once the
+other way. Not the budget: raising it from 500 to 2000 returns the same
+four numbers to four places, converging after 651 evaluations rather
+than exhausting anything.
+
+**What this falsifies.** The README and the status list both say the
+constrained variant is the same search with a single added refusal, so
+the gap between the two planners measures the constraint rather than two
+different optimisers. That is wrong and is now corrected in both. The
+refusal does not merely shrink the feasible set, it changes the path the
+compass search takes through it, because the route to a good safe region
+can run through candidates that get refused. So a measured gap between
+the two planners is the constraint plus an optimiser difference of up to
+0.08 legibility, and nothing in the number separates them.
+
+**What it costs.** Nothing published: no result in the draft or the
+README comes from the constrained planner, and the frontier table is the
+unconstrained sweep. What it costs is a contribution. The
+safety-constrained frontier was the first of the three candidate
+framings and was already recorded as at risk; it is now unavailable
+until this is fixed, because the quantity it would report is not the
+quantity it claims to report.
+
+**And the original question is still open, for a better reason.** The
+1.75 row is not a pocket the grid steps over. A safe trajectory at
+0.8719 exists and the constrained search fails to find it, so the
+non-monotone safety column in the unconstrained sweep stays what it
+looked like, a local optimum, and the constrained search turns out to
+have a worse case of the same illness. What can be said with the runs
+made: at a 2.00 ceiling the best safe trajectory either search found
+scores 0.8719 and the best violating one scores 0.8848, so crossing
+appears to buy about 0.013 there. Appears is the right word, since
+neither search reliably finds the safe optimum.
+
+**The obvious fix, and why it is not applied here.** Seed the
+constrained search from the unconstrained answer at the same ceiling
+whenever that answer is already safe. It is admissible by construction,
+it is the same ceiling so it smuggles nothing across budgets, and it
+would make the constrained result at least as good as the unconstrained
+one in exactly the rows above. It also changes the instrument's central
+comparison and should be a decision rather than a patch dropped in while
+checking something else.
 
 ## Ground rules for this draft
 

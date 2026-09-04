@@ -49,6 +49,14 @@ def main(argv=None) -> int:
     parser.add_argument("--spacing", type=float, default=0.15)
     parser.add_argument("--observer", default="geodesic")
     parser.add_argument(
+        "--respect-keep-out",
+        action="store_true",
+        help="run the safety-constrained variant, which refuses any "
+        "trajectory entering a keep-out zone. Comparing the two answers "
+        "the question a non-monotone safety column raises: whether the "
+        "unconstrained search declined a safe trajectory that exists.",
+    )
+    parser.add_argument(
         "--ceilings", default=",".join(f"{c:g}" for c in DEFAULT_GRID)
     )
     args = parser.parse_args(argv)
@@ -65,6 +73,7 @@ def main(argv=None) -> int:
     print(f"budget:    {args.budget} evaluations")
     print(f"spacing:   {args.spacing}")
     print(f"observer:  {observer.name}")
+    print(f"keep-out:  {'refused' if args.respect_keep_out else 'scored, not refused'}")
 
     transitions = []
     for scenario in scenarios:
@@ -89,6 +98,7 @@ def main(argv=None) -> int:
             budget=args.budget,
             spacing=args.spacing,
             observer=observer,
+            respect_keep_out=args.respect_keep_out,
         ):
             if point.plan is None:
                 print(f"{point.ceiling:>9.2f}  not found: {point.not_found}")
