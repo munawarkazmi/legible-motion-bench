@@ -26,11 +26,12 @@ inspected.
   ceiling on the cost ratio, seeded structurally to both sides of the
   start-to-goal line and run under a recorded evaluation budget; its
   safety-constrained variant, which is the same search with a single added
-  refusal, and which on 4 September 2026 turned out not to be the same
-  optimiser in effect: it misses safe trajectories the unconstrained
-  search finds, by up to 0.08 legibility, so the gap between the two does
-  not currently measure the constraint alone. See below; and a sweep over
-  ceilings that traces the frontier
+  refusal, which on 4 September 2026 turned out not to be the same
+  optimiser in effect, missing safe trajectories the unconstrained search
+  found by up to 0.08 legibility, and which the same day was fixed by
+  seeding it from that search's answer wherever the constraint admits it,
+  with a test that fails against the defect it names. See below; and a
+  sweep over ceilings that traces the frontier
   and records a ceiling it found nothing under as a search outcome rather
   than as an error. A 159-test suite in CI, which also re-checks every
   scenario property against the committed code)
@@ -55,7 +56,7 @@ inspected.
   retried rather than counted as answered. Qwen and Llama are complete
   across all four cost ceilings, 160 decodes each; Gemini is complete at
   1.25 and at 2.00, 80 decodes, which is the contrast that decides
-  whether it attends to the stated budget. A 245-test suite in CI, which also
+  whether it attends to the stated budget. A 248-test suite in CI, which also
   re-checks every scenario property against the committed code and every
   committed record file for completeness)
 - [x] Scenario suite (eight worlds, 46 machine-checked facts carried
@@ -663,16 +664,13 @@ decisions, not reading notes.
   and every rung above 1.25 is still buying legibility. What replaced
   this as an open question is the non-monotone sweep found while
   checking it, recorded below.
-- Whether to seed the safety-constrained search from the unconstrained
-  answer at the same ceiling when that answer is already safe. Raised 4
-  September 2026 by the probe below, which found the constrained search
-  returning less than trajectories it is obliged to accept, in five rows
-  out of five, by up to 0.08 legibility. Until it is decided, the gap
-  between the two planners is not a measurement of the constraint and
-  the safety-constrained frontier cannot be a contribution. The earlier
-  question, whether `keep_out_shortcut` has a safe pocket at 1.75, is
-  answered: the safe trajectory exists and the constrained search does
-  not find it.
+- The safety-constrained search's seeding is no longer open. It was
+  raised and settled on 4 September 2026: it now starts from the
+  unconstrained answer at the same ceiling wherever the constraint
+  admits that answer, which closes all five shortfalls exactly. What is
+  open is what to do with the frontier now that it can be measured, since
+  the safety-constrained frontier was dropped as a candidate framing
+  while it was broken.
 - The confidence threshold and the evaluation budget are no longer open.
   Both were checked on 5 August 2026 and the results are recorded below:
   the threshold stays at 0.8, its admissible range is now enforced in
@@ -1346,6 +1344,58 @@ would make the constrained result at least as good as the unconstrained
 one in exactly the rows above. It also changes the instrument's central
 comparison and should be a decision rather than a patch dropped in while
 checking something else.
+
+## The seeding fix, and what it cost, 4 September 2026
+
+The constrained planner now consults the unconstrained search at the same
+ceiling before starting, and begins from its answer whenever the
+constraint admits it. Three properties make this a fix rather than a
+thumb on the scale.
+
+It cannot adopt anything unsafe. The seed is scored under the constrained
+rules like every other candidate, so an answer that enters a zone is
+refused rather than taken, and at ceilings where the cheapest legible
+route crosses, nothing changes at all.
+
+It cannot smuggle across budgets. The consulted search runs at the same
+ceiling on the same scenario, which is the thing the sweep refuses to do
+between ceilings and the reason chaining was never an option.
+
+It cannot come back below where it started, because the compass search
+only ever accepts an improvement, and the seed is both scored first,
+before the budget can be spent elsewhere, and kept first, ahead of the
+truncation to the restart allowance.
+
+All five shortfalls close, exactly rather than approximately:
+
+| world | ceiling | unconstrained | constrained before | after |
+| --- | --- | --- | --- | --- |
+| keep_out_shortcut | 1.75 | 0.8719 | 0.8353 | 0.8719 |
+| pillar_aisle | 1.10 | 0.8180 | 0.7374 | 0.8180 |
+| pillar_aisle | 1.25 | 0.8429 | 0.8420 | 0.8429 |
+| pillar_aisle | 1.50 | 0.8658 | 0.8621 | 0.8658 |
+| pillar_aisle | 2.00 | 0.8937 | 0.8921 | 0.8937 |
+
+That they close to the fourth decimal rather than overshooting says the
+constrained search finds nothing better than the seed in these worlds,
+which is its own small result: what the constraint costs here is what the
+unconstrained answer already pays, and the earlier gap was the optimiser
+the whole way.
+
+**What it costs.** A constrained run now spends its own budget plus the
+consulted search's, so about twice an unconstrained one. That is
+recorded per plan as `seed_search_evaluations` rather than folded into
+`evaluations`, because a budget that is not in the record cannot be read
+off the number it produced.
+
+**A test that failed against the defect it names.** The first version of
+the regression test ran at the suite's coarse settings, passed, and was
+worthless: at budget 40 and spacing 0.3 the constrained search on that
+fixture comes out ahead anyway, so the test would have passed against the
+bug it was written for. It was checked by disabling the fix and watching
+it pass, which is the only way that kind of dead test gets found. It now
+runs at the settings the defect was measured at and takes a few seconds,
+which is what a regression test for this is worth.
 
 ## Ground rules for this draft
 

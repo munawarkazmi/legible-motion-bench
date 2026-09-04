@@ -27,7 +27,7 @@ measure.
 from __future__ import annotations
 
 import random
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from math import hypot, sqrt
 
 from .. import metrics
@@ -244,8 +244,56 @@ class LegiblePlanner:
             params.extend(point)
         return params
 
+    def _unconstrained_answer(self, scenario: Scenario):
+        """What the same search finds when keep-out zones are only scored.
+
+        Returns the waypoints and what they cost to find, or None and zero
+        for the unconstrained planner, which has no twin to consult.
+
+        Refusing a candidate does not only shrink the feasible set, it
+        changes the path the compass search takes through it, because the
+        route to a good safe region can run through candidates that are
+        refused for entering a zone on the way. Measured on 4 September
+        2026: in every world and ceiling where the unconstrained answer
+        was itself safe, and so lay inside the constrained planner's own
+        feasible set, the constrained search came back below it. Five
+        cases out of five, by between 0.0010 and 0.0806 legibility, and
+        unchanged by quadrupling the budget. A search that returns less
+        than a trajectory it is obliged to accept is not measuring its
+        constraint, it is reporting its own seeding.
+
+        So the constrained planner starts from that answer whenever the
+        constraint admits it. Nothing is smuggled: it comes from the same
+        ceiling on the same scenario, and it is scored under the
+        constrained rules like any other candidate, so an unsafe one is
+        refused rather than adopted. It is not free either. The twin
+        search spends its own budget, recorded separately as
+        seed_search_evaluations, so a constrained run costs about twice
+        what an unconstrained one costs.
+        """
+        if not self.respect_keep_out:
+            return None, 0
+        try:
+            plan = replace(self, respect_keep_out=False).plan(scenario)
+        except PlannerError:
+            # The unconstrained search found nothing either, so there is
+            # nothing to seed from and the constrained search proceeds as
+            # it did before.
+            return None, 0
+        interior = plan.points[1:-1]
+        if len(interior) != self.waypoints:
+            return None, plan.settings["evaluations"]
+        params = []
+        for point in interior:
+            params.extend(point)
+        return params, plan.settings["evaluations"]
+
     def _starting_points(
-        self, scenario: Scenario, budget: _Budget, optimal_cost: float
+        self,
+        scenario: Scenario,
+        budget: _Budget,
+        optimal_cost: float,
+        unconstrained=None,
     ) -> list:
         """Admissible waypoint sets to search from.
 
@@ -256,9 +304,23 @@ class LegiblePlanner:
         candidates that are refused for the same reason. So the seed is
         only kept if it is admissible, and the search for further starts
         recentres on the first admissible point it finds.
+
+        The unconstrained answer, where there is one, is scored before
+        anything else and kept ahead of everything else. Both orderings
+        matter. Scored first, because a start scored after the budget has
+        run out is refused for that alone. Kept first, because the list
+        is truncated to the restart allowance, and this is the one start
+        whose presence the guarantee rests on: the compass search only
+        ever accepts an improvement, so beginning here is what stops the
+        constrained result falling below it.
         """
         base = self._seed_along_the_optimal_path(scenario)
         scored = []
+        pinned = []
+        if unconstrained is not None:
+            score = self._score(scenario, unconstrained, budget, optimal_cost)
+            if score is not None:
+                pinned.append(unconstrained)
         for candidate in self._structured_starts(scenario, base, optimal_cost):
             score = self._score(scenario, candidate, budget, optimal_cost)
             if score is not None:
@@ -283,7 +345,10 @@ class LegiblePlanner:
         # small budget is spent going deep in a few basins instead of
         # shallow in many.
         scored.sort(key=lambda pair: -pair[0])
-        return [candidate for _score, candidate in scored[: self.restarts + 1]]
+        return pinned + [
+            candidate
+            for _score, candidate in scored[: self.restarts + 1 - len(pinned)]
+        ]
 
     def _structured_starts(self, scenario: Scenario, base, optimal_cost: float) -> list:
         """Seeds that differ in which way they go round, not only by how far.
@@ -375,6 +440,10 @@ class LegiblePlanner:
         return best, best_score
 
     def plan(self, scenario: Scenario) -> Plan:
+        # Before this planner's own budget is touched, so that the seed is
+        # scored against a full budget rather than the remains of one.
+        unconstrained, seed_search_evaluations = self._unconstrained_answer(scenario)
+
         budget = _Budget(self.budget)
         optimal_cost = geodesic(
             scenario.start, scenario.true_goal_position, scenario.obstacles
@@ -388,7 +457,9 @@ class LegiblePlanner:
 
         best = None
         best_score = None
-        for start in self._starting_points(scenario, budget, optimal_cost):
+        for start in self._starting_points(
+            scenario, budget, optimal_cost, unconstrained
+        ):
             params, score = self._compass_search(
                 scenario, start, budget, optimal_cost
             )
@@ -426,6 +497,7 @@ class LegiblePlanner:
                 "respect_keep_out": self.respect_keep_out,
                 "cost_budget": self.cost_budget,
                 "observer": self.observer.name,
+                "seed_search_evaluations": seed_search_evaluations,
                 "seed_legibility": baseline,
                 "best_legibility": best_score,
             },

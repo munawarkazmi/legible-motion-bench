@@ -207,6 +207,76 @@ def test_the_cost_budget_is_never_exceeded(ceiling):
     assert plan.settings["cost_budget"] == ceiling
 
 
+def test_the_constraint_never_costs_a_trajectory_it_had_to_accept():
+    # The one test here that does not run at the suite's coarse settings,
+    # and it cannot. The constrained planner's feasible set is a subset of
+    # the unconstrained planner's, so whenever the unconstrained answer is
+    # itself safe it lies inside that subset and the constrained search is
+    # obliged to do at least as well. Until 4 September 2026 it did not,
+    # in five worlds and ceilings out of five, by up to 0.08 legibility,
+    # because refusing a candidate changes the path the compass search
+    # takes and not only where it may stop. The gap between the two
+    # planners was therefore a measurement of their seeding rather than of
+    # the constraint.
+    #
+    # The defect does not show at budget 40 and spacing 0.3: at that
+    # coarseness the constrained search on this world happens to come out
+    # ahead anyway, and a version of this test written that way passed
+    # against the very bug it names. So it runs at the settings where the
+    # defect was measured, which cost a few seconds, and that is the
+    # honest price of a regression test for it.
+    pillar = scenario("pillar_two_goals")
+    observer = Observer(condition="geodesic")
+    settings = {"budget": 500, "restarts": 3, "spacing": 0.15, "waypoints": 3}
+
+    free = LegiblePlanner(cost_budget=1.1, **settings).plan(pillar)
+    free_result = metrics.evaluate(pillar, observer, free.points, spacing=0.15)
+
+    # Asserted rather than skipped past. If the unconstrained answer here
+    # stops being safe, this test has stopped testing anything and should
+    # fail saying so instead of passing vacuously.
+    assert free_result.safety.keep_out_entries == 0
+    assert free_result.cost_ratio <= 1.1 + 1e-9
+
+    safe = LegiblePlanner(cost_budget=1.1, respect_keep_out=True, **settings).plan(
+        pillar
+    )
+    safe_result = metrics.evaluate(pillar, observer, safe.points, spacing=0.15)
+
+    assert safe_result.safety.keep_out_entries == 0
+    assert safe_result.legibility >= free_result.legibility - 1e-9
+
+
+def test_an_unsafe_seed_is_refused_rather_than_adopted():
+    # The other half of seeding from the unconstrained answer. At a tight
+    # ceiling on this world that answer crosses the keep-out zone, and a
+    # planner that took it because it scored well would be reporting a
+    # violation as a constrained result.
+    pillar = scenario("pillar_two_goals")
+    observer = Observer(condition="geodesic")
+
+    free = LegiblePlanner(cost_budget=1.1, **FAST).plan(pillar)
+    free_result = metrics.evaluate(pillar, observer, free.points, spacing=0.3)
+    assert free_result.safety.keep_out_entries > 0
+
+    safe = LegiblePlanner(cost_budget=1.1, respect_keep_out=True, **FAST).plan(pillar)
+    safe_result = metrics.evaluate(pillar, observer, safe.points, spacing=0.3)
+    assert safe_result.safety.keep_out_entries == 0
+
+
+def test_the_constrained_planner_records_what_its_seed_cost():
+    # Seeding from the unconstrained answer means running that search as
+    # well, so a constrained run costs about twice an unconstrained one.
+    # That is recorded rather than hidden, because a budget that is not
+    # in the record cannot be read off the number it produced.
+    pillar = scenario("pillar_two_goals")
+    free = LegiblePlanner(cost_budget=1.5, **FAST).plan(pillar)
+    safe = LegiblePlanner(cost_budget=1.5, respect_keep_out=True, **FAST).plan(pillar)
+
+    assert free.settings["seed_search_evaluations"] == 0
+    assert safe.settings["seed_search_evaluations"] > 0
+
+
 def test_a_looser_budget_buys_more_clarity_than_a_tight_one():
     open_world = scenario("open_two_goals")
     tight = LegiblePlanner(cost_budget=1.05, **FAST).plan(open_world)

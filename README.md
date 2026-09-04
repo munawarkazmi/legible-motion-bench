@@ -296,16 +296,18 @@ legibility optimiser is a compass search over K free interior waypoints
 with the endpoints pinned, derivative free because the optimal cost-to-go
 has kinks wherever the shortest path switches which obstacle corner it
 rounds. Its safety-constrained variant is the same search with a single
-added refusal. That was described here as making the gap between the two
-planners a measurement of the constraint rather than of two different
-optimisers, and on 4 September 2026 that turned out to be false: the
-refusal also changes the path the search takes, and the constrained
-search returns less than trajectories it is obliged to accept, by up to
-0.08 legibility. Run `tools/ceiling_grid.py --respect-keep-out` to see
-it. No number reported here comes from the constrained planner, and the
-frontier table below is the unconstrained sweep, but the gap between the
-two planners should not be read as the cost of the constraint until this
-is fixed.
+added refusal. That refusal turned out to change more than the feasible
+set: it changes the path the search takes through it, and until 4
+September 2026 the constrained search returned less than trajectories it
+was obliged to accept, by up to 0.08 legibility, which made the gap
+between the two planners a measurement of their seeding rather than of
+the constraint. It now starts from the unconstrained answer at the same
+ceiling wherever the constraint admits that answer, which closes every
+such case exactly. An unsafe answer is still refused rather than
+adopted, so the constraint binds where it should. The consulted search
+spends its own budget, recorded per plan as `seed_search_evaluations`,
+so a constrained run costs about twice an unconstrained one. Run
+`tools/ceiling_grid.py --respect-keep-out` to see the comparison.
 
 Both take a ceiling on the cost ratio, and sweeping that ceiling is what
 turns a point into a frontier. In the `pillar_two_goals` fixture, at a
@@ -362,7 +364,7 @@ Requires Python 3.10 or newer and pytest. No other dependencies.
 python -m pytest -q
 ```
 
-245 tests. To check the facts every scenario carries, and to see the suite
+248 tests. To check the facts every scenario carries, and to see the suite
 inventory that any quoted denominator has to come from:
 
 ```bash
