@@ -208,9 +208,8 @@ def test_the_cost_budget_is_never_exceeded(ceiling):
 
 
 def test_the_constraint_never_costs_a_trajectory_it_had_to_accept():
-    # The one test here that does not run at the suite's coarse settings,
-    # and it cannot. The constrained planner's feasible set is a subset of
-    # the unconstrained planner's, so whenever the unconstrained answer is
+    # The constrained planner's feasible set is a subset of the
+    # unconstrained planner's, so whenever the unconstrained answer is
     # itself safe it lies inside that subset and the constrained search is
     # obliged to do at least as well. Until 4 September 2026 it did not,
     # in five worlds and ceilings out of five, by up to 0.08 legibility,
@@ -219,29 +218,27 @@ def test_the_constraint_never_costs_a_trajectory_it_had_to_accept():
     # planners was therefore a measurement of their seeding rather than of
     # the constraint.
     #
-    # The defect does not show at budget 40 and spacing 0.3: at that
-    # coarseness the constrained search on this world happens to come out
-    # ahead anyway, and a version of this test written that way passed
-    # against the very bug it names. So it runs at the settings where the
-    # defect was measured, which cost a few seconds, and that is the
-    # honest price of a regression test for it.
+    # The ceiling is 1.15 and it is load bearing. Whether the defect shows
+    # at all depends on the ceiling: at 1.1 the coarse constrained search
+    # on this world happens to come out ahead anyway, and the first
+    # version of this test, written at 1.1 and at 1.5 and 2.0, passed
+    # against the very bug it names. At 1.15 the search misses by 0.0869,
+    # which is what this asserts against. A regression test written after
+    # its fix has to be run once with the fix removed or it is decoration.
     pillar = scenario("pillar_two_goals")
     observer = Observer(condition="geodesic")
-    settings = {"budget": 500, "restarts": 3, "spacing": 0.15, "waypoints": 3}
 
-    free = LegiblePlanner(cost_budget=1.1, **settings).plan(pillar)
-    free_result = metrics.evaluate(pillar, observer, free.points, spacing=0.15)
+    free = LegiblePlanner(cost_budget=1.15, **FAST).plan(pillar)
+    free_result = metrics.evaluate(pillar, observer, free.points, spacing=0.3)
 
     # Asserted rather than skipped past. If the unconstrained answer here
     # stops being safe, this test has stopped testing anything and should
     # fail saying so instead of passing vacuously.
     assert free_result.safety.keep_out_entries == 0
-    assert free_result.cost_ratio <= 1.1 + 1e-9
+    assert free_result.cost_ratio <= 1.15 + 1e-9
 
-    safe = LegiblePlanner(cost_budget=1.1, respect_keep_out=True, **settings).plan(
-        pillar
-    )
-    safe_result = metrics.evaluate(pillar, observer, safe.points, spacing=0.15)
+    safe = LegiblePlanner(cost_budget=1.15, respect_keep_out=True, **FAST).plan(pillar)
+    safe_result = metrics.evaluate(pillar, observer, safe.points, spacing=0.3)
 
     assert safe_result.safety.keep_out_entries == 0
     assert safe_result.legibility >= free_result.legibility - 1e-9
