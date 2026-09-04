@@ -46,15 +46,22 @@ A robot moving towards one of several possible goals is unreadable for
 the first seconds of its motion, which is when a person nearby hesitates
 or steps into its path. Legible motion deviates early to resolve that
 ambiguity, and the deviation costs path length. What it can also cost is
-the constraint the robot was supposed to respect. We present a small
+the constraint the robot was supposed to respect. We contribute a small
 judge-free benchmark that measures the three together: legibility in the
 form of Dragan et al., path cost against the exact optimum, and
-satisfaction of stated keep-out constraints. Eight worlds each carry
-machine-checked facts about their own geometry, optimal cost-to-go is
-computed exactly over a visibility graph, and no human rater or model
-judge appears anywhere in the scoring loop. Asked to produce legible
-motion under a stated path budget, three language models returned 120
-trajectories, and they differ exactly where it matters. Two of them
+satisfaction of stated keep-out constraints. Eight worlds carry 46
+machine-checked facts about their own geometry, so a world and its proof
+obligations cannot drift apart. Optimal cost-to-go is the exact geodesic
+over a visibility graph rather than a grid approximation, computed
+through a predicate that falls back to exact arithmetic wherever floating
+point cannot prove its own sign. No human rater and no model judge
+appears anywhere in the scoring loop. Every reply is committed as a
+record, and every table and figure below is recomputed from those records
+by a tool, so each number traces to the reply that produced it. Anything
+that emits a trajectory can be scored, and adding a planner or a model
+costs one record file. We demonstrate the instrument on three language
+models asked to produce legible motion under a stated path budget, which
+returned 120 trajectories and differ exactly where it matters. Two of them
 called all 80 of their trajectories legible, including the 25 that were
 not physically possible, and broke the stated budget 24 times between
 them; in the world built so that the clearest signal is the one the robot
@@ -126,8 +133,26 @@ any reported result.
 
 This report contributes an instrument rather than a planner: a
 reproducible way to ask what a given trajectory pays, in path and in
-constraint satisfaction, for the clarity it buys. We use it to ask
-whether language models produce legible motion when told to.
+constraint satisfaction, for the clarity it buys.
+
+What is released is the instrument, not a result that happens to have
+code attached. It is eight worlds, each carrying the facts about its own
+geometry that a test re-checks against the implementation; an observer
+and three metrics with no free parameter in the ones the headline rests
+on; an exact optimal cost-to-go to measure path cost against; a
+legibility optimiser and a shortest-path baseline to compare a candidate
+trajectory with; the prompt template, carried by SHA-256 into every
+record so a comparison is of models and not of prompts; and the tools
+that turn committed records into the tables and the figure printed here.
+The worlds and the facts they carry are the fixed part. What is measured
+against them is not: anything that emits a sequence of positions can be
+scored, and the cost of adding a planner or a model is one record file.
+Scoring is a separate step from asking, so a metric can be recomputed
+from replies already given without spending an API call.
+
+We use it here to ask whether language models produce legible motion when
+told to, which is a demonstration of the instrument rather than the
+reason it exists.
 
 \section{Related work}
 
@@ -224,6 +249,14 @@ halves so the corpus cannot quietly become easy.
 Keep-out zones do not block motion. A trajectory may cross one and is
 scored for having done so. If they blocked motion there would be no
 trade to measure.
+
+The code is tested rather than merely posted. A suite of 248 tests runs
+in continuous integration and re-checks all 46 facts the worlds carry
+against the committed implementation, so a change that alters a world's
+geometry fails the build instead of quietly moving a published number.
+Tests assert on trajectory arrays and metric values and never on rendered
+image bytes, and a figure is treated as a drawing of numbers that have
+already been verified elsewhere.
 
 Legibility optimisation is bounded by a ceiling on the cost ratio. That
 bound is not our idea: \cite{dragan2013legibility} adds a cost
