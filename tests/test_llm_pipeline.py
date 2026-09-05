@@ -478,15 +478,45 @@ def tracked_record_files(root: Path):
     return [root / name for name in listing.stdout.split() if name]
 
 
+def declared_in_progress(root):
+    """Cells `results/IN_PROGRESS` says are still being filled.
+
+    A rate limited run takes more than one sitting, and the choice while
+    it is unfinished is between committing a partial cell and leaving the
+    only copy of a day's answered decodes on one machine. Declaring the
+    gap is the third option: the file is in the repository, and the fact
+    that it is not finished is written down rather than inferred from a
+    count nobody checks.
+    """
+    listing = root / "results" / "IN_PROGRESS"
+    if not listing.exists():
+        return set()
+    names = set()
+    for line in listing.read_text().splitlines():
+        line = line.split("#", 1)[0].strip()
+        if line:
+            names.add(line)
+    return names
+
+
 def test_every_committed_record_file_is_complete_and_scoreable(suite):
     # The record files are the evidence. A committed run that had lost a
     # scenario, or that named a checkpoint the manifest does not know,
-    # would be worse than no run at all.
+    # would be worse than no run at all. A cell declared in progress is
+    # the one exception, and it is held to every other invariant here.
     root = Path(__file__).resolve().parents[1]
     manifest = adapter.load_manifest()
+    in_progress = declared_in_progress(root)
     for path in tracked_record_files(root):
         records = runner.load_records(path)
-        runner.require_complete(records, suite, str(path))
+        if path.name in in_progress:
+            # Asserted the other way round on purpose. A finished run left
+            # on the list would quietly exempt itself from the check that
+            # matters, so the declaration has to expire by failing.
+            with pytest.raises(ValueError, match="incomplete"):
+                runner.require_complete(records, suite, str(path))
+        else:
+            runner.require_complete(records, suite, str(path))
         for record in records:
             assert record["run_alias"] in manifest, (path.name, record["run_alias"])
             assert record["api_model"] == manifest[record["run_alias"]]["api_model"]

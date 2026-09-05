@@ -1,0 +1,28 @@
+# Cells still being filled, one filename per line.
+#
+# A record file named here is allowed to be incomplete, and only that.
+# Every other invariant CI asserts on records still applies to it: the
+# alias is checked against the manifest, the checkpoint against the
+# alias, the prompt hash for length, the record version for a match.
+# Nothing here reaches a table either, because the scoring tool and the
+# table builder call runner.require_complete for themselves and skip a
+# cell that does not answer every scenario.
+#
+# The declaration cannot go stale. CI asserts that a file named here is
+# genuinely incomplete, so a finished run left on this list fails the
+# build and has to be removed from it.
+#
+# Why this exists: the Gemini free tier answers about five requests a
+# minute with a daily ceiling on top, so a forty decode cell takes more
+# than one sitting. The alternative to declaring the gap was leaving the
+# only copy of a day's answered decodes on one laptop overnight.
+
+gemini_flash_c1p1_k1.jsonl
+gemini_flash_c1p1_k3.jsonl
+gemini_flash_c1p1_k4.jsonl
+gemini_flash_c1p1_k5.jsonl
+gemini_flash_c1p5_k1.jsonl
+gemini_flash_c1p5_k2.jsonl
+gemini_flash_c1p5_k3.jsonl
+gemini_flash_c1p5_k4.jsonl
+gemini_flash_c1p5_k5.jsonl

@@ -67,14 +67,29 @@ python tools/run_models.py --config configs/models.json \
 
 That is 80 requests, eight worlds by five samples by two ceilings.
 
-Expect it to take more than one sitting. Gemini has returned 429 quota
-exceeded and 503 high demand after about twenty replies. Nothing is lost:
-a failed request is recorded as evidence and retried rather than counted
-as answered, the resume guard skips whatever is already answered, and a
-file built across two days is byte-identical to one built in a single
-run, which `tests/test_llm_pipeline.py` asserts. `--limit` stops
-deliberately at a known point, which is better than being stopped
-mid-request.
+Expect it to take more than one sitting, and pace it. Measured on 5
+September 2026, the free tier answers five requests a minute for this
+model with a daily ceiling on top of that, so forty decodes is not a
+single run. Two things about `--limit` matter here: it caps requests per
+`k` file rather than per invocation, so `--limit 4` at `--k 5` asks for
+twenty requests and not four, and a refused scenario costs two requests
+because the Gemini backend retries once. `--limit 1` with a sleep of
+about a hundred seconds between passes is five requests per pass and
+stays under the limit.
+
+Nothing is lost when it stops. A failed request is recorded as evidence
+and retried rather than counted as answered, the resume guard skips
+whatever is already answered, and a file built across two days is
+byte-identical to one built in a single run, which
+`tests/test_llm_pipeline.py` asserts.
+
+Commit what has answered rather than holding it until a cell is full,
+and name the unfinished files in `results/IN_PROGRESS`. CI requires
+every committed record file to answer every scenario, and that listing
+is the declared exception: a file named there may be incomplete and is
+held to every other invariant, while a finished run left on the list
+fails the build so the declaration cannot go stale. Remove the names as
+the cells fill.
 
 ## After a run
 
