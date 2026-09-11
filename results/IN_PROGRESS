@@ -17,10 +17,6 @@
 # than one sitting. The alternative to declaring the gap was leaving the
 # only copy of a day's answered decodes on one laptop overnight.
 
-gemini_flash_c1p1_k1.jsonl
-gemini_flash_c1p1_k3.jsonl
-gemini_flash_c1p1_k4.jsonl
-gemini_flash_c1p1_k5.jsonl
 gemini_flash_c1p5_k1.jsonl
 gemini_flash_c1p5_k2.jsonl
 gemini_flash_c1p5_k3.jsonl
