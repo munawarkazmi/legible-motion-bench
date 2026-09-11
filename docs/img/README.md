@@ -12,6 +12,16 @@ regeneration would fill the history with noise that proves nothing. They
 are committed deliberately at milestones, in the same way the paper PDF is,
 once the scenario suite exists and a figure is one the paper refers to.
 
+Two are committed. `keep_out_shortcut.gif` is the one the report refers to, in
+the default grid. `pillar_aisle.gif` is the world where the cheapest route
+crosses the keep-out zone and every legible one stays out of it, laid out in a
+single row because it is published at banner width elsewhere:
+
+    python tools/render_figures.py scenarios --out docs/img --columns 4
+
+That is the whole difference between them. Neither is touched afterwards, and a
+figure that has been through an image editor is not one of these.
+
 Nothing in CI checks a rendered image. The trajectory arrays and the metric
 values are what get asserted, in `tests/test_render.py` and the metric
 tests; a GIF is a picture of numbers that were already checked. The belief

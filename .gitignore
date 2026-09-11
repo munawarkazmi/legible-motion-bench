@@ -23,9 +23,11 @@ paper/*.synctex.gz
 # matplotlib version. They are committed deliberately at milestones rather
 # than on every regeneration. See docs/img/README.md.
 docs/img/*.gif
-# One exception: the animation the README shows. Committed deliberately,
-# regenerated only when the figure it illustrates changes.
+# Two exceptions, both committed deliberately and regenerated only when the
+# figure they illustrate changes: the animation this README shows, and the
+# banner-width one published on the profile page.
 !docs/img/keep_out_shortcut.gif
+!docs/img/pillar_aisle.gif
 
 # LaTeX build artefacts; the PDF is committed at milestones only.
 paper/*.aux
