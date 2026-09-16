@@ -1415,8 +1415,9 @@ which is what a regression test for this is worth.
 ## The rewrite builds, and a line ending incident, 4 September 2026
 
 Both builds are four pages with zero overfull boxes, no undefined
-references and nothing missing. That is the whole of the format question
-settled: the limit is four pages excluding references, the content ends
+references and nothing missing. (One vbox came back on 16 September when
+the abstract was cut to the 170 word limit; see below.) That is the whole
+of the format question settled: the limit is four pages excluding references, the content ends
 on page three and the bibliography takes page four, so the instrument-led
 rewrite fits with a page in hand rather than by a line.
 
@@ -1487,6 +1488,35 @@ untouched, because they were about those two budgets and the records
 behind them have not changed: `keep_out_shortcut` going 1.0819 to 1.4139
 and buying 0.7710 to 0.8496, `wall_choice` crossing the baseline, and
 `fan_middle` spending nothing extra where deviating cannot help.
+
+## The 170 word abstract, and the vbox it brought back, 16 September 2026
+
+The Short Contributions call caps the abstract at 170 words and the title
+at 110 characters. The title was already inside at 96. The abstract was
+390, so it was rewritten rather than trimmed, and it is now 170 exactly.
+
+The completed grid made the shorter version the stronger one, which was
+not obvious in advance. The old abstract quoted figures from ceiling 1.25
+alone: all 80 trajectories claimed legible, 25 of them not physically
+possible. Stated across the whole grid that becomes 320 claimed legible
+and 93 not physically possible, against a third model feasible on 160 of
+160. A bigger claim in fewer words.
+
+Dropped to make room, and all of it still in the body: the per world
+detail, the refusal finding, and the exact arithmetic predicate.
+
+**Both builds now report one overfull vbox of 1.71701pt where they
+reported none.** About six tenths of a millimetre of vertical overflow,
+raised while the output routine ships a page, and no text runs past a
+column margin. It is the same class as the 1.259pt vbox recorded on 10
+August, which was checked on the rendered page and left alone. The
+shorter abstract moved the page break and brought one back, in both
+builds this time rather than only the named one. Four pages either way,
+no undefined references.
+
+Recorded rather than fixed. The line above this entry said zero overfull
+boxes and that had stopped being true, which is the kind of stale claim
+this file exists to catch.
 
 ## Ground rules for this draft
 
