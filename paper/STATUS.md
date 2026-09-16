@@ -1565,21 +1565,22 @@ bibliography filling the rest, and the room the earlier entry describes
 had quietly stopped being used. Measured on the built PDF against the
 word density of pages two and three, that is about 644 words.
 
-A caveat on the number. The call page could not be fetched from the
-machine this was checked on, because the network policy there blocks
-humanrobotinteraction.org along with the mirrors and the archive. Four
-independent searches return the same sentence, "three types of short
-contributions (4 pages, excluding references)", and it agrees with what
-this file already said, but the page itself has not been read since the
-venue moved. It is a ten second check in a browser and it should be done
-before the draft is submitted rather than trusted from here.
+The call page was read the same day, after this entry was first written
+from search results because the network policy on the machine it was
+checked from blocks humanrobotinteraction.org along with the mirrors and
+the archive. The page says "three types of short contributions (4 pages,
+excluding references)", so the caveat is discharged. It also settles the
+title and abstract caps this draft was already built to, 110 characters
+and 170 words, and it corrects one word used below: the stated review
+criteria are accessibility, completeness, utility and relevance, not
+availability.
 
 **Nothing had been cut from the body.** The abstract entry above records
 the per world detail, the refusal finding and the exact predicate as
 dropped from the abstract, which the call caps at 170 words, and all
 three are still in the body in full. So the room was not a matter of
 restoring anything. It went where the draft was weakest against what
-this track is judged on, which is availability, completeness, utility and
+this track is judged on, which is accessibility, completeness, utility and
 relevance. Against those the draft read as a results paper with a closing
 note on where to find the code.
 
