@@ -1535,11 +1535,15 @@ page break did not move: four pages each, the same single vbox on both,
 nothing undefined. `paper.pdf` grew by fifteen bytes and `paper-named.pdf`
 by seventeen, which is the whole of the difference.
 
-The absent city on the affiliation is still open, recorded on 6 August and
-unchanged. `acmart` documents `\institution`, `\city` and `\country` as
-mandatory and warns on the missing one. It costs nothing in the anonymised
-build, where the block is suppressed, but the preprint carries the author
-block and goes out without a city.
+The absent city on the affiliation is closed, open since 6 August.
+`acmart` documents `\institution`, `\city` and `\country` as mandatory
+and warns on the missing one, which cost nothing in the anonymised build,
+where the block is suppressed, but the preprint carries the author block
+and was going out without a city. It now reads Independent, Multan,
+Pakistan. The country changed with it: the entry said United Kingdom from
+when the work was being done in Winchester, and the affiliation is
+independent rather than institutional, so it records where the author is
+rather than a body they belong to.
 
 ## Ground rules for this draft
 
