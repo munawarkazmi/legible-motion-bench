@@ -530,11 +530,19 @@ python tools/ceiling_sweep.py --alias gemini_flash
 python tools/consistency.py results/gemini_flash_c1p25_k*.jsonl
 ```
 
-**Draw the figures.** This is the one part that needs matplotlib:
+**Draw the figures.** This is the one part that needs matplotlib, and
+the one slow command here. Budget several minutes for all eight worlds:
+it plans four trajectories per world and renders every frame, which is
+about forty seconds for a world with no obstacles and longer for the
+others. It prints each panel's scores as it goes and writes one GIF per
+scenario, roughly a megabyte each.
 
 ```bash
 python tools/render_figures.py scenarios --out docs/img
 ```
+
+To try one world first, point it at a directory holding just that
+scenario file. Nothing else here takes more than a minute.
 
 ## Paper
 
