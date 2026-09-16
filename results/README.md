@@ -7,7 +7,7 @@ that produced it without spending quota again.
 
 ## What is here
 
-51 files carrying 408 answered decodes. Each writes
+61 files carrying 488 answered decodes. Each writes
 `results/<alias>_c<ceiling>[_k<sample>].jsonl`, one JSON object per line,
 appended and flushed as it goes. Every record carries the run alias, the
 exact `api_model` that answered, the cost ceiling it was given, the

@@ -87,9 +87,9 @@ stated ceiling of 1.25. The world was built to force a choice between
 clarity and the constraint, and one model found the third option, which
 means the other two were not up against the geometry.
 
-The claim behaves the same way, and a second budget shows what it is
-worth. 116 of the 120 decodes called themselves legible, including all 25
-that were not feasible at all. All four refusals are Gemini's: three in
+The claim behaves the same way, and changing the stated budget shows what
+it is worth. 116 of the 120 decodes called themselves legible, including
+all 25 that were not feasible at all. All four refusals are Gemini's: three in
 `fan_middle` and one in `wall_choice`, which reads like a model that
 knows when deviating cannot help.
 
@@ -108,19 +108,18 @@ per model:
 
 | stated ceiling | Qwen median | Qwen over | Llama median | Llama over | Gemini median | Gemini over |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1.10 | 1.1663 | 17 | 1.2817 | 30 | not run | not run |
+| 1.10 | 1.1663 | 17 | 1.2817 | 30 | 1.0536 | 0 |
 | 1.25 | 1.1588 | 9 | 1.2817 | 15 | 1.0819 | 0 |
-| 1.50 | 1.1712 | 3 | 1.2817 | 10 | not run | not run |
+| 1.50 | 1.1712 | 3 | 1.2817 | 10 | 1.1116 | 0 |
 | 2.00 | 1.1709 | 0 | 1.2817 | 0 | 1.1539 | 0 |
 
 The ceiling nearly doubles. Qwen's median cost moves by 0.012 and Llama's
 does not move at all: 1.2817 at every ceiling, to four decimals. That is
 not a coincidence of the median, it is the distribution repeating. Across
-roughly thirty feasible decodes at each ceiling Llama returns only
-thirteen to sixteen distinct trajectories, and their cost ratios cluster
-on the same modal value of 1.2452 every time. Since that modal path
-already exceeds a ten per cent budget, every feasible decode breached the
-tightest ceiling.
+roughly thirty feasible decodes at each ceiling Llama returns only nine to
+eleven distinct trajectories, and their cost ratios cluster on the same
+modal value of 1.2452 every time. Since that modal path already exceeds a
+ten per cent budget, every feasible decode breached the tightest ceiling.
 
 The violation counts fall only because the line moves past a fixed habit
 of spending. Where the optimiser treats the budget as a constraint that
@@ -129,32 +128,33 @@ above, both of these models treat it as text. Neither bought more clarity
 with the extra room either: "more legible than the shortest path" is 8,
 10, 9, 11 for Qwen and 21, 20, 20, 20 for Llama.
 
-Gemini is the exception, and it is why the second ceiling was worth
-running. Its median cost rises from 1.0819 to 1.1539 when the stated
-budget goes from 1.25 to 2.00, and it rises in seven of the eight worlds.
+Gemini is the exception, and it is why the rest of the grid was worth the
+quota. Its median cost climbs at every rung, 1.0536 to 1.0819 to 1.1116 to
+1.1539, and per world it is non-decreasing across all four in seven of the
+eight; only `pillar_aisle` turns back, by 0.0044 between 1.50 and 2.00,
+which is five samples of a stochastic decoder and not a budget effect.
 Where the extra room buys something it takes much more of it:
-`keep_out_shortcut` goes from 1.0819 to 1.4139 and its legibility from
-0.7710 to 0.8496, with no keep-out entry at either budget, and
+`keep_out_shortcut` goes from 1.0819 to 1.4139 between the 1.25 and 2.00
+budgets and its legibility from 0.7710 to 0.8496, with no keep-out entry
+at any of the four, and
 `wall_choice` crosses from below the shortest path's legibility to well
-above it, 0.5339 to 0.7575 against a baseline of 0.5457. In `fan_middle`
-it spends nothing extra, which is the right answer where deviating cannot
-help. It never exceeded either stated budget. For this model the budget
-is a constraint; for the other two it is text.
+above it between 1.25 and 1.50, 0.5339 to 0.7575 against a baseline of
+0.5457. In `fan_middle` it spends nothing extra at any budget, which is
+the right answer where deviating cannot help. It never exceeded any of the
+four stated ceilings. For this model the budget is a constraint; for the
+other two it is text.
 
-Three models at one temperature is a pilot, not a finding. All three are
-now swept across all four ceilings, 480 decodes, and the model that
-responds to the budget does so at every step of it: 1.0536 at a stated
-1.10, then 1.0819, 1.1116 and 1.1539. The other two pay 1.2817 and about
-1.17 whatever they are told, so their violation counts fall only because
-the line moves. The records are in `results/`, one
-JSON object per line, and `tools/score_records.py`,
-`tools/consistency.py` and `tools/ceiling_sweep.py` recompute every number
-above from them.
+Three models at one temperature is a pilot, not a finding, and the grid
+being full does not make it one: 480 decodes is still one prompt, one
+temperature and three models. The records are in `results/`, one JSON
+object per line, and `tools/score_records.py`, `tools/consistency.py` and
+`tools/ceiling_sweep.py` recompute every number above from them.
 
 ## Status
 
-Early. Three components are built and tested; the rest is not written yet,
-and this section will say so until it is.
+Every component on this list is built and tested, and the language model
+grid is full. What is left is the write-up, whose honest state is kept in
+`paper/STATUS.md` rather than here.
 
 - [x] World model: scenarios, exact convex polygonal geometry, exact optimal
   cost-to-go, and machine-checked properties carried inside scenario files
@@ -165,12 +165,12 @@ and this section will say so until it is.
 - [x] Planners: shortest path, the legibility optimiser under a path cost
   ceiling, and its safety-constrained variant, with a sweep over ceilings
   that traces the frontier
-- [ ] Trajectories proposed by language models
+- [x] Trajectories proposed by language models
 - [x] Rendering: one animated GIF per scenario, panels side by side, the
   observer's belief updating underneath, all panels on one clock
 - [x] Scenario suite: eight worlds, each carrying its facts inline and
   re-checked in CI
-- [ ] Language model evaluation: the prompt, the extraction, the record
+- [x] Language model evaluation: the prompt, the extraction, the record
   format, the resume guard and the scoring are built and tested. Three
   models are committed and all three are complete at k = 5 across all
   four cost ceilings, 160 decodes each: Qwen 2.5 7B on a local Ollama,
@@ -250,13 +250,16 @@ paths to both goals share their first leg around the wall, so the informed
 observer holds at the prior over that stretch and learns nothing, while the
 naive observer's belief in the true goal falls from 0.5000 to 0.3164 before
 the path clears the corner: the same motion reads as heading for the wrong
-goal. Both traces are asserted in
+goal. Legibility on that one path reads 0.5457 under the informed observer
+and 0.4370 under the naive one. Both traces are asserted in
 `tests/test_observer.py::test_the_two_observers_disagree_when_the_room_is_not_visible`.
 
-The suite reproduces it. Along the cheapest route in `wall_choice` the
-informed observer holds at exactly 0.5000 while the naive one falls to
-0.3164, and legibility on that one path reads 0.5457 under the first and
-0.4370 under the second. Every number reported above is under the
+The suite carries that world as `wall_choice`, with the same geometry, the
+same start and the same goals, because the language model runs read from
+`scenarios/` and the planner tests read from `tests/fixtures/`. So those
+are not two measurements that agree. They are one measurement under two
+names, and it is worth saying because a reader counting worlds would
+otherwise count it twice. Every number reported above is under the
 informed observer, and the paper says so.
 
 The rationality coefficient is exposed rather than absorbed, and travels in
@@ -315,22 +318,24 @@ so a constrained run costs about twice an unconstrained one. Run
 `tools/ceiling_grid.py --respect-keep-out` to see the comparison.
 
 Both take a ceiling on the cost ratio, and sweeping that ceiling is what
-turns a point into a frontier. In the `pillar_two_goals` fixture, at a
-budget of 250 evaluations:
+turns a point into a frontier. That sweep is the table at the top of this
+file. The `pillar_two_goals` fixture is `pillar_aisle` again, for the same
+reason `wall_detour` is `wall_choice`, so it is not run here a second time.
+
+What the fixture adds is the row with no ceiling at all, beside the
+loosest one that has a ceiling:
 
 ```
   ceiling   legibility   cost ratio   keep-out   clearance
-  1.00          0.7200       1.0000          1      0.1916
-  1.05          0.7995       1.0500          1      1.6343
-  1.10          0.8180       1.0999          0      2.2710
-  1.25          0.8429       1.2498          0      2.8474
+  2.00          0.8937       1.9998          0      3.6385
   unbounded     0.9286       3.6297          0      2.6798
 ```
 
-The cost ratio sits on the ceiling at every row, so the constraint binds.
-The safety column changes along the curve: at a five per cent path budget
-the best trajectory found still crosses the keep-out zone, and only at ten
-per cent does it buy its way out.
+Removing the budget buys 0.0349 more legibility at a cost ratio of 3.63
+rather than 2.00, and the clearance falls from 3.6385 to 2.6798 while it
+does. Past a point the search spends path on a route that is both longer
+and closer to the obstacle, which is the shape of the trade once nothing
+holds it, and the reason every reported number carries a ceiling.
 
 The optimiser is a local search and cannot prove a trajectory does not
 exist, only that it did not find one. A sweep records a ceiling it found
@@ -363,7 +368,9 @@ value is absent rather than large, because a large number reads as
 
 ## Running it
 
-Requires Python 3.10 or newer and pytest. No other dependencies.
+Requires Python 3.10 or newer and pytest. The benchmark itself has no
+other dependencies. Rendering needs matplotlib, which is the `render`
+extra in `pyproject.toml` and the only thing CI installs beyond pytest.
 
 ```bash
 python -m pytest -q
@@ -377,8 +384,12 @@ python tools/verify_scenarios.py scenarios tests/fixtures
 ```
 
 ```bash
-python tools/report_suite.py tests/fixtures
+python tools/report_suite.py scenarios
 ```
+
+The first checks 60 recorded properties, 46 of them in the eight suite
+worlds and the rest in the three fixtures. The second prints the suite on
+its own, which is where every "eight worlds" in this file comes from.
 
 Adding `--write` to the first command computes and records the value of
 every property that carries one. That is the only way a computed number
