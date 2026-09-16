@@ -1417,9 +1417,10 @@ which is what a regression test for this is worth.
 Both builds are four pages with zero overfull boxes, no undefined
 references and nothing missing. (One vbox came back on 16 September when
 the abstract was cut to the 170 word limit; see below.) That is the whole
-of the format question settled: the limit is four pages excluding references, the content ends
-on page three and the bibliography takes page four, so the instrument-led
-rewrite fits with a page in hand rather than by a line.
+of the format question settled: the limit is four pages excluding
+references, the content ends on page three and the bibliography takes
+page four, so the instrument-led rewrite fits with a page in hand rather
+than by a line.
 
 The named build's one overfull vbox of 1.259pt, recorded on 10 August as
 not worth chasing, is gone. Nothing was done to it; the rewrite moved
@@ -1552,6 +1553,87 @@ same 413944 bytes with the same content, differing only in its build
 timestamp and PDF id, because the anonymised block never printed the
 field. That is the useful half of the result. A reviewer sees exactly the
 same four pages as before.
+
+## The draft is aimed at what the track scores, 16 September 2026
+
+The limit was already in this file. The entry of 4 September records it
+as four pages excluding references, and the number survived the move from
+Late-Breaking Reports to Short Contributions, so nothing was discovered
+today. What had changed is that the draft grew: the content no longer
+ends on page three, it ends a quarter of the way down page four with the
+bibliography filling the rest, and the room the earlier entry describes
+had quietly stopped being used. Measured on the built PDF against the
+word density of pages two and three, that is about 644 words.
+
+A caveat on the number. The call page could not be fetched from the
+machine this was checked on, because the network policy there blocks
+humanrobotinteraction.org along with the mirrors and the archive. Four
+independent searches return the same sentence, "three types of short
+contributions (4 pages, excluding references)", and it agrees with what
+this file already said, but the page itself has not been read since the
+venue moved. It is a ten second check in a browser and it should be done
+before the draft is submitted rather than trusted from here.
+
+**Nothing had been cut from the body.** The abstract entry above records
+the per world detail, the refusal finding and the exact predicate as
+dropped from the abstract, which the call caps at 170 words, and all
+three are still in the body in full. So the room was not a matter of
+restoring anything. It went where the draft was weakest against what
+this track is judged on, which is availability, completeness, utility and
+relevance. Against those the draft read as a results paper with a closing
+note on where to find the code.
+
+Availability is now Availability and use, and says what the call asks a
+code submission to say. That it runs on Python 3.10 with no third-party
+package and matplotlib only for figures. What the three commands do. That
+adding a planner is one class with a `plan` method and adding a model is
+one backend with a `complete` method, both then scored by the code that
+scored everything here, because scoring takes a trajectory and a world
+and knows nothing about what produced either. That scoring is deliberately
+outside the runner, so changing a metric cannot rewrite what a model said.
+That worlds are validated strictly in both directions, because a
+misspelled `keep_out_zones` would otherwise load as a world in which
+every planner is perfectly safe.
+
+Responsible use is a new section because the call asks for one and there
+was none, which is the kind of gap a reviewer with a checklist marks
+without needing an argument. No participants, no personal data, replies
+committed as they came back, the 292 failed requests recorded as evidence
+and retried rather than dropped, the impossible paths kept and counted
+rather than filtered. Then the two readings worth refusing in advance: a
+legibility score is not a safety certificate, and a model's standing here
+is its standing on this instrument under one prompt at one temperature.
+
+Two corrections went in alongside. `\acmConference` had never been set,
+so both builds printed acmart's placeholder, Conference'17, July 2017,
+Washington, DC, USA, in the running head. Rights, ISBN and DOI are left
+unset on purpose: those are camera-ready values and inventing one is
+worse than a placeholder. And the threshold sensitivity figure read 55 of
+95 down to 31 of 95, which is accurate for the 1.25 cell alone while
+every other number in the paper reports the grid. Over all 480 decodes it
+is 234 of 387 down to 144 of 387, with 72 of the 387 verdicts differing
+between the default threshold and the loosest. Same conclusion, four
+times the evidence.
+
+The header comment still called this a Late-Breaking Report.
+
+**The box history closes at zero.** 394 net words displaced the
+1.71701pt vbox recorded above, and the new Responsible use section
+brought an overfull hbox of 4.90938pt in its place. That one was worth
+chasing where the vbox was not: a vbox is vertical slack while the output
+routine ships a page and puts no ink anywhere, an hbox is about 1.7mm of
+text past the column edge and a reader sees it. The paragraph carried no
+typewriter text, so it was ordinary prose TeX could not break, and it was
+reworded into shorter words with one more sentence break, which is more
+places to break rather than a hack on the spacing. It cleared. Both
+builds now report four pages, zero overfull boxes, no undefined
+references, no affiliation warning and the right conference in the
+running head.
+
+Not spent: the room left under a limit that excludes references. The
+sections a reviewer scores now have an answer each, and padding a short
+contribution is how it starts reading like a full paper that was cut
+down.
 
 ## Ground rules for this draft
 
