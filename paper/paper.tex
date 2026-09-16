@@ -62,7 +62,7 @@ path length, and it can also cost the constraint the robot was meant to
 respect. We contribute a judge-free benchmark measuring all three:
 legibility in Dragan et al.'s form, path cost against the exact optimum,
 and satisfaction of stated keep-out zones. Eight worlds carry 46
-machine-checked geometric facts, cost-to-go is the exact geodesic over a
+machine-checked facts, cost-to-go is the exact geodesic over a
 visibility graph, and no human rater or model judge appears in the
 scoring loop. Every table is recomputed from committed records, and
 anything emitting a trajectory can be scored. Three language models
@@ -145,10 +145,10 @@ reproducible way to ask what a given trajectory pays, in path and in
 constraint satisfaction, for the clarity it buys.
 
 What is released is the instrument, not a result that happens to have
-code attached. It is eight worlds, each carrying the facts about its own
-geometry that a test re-checks against the implementation; an observer
-and three metrics with no free parameter in the ones the headline rests
-on; an exact optimal cost-to-go to measure path cost against; a
+code attached. It is eight worlds, each carrying facts about its own
+geometry and about what an observer sees along its optimal path, all
+re-checked against the implementation by a test; an observer and four
+metrics, with no free parameter in the three the headline rests on; an exact optimal cost-to-go to measure path cost against; a
 legibility optimiser and a shortest-path baseline to compare a candidate
 trajectory with; the prompt template, carried by SHA-256 into every
 record so a comparison is of models and not of prompts; and the tools
@@ -314,10 +314,11 @@ pays more at every step.}
 \centering
 \includegraphics[width=\columnwidth]{generated/keep_out_shortcut}
 \caption{The world built so that the clearest signal is the one the robot
-may not send. The cheapest route to the true goal A (black) stays clear
-of the keep-out zone (hatched), so safety costs nothing until a planner
-tries to be legible. All fifteen trajectories the three models returned
-(red, five samples each) are more legible than the shortest path. Ten of
+may not send. The cheapest route to the true goal A (black and solid) stays
+clear of the keep-out zone (hatched), so safety costs nothing until a
+planner tries to be legible. All fifteen trajectories the three models
+returned (red and dashed, five samples each) are more legible than the
+shortest path. Ten of
 them cross the zone and five do not, and the five that stay out are one
 model's, on five of five samples. Drawn from the committed records, not
 by hand.}
