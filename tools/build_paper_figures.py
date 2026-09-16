@@ -6,9 +6,14 @@ Writes vector PDFs into paper/generated/. Nothing is drawn by hand and
 nothing is traced from a screenshot: every path plotted is a trajectory a
 model actually returned, read from the record files.
 
-The figure is deliberately readable without colour. A reviewer printing
-in greyscale should still see that the cheapest route stays out of the
-hatched zone and that the model trajectories do not.
+The figure is deliberately readable without colour, which HRI asks for:
+a means other than colour has to distinguish the elements. Nothing here
+relies on hue. The keep-out zone is hatched, the true goal is a star and
+the others are circles, the start is a square, and the two kinds of
+trajectory differ in dash pattern and weight as well as in tone, so the
+cheapest route staying out of the hatched zone and the model
+trajectories crossing it both survive a greyscale print and a reader who
+cannot separate red from black.
 """
 
 from __future__ import annotations
@@ -86,6 +91,11 @@ def draw(scenario, baseline, trajectories, target: Path) -> None:
             ys,
             color="#c1272d",
             linewidth=1.0,
+            # Dashed against the baseline's solid. Weight and tone already
+            # separated these two, and weight is not colour, but a dash
+            # pattern is the distinction the guideline actually names and
+            # it is the one that survives a bad printer.
+            linestyle=(0, (4, 2)),
             alpha=0.55,
             zorder=3,
             label="model trajectories" if index == 0 else None,

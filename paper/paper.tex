@@ -119,7 +119,14 @@ feasible on all 160 and moved with the budget at every step.
 \keywords{legibility, human-robot interaction, motion planning,
 benchmarking, language models}
 
+% \keywords sets what is printed; it does not reach the PDF's metadata,
+% and the accessibility guidance asks for the document's metadata to be
+% set. Title and subject arrive from the title and the CCS concepts
+% already. This adds the third, after \maketitle so the class has
+% finished with hyperref.
 \maketitle
+\hypersetup{pdfkeywords={legibility, human-robot interaction, motion
+planning, benchmarking, language models}}
 
 \section{Introduction}
 
@@ -321,7 +328,7 @@ goals: the true goal A, marked with a star, above, and goal B, marked
 with a small circle, below. A hatched rectangle across the upper left of
 the room is the keep-out zone. A thick black line, the shortest path,
 runs straight from the start to A and passes just under the hatched
-rectangle without touching it. Fifteen thin red lines, the model
+rectangle without touching it. Fifteen thin dashed red lines, the model
 trajectories, leave the start on a higher course and come down to A. Ten
 of them pass through the hatched rectangle and five bend just under its
 lower edge without entering it.}
