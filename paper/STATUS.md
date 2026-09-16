@@ -1689,9 +1689,18 @@ expression, the weighting `f(t) = T - t`, is inline math. Tables real
 rather than images: both come from `\input` of generated `tabular`, with
 `booktabs` rules. A text description for every figure: the one figure
 carries a `\Description` naming the room, the marks and what crosses the
-zone. Metadata set: title and subject arrive from the title and the CCS
-concepts, and keywords now go in through `hypersetup`, since `\keywords`
-sets only what is printed.
+zone. Metadata set: all three
+are, and the class does it without help. They land in the XMP stream
+rather than the older Info dictionary, so `pdfinfo` shows no Keywords
+line and nothing is absent. Read them back with
+
+    python -c "import re;d=open('paper/paper.pdf','rb').read();\
+    print(re.search(rb'<\\?xpacket begin.*<\\?xpacket end.*?\\?>',d,re.S).group(0).decode())"
+
+which shows `dc:title`, `pdf:Keywords`, `dc:description` carrying the CCS
+concepts, and `dc:creator` reading Anonymous Author(s). That last one is
+worth knowing for its own sake: the anonymisation reaches XMP, which is
+the copy people forget and the one a reviewer's PDF tool will show.
 
 The sixth asks for a means other than colour to distinguish elements.
 The figure already used a hatched keep-out zone, a star for the true

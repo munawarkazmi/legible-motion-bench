@@ -119,14 +119,13 @@ feasible on all 160 and moved with the budget at every step.
 \keywords{legibility, human-robot interaction, motion planning,
 benchmarking, language models}
 
-% \keywords sets what is printed; it does not reach the PDF's metadata,
-% and the accessibility guidance asks for the document's metadata to be
-% set. Title and subject arrive from the title and the CCS concepts
-% already. This adds the third, after \maketitle so the class has
-% finished with hyperref.
+% The accessibility guidance asks for the document's metadata to be set,
+% and all of it already is: the class hands title, CCS concepts and the
+% keywords above to hyperref itself, and they land in the XMP stream
+% rather than the Info dictionary, which is why pdfinfo shows no
+% Keywords line and nothing is missing. See STATUS.md for how to read
+% them back.
 \maketitle
-\hypersetup{pdfkeywords={legibility, human-robot interaction, motion
-planning, benchmarking, language models}}
 
 \section{Introduction}
 
