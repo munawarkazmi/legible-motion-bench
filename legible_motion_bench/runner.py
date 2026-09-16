@@ -197,9 +197,33 @@ def load_records(path) -> tuple[dict, ...]:
             if not line:
                 continue
             try:
-                records.append(json.loads(line))
+                record = json.loads(line)
             except ValueError as exc:
                 raise ValueError(f"{path}: line {number} is not valid JSON: {exc}") from exc
+            # The format is a contract other people's numbers hang on, so a
+            # record from a format this build cannot know is refused rather
+            # than read on the assumption that the fields it wants are
+            # still there and still mean what they meant. Silently reading
+            # a future record is how a tool reports a number for a field
+            # that moved underneath it.
+            #
+            # Only newer is refused. A record older than this build, an
+            # absent version included, is read: it predates a field rather
+            # than redefining one, and the resume guard is built to carry
+            # exactly that case across a format change.
+            version = record.get("record_version", 0)
+            if not isinstance(version, int) or isinstance(version, bool):
+                raise ValueError(
+                    f"{path}: line {number} carries a record_version that "
+                    f"is not a whole number, {version!r}."
+                )
+            if version > RECORD_VERSION:
+                raise ValueError(
+                    f"{path}: line {number} carries record_version "
+                    f"{version}, and this build reads up to version "
+                    f"{RECORD_VERSION}."
+                )
+            records.append(record)
     return tuple(records)
 
 

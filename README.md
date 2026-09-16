@@ -366,36 +366,170 @@ speed doubles it. When the belief never settles above the threshold the
 value is absent rather than large, because a large number reads as
 "arrived late" and the truth is "did not arrive".
 
-## Running it
+## System requirements
 
-Requires Python 3.10 or newer and pytest. The benchmark itself has no
-other dependencies. Rendering needs matplotlib, which is the `render`
-extra in `pyproject.toml` and the only thing CI installs beyond pytest.
+Python 3.10 or newer, and nothing else. The benchmark package declares no
+dependencies, which is deliberate: the arithmetic underneath every number
+here is the standard library plus `fractions`, and a benchmark whose
+results move with a linear algebra release is not measuring what it says
+it measures.
+
+Two optional extras, both in `pyproject.toml`:
+
+| extra | package | needed for |
+| --- | --- | --- |
+| `dev` | `pytest` 8 or newer | running the test suite |
+| `render` | `matplotlib` 3.8 or newer | drawing GIFs and the paper figure |
+
+Nothing else imports matplotlib, so every number in this file can be
+reproduced without it.
+
+Tested on CPython 3.11 and 3.12 on Linux. Continuous integration runs
+3.12 on `ubuntu-latest` on every push, and that run is the one this file
+quotes. Windows and macOS are expected to work and are not claimed as
+tested: nothing here touches a platform interface, every path goes
+through `pathlib`, and the only file the code writes is a scenario
+property under `--write`. No GPU, no robot, no non-standard hardware.
+The world is 2D and kinematic and the whole suite runs on a laptop CPU in
+under a minute.
+
+## Installation
+
+```bash
+git clone <this repository>
+cd legible-motion-bench
+python -m pip install -e ".[dev,render]"
+```
+
+There is no build step and no compilation. If you would rather not
+install anything, the benchmark runs from a checkout as it stands,
+because it imports nothing that is not in the standard library:
+
+```bash
+python tools/report_suite.py scenarios
+```
+
+That works in a bare Python 3.10 with no `pip install` at all. The extras
+above are needed only to run the tests and to draw figures.
+
+## Demo
+
+Two commands, both under three seconds, neither needing a network or an
+API key. The first checks that the world files still say what the code
+computes:
+
+```bash
+python tools/verify_scenarios.py scenarios
+```
+
+```
+46 properties checked, 0 failed
+```
+
+The second traces the frontier this benchmark exists to measure. It plans
+a legible trajectory in one world under two path budgets and scores each
+against the shortest path:
+
+```bash
+python tools/ceiling_grid.py --scenario open_pair --budget 60 --ceilings 1.1,1.5
+```
+
+```
+  ceiling  legibility  cost ratio  keep-out  clearance   evals
+--------------------------------------------------------------
+     1.00      0.6949      1.0000         0        inf       0
+     1.10      0.8051      1.0997         0        inf      60
+     1.50      0.8556      1.4786         0        inf      60
+legibility bought above a ceiling of 1.1: 0.0504 (0.8051 at 1.1 to 0.8556 at 1.5)
+```
+
+Read it as the trade in one line. The top row is the shortest path, which
+is free and leaves the watcher guessing at 0.6949. Ten per cent more path
+buys 0.11 of legibility; fifty per cent buys 0.05 more on top of that. The
+cost ratio sits on the ceiling in both planned rows, so the budget is
+binding and the curve is the trade rather than an artefact of where the
+search stopped.
+
+Those numbers are exact and reproducible: the search is deterministic at a
+given budget, so the table above is what the command prints, not an
+example of what it might print. If your output differs, something is
+wrong and it is worth reporting.
+
+The full test suite, 250 tests, takes well under a minute:
 
 ```bash
 python -m pytest -q
 ```
 
-248 tests. To check the facts every scenario carries, and to see the suite
-inventory that any quoted denominator has to come from:
+```
+250 passed
+```
+
+## Instructions for use
+
+**Check what a world asserts.** Every scenario carries its facts inline
+and the code re-checks them:
 
 ```bash
 python tools/verify_scenarios.py scenarios tests/fixtures
-```
-
-```bash
 python tools/report_suite.py scenarios
 ```
 
 The first checks 60 recorded properties, 46 of them in the eight suite
 worlds and the rest in the three fixtures. The second prints the suite on
 its own, which is where every "eight worlds" in this file comes from.
+Adding `--write` to the first computes and records the value of every
+property that carries one. That is the only way a computed number enters a
+scenario file. Nobody types a cost-to-go by hand, and a recorded value
+that disagrees with the code is a failure rather than a disagreement to be
+settled by editing the number.
 
-Adding `--write` to the first command computes and records the value of
-every property that carries one. That is the only way a computed number
-enters a scenario file. Nobody types a cost-to-go by hand, and a recorded
-value that disagrees with the code is a failure rather than a disagreement
-to be settled by editing the number.
+**Score a trajectory you already have.** Scoring takes a world and a
+sequence of positions and knows nothing about what produced them:
+
+```python
+from legible_motion_bench import metrics, world
+from legible_motion_bench.observer import Observer
+
+scenario = world.load_scenario("scenarios/keep_out_shortcut.json")
+path = [(1.0, 5.0), (2.0, 6.9), (7.0, 6.9), (11.0, 8.0)]
+result = metrics.evaluate(scenario, Observer(), path)
+print(round(result.legibility, 4), round(result.cost_ratio, 4),
+      result.safety.keep_out_entries)
+```
+
+```
+0.771 1.0819 0
+```
+
+That is a real committed trajectory, the one Gemini returned for this
+world at a stated budget of 1.25, so the same three numbers appear in the
+tables above. An infeasible trajectory instead comes back with `feasible`
+false and `None` for legibility and cost ratio, rather than a figure that
+would flatter a path for walking through a wall.
+
+**Add a planner.** One class with a `plan` method that takes a scenario
+and returns a `Plan`. `legible_motion_bench/planners/shortest.py` is
+about thirty lines and is the whole interface.
+
+**Add a model.** One backend with a `complete` method that takes a prompt
+and a scenario id and returns the reply as a string. See
+`legible_motion_bench/adapter.py`, and `results/README.md` for running a
+cell and what the record format guarantees.
+
+**Recompute any table in this file.** Nothing here is typed by hand:
+
+```bash
+python tools/score_records.py results/gemini_flash_c1p25_k1.jsonl
+python tools/ceiling_sweep.py --alias gemini_flash
+python tools/consistency.py results/gemini_flash_c1p25_k*.jsonl
+```
+
+**Draw the figures.** This is the one part that needs matplotlib:
+
+```bash
+python tools/render_figures.py scenarios --out docs/img
+```
 
 ## Paper
 
@@ -421,6 +555,29 @@ Both results tables and the figure in the paper are written by
 `tools/build_paper_results.py` and `tools/build_paper_figures.py` from the
 record files in `results/`. No number in the paper is typed.
 
-## Licence
+## Licence and maintenance
 
-MIT. See `LICENSE`.
+MIT, in `LICENSE`. It covers the code, the eight scenario files and the
+record files alike, so anything here can be used, modified and
+redistributed with attribution and no further permission.
+
+The scenario suite and the record format are the parts other work would
+depend on, so they are the parts held still. A world's geometry is fixed
+once it is committed: changing it would silently move every number ever
+reported against it, so a world that needs different geometry is a new
+world with a new id rather than an edit. The record format carries a
+`record_version` for the same reason, and the reader refuses a version it
+does not know instead of guessing.
+
+Breakage is caught rather than hoped against. Every property each world
+carries is re-checked against the committed code on every push, so a
+change that alters a world fails the build rather than quietly moving a
+published number, and the same run holds the test count in this file to
+the count the suite actually collects.
+
+Issues and pull requests are welcome on the repository. Adding a planner
+or a model is a small, contained change by design, described under
+instructions for use above, and a new one is welcome without asking
+first. Changes to a committed world or to the record format are the ones
+worth raising as an issue before writing code, because those are the two
+things other people's numbers hang on.

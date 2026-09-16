@@ -57,7 +57,7 @@ inspected.
   across all four cost ceilings, 160 decodes each, and Gemini is now
   complete across all four as well, 16 September 2026. The grid is 480
   decodes with no cell outstanding, and the contrast that was two points
-  is a four point response. A 248-test suite in CI, which also
+  is a four point response. A 250-test suite in CI, which also
   re-checks every scenario property against the committed code and every
   committed record file for completeness)
 - [x] Scenario suite (eight worlds, 46 machine-checked facts carried

@@ -39,6 +39,10 @@ DEFAULT_GRID = tuple(
     [round(1.02 + 0.01 * i, 2) for i in range(19)] + [1.25, 1.3, 1.4, 1.5, 1.75, 2.0]
 )
 
+# The ceiling the report's frontier table quotes, which is the rung the
+# "still buying" line measures from when the grid reaches it.
+REPORTED_CEILING = 1.25
+
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -129,12 +133,20 @@ def main(argv=None) -> int:
                     f"{hi_result.safety.keep_out_entries} between {lo:g} and {hi:g}"
                 )
 
-        # What the rungs above 1.25 are still buying.
-        best = max(r.legibility for _, r, _ in rows)
-        at_125 = max(r.legibility for c, r, _ in rows if c <= 1.25)
+        # What the loosest rungs are still buying, measured from the
+        # tightest rung at or under the ceiling the report quotes. The
+        # reference rung is named rather than assumed to be 1.25: a grid
+        # passed with --ceilings need not contain 1.25 at all, and saying
+        # 1.25 when the row is really 1.10 misreports the comparison.
+        best_ceiling, best = max(
+            ((c, r.legibility) for c, r, _ in rows), key=lambda pair: pair[1]
+        )
+        under = [(c, r.legibility) for c, r, _ in rows if c <= REPORTED_CEILING]
+        reference_ceiling, reference = max(under, key=lambda pair: pair[1])
         print(
-            f"legibility bought above a 1.25 ceiling: {best - at_125:.4f} "
-            f"({at_125:.4f} to {best:.4f})"
+            f"legibility bought above a ceiling of {reference_ceiling:g}: "
+            f"{best - reference:.4f} ({reference:.4f} at {reference_ceiling:g} "
+            f"to {best:.4f} at {best_ceiling:g})"
         )
 
     if transitions:

@@ -455,6 +455,50 @@ def test_records_written_before_a_field_existed_still_resume(tmp_path, suite):
     assert (attempted, skipped) == (1, 1)
 
 
+def test_a_record_from_a_newer_format_is_refused_rather_than_read(tmp_path):
+    """The other half of the resume guard's tolerance.
+
+    Reading a record older than this build is safe: an absent field
+    predates a format rather than redefining one, and the test above
+    depends on that. Reading a newer one is not, because a field this
+    build knows the name of may have changed its meaning, and a tool that
+    guesses reports a number for something else. So the version is a
+    ceiling rather than an equality.
+    """
+    out = tmp_path / "future.jsonl"
+    out.write_text(
+        json.dumps(
+            {
+                "record_version": runner.RECORD_VERSION + 1,
+                "scenario_id": "open_pair",
+                "run_alias": "local_qwen",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError) as caught:
+        runner.load_records(out)
+    message = str(caught.value)
+    assert "record_version" in message
+    assert str(runner.RECORD_VERSION + 1) in message
+    # The line is named, because a reader given one bad row in a long file
+    # needs to know which row.
+    assert "line 1" in message
+
+
+def test_a_record_version_that_is_not_a_number_is_refused(tmp_path):
+    # A string version compares as neither older nor newer, so it would
+    # otherwise slip through whichever way the comparison is written.
+    out = tmp_path / "odd.jsonl"
+    out.write_text(
+        json.dumps({"record_version": "1", "scenario_id": "open_pair"}) + "\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="not a whole number"):
+        runner.load_records(out)
+
+
 def tracked_record_files(root: Path):
     """Record files git knows about, which is what "committed" means here.
 
