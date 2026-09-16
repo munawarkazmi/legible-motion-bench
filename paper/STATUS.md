@@ -1518,6 +1518,31 @@ Recorded rather than fixed. The line above this entry said zero overfull
 boxes and that had stopped being true, which is the kind of stale claim
 this file exists to catch.
 
+## Three phrases in the body outlived the two ceiling grid, 16 September 2026
+
+Fixing the README turned up the same defect in `paper.tex`. The body was
+written when Gemini had been run at 1.25 and 2.00 only, and three phrases
+still counted to two after the grid filled: "a second budget shows what it
+is worth", "without a single keep-out entry at either budget", and "It
+never exceeded either stated budget". Each is now stated over all four,
+which is what Table 2 and its caption already claimed two paragraphs
+earlier. No number changed; every figure in those sentences was
+recomputed from the records first and all of them held.
+
+**The PDFs have not been rebuilt for this.** They are three phrases behind
+the source until `make both` is run, which needs a TeX distribution that
+carries `binhex.tex` for `newtxmath`. The edits add about fourteen
+characters to a four page draft that already carries a 1.71701pt overfull
+vbox, so the page break is worth looking at rather than assuming. This
+note is the declared exception, in the way `results/IN_PROGRESS` was, and
+it comes out when the two PDFs are committed.
+
+The absent city on the affiliation is still open, recorded on 6 August and
+unchanged. `acmart` documents `\institution`, `\city` and `\country` as
+mandatory and warns on the missing one. It costs nothing in the anonymised
+build, where the block is suppressed, but the preprint carries the author
+block and goes out without a city.
+
 ## Ground rules for this draft
 
 - Results tables and figures are generated from committed records by a

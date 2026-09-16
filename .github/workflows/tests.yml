@@ -24,8 +24,11 @@ jobs:
       # being true when the geometry changed underneath it.
       - name: Scenario properties hold
         run: python tools/verify_scenarios.py scenarios tests/fixtures
+      # The suite is scenarios/. Pointing this at tests/fixtures printed
+      # the three planner fixtures and called it the suite inventory,
+      # which is the wrong denominator for every count in the prose.
       - name: Suite inventory is reproducible
-        run: python tools/report_suite.py tests/fixtures
+        run: python tools/report_suite.py scenarios
       # The README and the status file both quote the suite size; this
       # fails the build when the suite grows or shrinks until every
       # documented number is updated, so no copy of the integer can
