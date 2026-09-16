@@ -141,8 +141,12 @@ it spends nothing extra, which is the right answer where deviating cannot
 help. It never exceeded either stated budget. For this model the budget
 is a constraint; for the other two it is text.
 
-Three models at one temperature is a pilot, not a finding, and Gemini was
-swept at two ceilings rather than four. The records are in `results/`, one
+Three models at one temperature is a pilot, not a finding. All three are
+now swept across all four ceilings, 480 decodes, and the model that
+responds to the budget does so at every step of it: 1.0536 at a stated
+1.10, then 1.0819, 1.1116 and 1.1539. The other two pay 1.2817 and about
+1.17 whatever they are told, so their violation counts fall only because
+the line moves. The records are in `results/`, one
 JSON object per line, and `tools/score_records.py`,
 `tools/consistency.py` and `tools/ceiling_sweep.py` recompute every number
 above from them.
@@ -168,10 +172,11 @@ and this section will say so until it is.
   re-checked in CI
 - [ ] Language model evaluation: the prompt, the extraction, the record
   format, the resume guard and the scoring are built and tested. Three
-  models are committed. Qwen 2.5 7B on a local Ollama and Llama 3.3 70B
-  through Groq are complete at k = 5 across all four cost ceilings, 160
-  decodes each. Gemini 3.6 Flash is complete at k = 5 at ceilings 1.25
-  and 2.00, 80 decodes; 1.10 and 1.50 have not been run
+  models are committed and all three are complete at k = 5 across all
+  four cost ceilings, 160 decodes each: Qwen 2.5 7B on a local Ollama,
+  Llama 3.3 70B through Groq, and Gemini 3.6 Flash. 480 decodes in the
+  grid, plus 8 more of Qwen at temperature zero, which are never pooled
+  with the rest
 
 ## What is here
 

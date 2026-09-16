@@ -69,11 +69,11 @@ is not allowed to send, both entered the keep-out zone on every one of
 ten samples. The third stayed inside the budget and outside the zone on
 all 40, and beat the shortest path in that same world on five of five
 without entering it. Given four different path budgets the first two
-moved the cost they actually paid by 0.012 and by nothing at all; given
-two, the third moved with the budget in seven of eight worlds. Its four
-refusals turn out to be about the stated budget rather than the motion:
-the same trajectory in the same world is called not legible under a tight
-budget and legible under a loose one.
+moved the cost they actually paid by 0.0124 and by nothing whatever; the
+third moved at every one of them, 1.0536 to 1.0819 to 1.1116 to 1.1539.
+Its four refusals turn out to be about the stated budget rather than the
+motion: the same trajectory in the same world is called not legible under
+a tight budget and legible under a loose one.
 \end{abstract}
 
 % Mandatory for papers over two pages, which this became when related
@@ -301,11 +301,10 @@ survives raising the stated budget to 2.00.}
 \centering
 \small
 \input{generated/ceiling_table}
-\caption{Forty decodes at each stated budget, per model. For the two
-models swept across all four, the budget nearly doubles and the cost
-actually paid does not follow it. The third was run at 1.25 and 2.00,
-where it does follow. A dash is a cell that was not run rather than a
-cell with nothing in it.}
+\caption{Forty decodes at each stated budget, per model. All three are
+swept across all four budgets, 480 decodes in the grid. The budget nearly
+doubles across it. Two of the three pay the same either way; the third
+pays more at every step.}
 \label{tab:ceilings}
 \end{table*}
 
@@ -364,17 +363,19 @@ in the prompt changed.
 
 
 Table~\ref{tab:ceilings} asks whether the budget violations mean the
-budget was too tight or that the budget was not attended to. For the two
-models swept across all four budgets it is the second. One model's median
-cost moves by 0.012 across a budget that nearly doubles and the other's
-does not move at all, so the falling violation counts are the line
-moving, not the models complying. Where the optimiser sits exactly on the
-budget in every row, because for a planner it is a constraint, for those
-two it is text.
+budget was too tight or that the budget was not attended to. For two of
+the three models it is the second. One model's median cost moves by
+0.0124 across a budget that nearly doubles and the other's does not move
+at all, staying at 1.2817 to four places in all four rows, so their
+falling violation counts are the line moving and not the models
+complying. Where the optimiser sits exactly on the budget in every row,
+because for a planner it is a constraint, for those two it is text.
 
 The third model separates the two readings that compliance at a single
-budget cannot. Given 2.0 rather than 1.25 it spends more, in seven of the
-eight worlds, and its pooled median rises from 1.0819 to 1.1539. Where
+budget cannot. Its pooled median rises at every step of the grid, 1.0536
+at a stated 1.10, then 1.0819, 1.1116 and 1.1539, so this is a response
+to the budget rather than two points that happen to differ. Given 2.0
+rather than 1.25 it spends more in seven of the eight worlds. Where
 the extra room buys something it takes much more of it: in the keep-out
 world the median cost goes from 1.0819 to 1.4139 and legibility with it,
 0.7710 to 0.8496, without a single keep-out entry at either budget. In

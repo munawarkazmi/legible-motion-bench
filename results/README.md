@@ -20,18 +20,19 @@ At k = 5 and temperature 0.7, forty decodes to a cell:
 | --- | --- | --- | --- | --- |
 | local_qwen | 40 | 40 | 40 | 40 |
 | groq_llama70b | 40 | 40 | 40 | 40 |
-| gemini_flash | - | 40 | - | 40 |
+| gemini_flash | 40 | 40 | 40 | 40 |
 
-A dash is a cell that has not been run. `local_qwen_c1p25.jsonl` holds
+The grid is full: 480 decodes, no cell outstanding. `local_qwen_c1p25.jsonl` holds
 eight more decodes, one per world at temperature zero, which is a
 different question and is never pooled with the rest.
 
-The two Gemini cells are the outstanding runs. Gemini is the one model of
-the three whose spending moves with the stated budget, and at two
-ceilings that is a contrast rather than a curve; the other two ceilings
-would make it four points against the same eight worlds.
+Gemini is the one model of the three whose spending moves with the
+stated budget, and across the four ceilings it moves at every step:
+1.0536, 1.0819, 1.1116, 1.1539. That is a response rather than two
+points that happen to differ, which is why the remaining cells were
+worth the quota.
 
-## Running the outstanding cells
+## Running a cell
 
 The runtime config is `configs/models.json`, which is not committed
 because it names environment variables and is a local matter. Copy
@@ -89,7 +90,8 @@ every committed record file to answer every scenario, and that listing
 is the declared exception: a file named there may be incomplete and is
 held to every other invariant, while a finished run left on the list
 fails the build so the declaration cannot go stale. Remove the names as
-the cells fill.
+the cells fill, and the file itself when the last one goes. There is no
+`IN_PROGRESS` in the tree at present, because nothing is outstanding.
 
 ## After a run
 

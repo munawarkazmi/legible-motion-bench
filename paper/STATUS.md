@@ -54,9 +54,10 @@ inspected.
   3.6 Flash, plus one single decode of Qwen at temperature zero. A file
   cannot mix temperatures or cost ceilings, and a rate-limited request is
   retried rather than counted as answered. Qwen and Llama are complete
-  across all four cost ceilings, 160 decodes each; Gemini is complete at
-  1.25 and at 2.00, 80 decodes, which is the contrast that decides
-  whether it attends to the stated budget. A 248-test suite in CI, which also
+  across all four cost ceilings, 160 decodes each, and Gemini is now
+  complete across all four as well, 16 September 2026. The grid is 480
+  decodes with no cell outstanding, and the contrast that was two points
+  is a four point response. A 248-test suite in CI, which also
   re-checks every scenario property against the committed code and every
   committed record file for completeness)
 - [x] Scenario suite (eight worlds, 46 machine-checked facts carried
@@ -1440,6 +1441,48 @@ It cost twenty minutes and it was noise, but the next one would not
 necessarily be: a real edit sitting among 436 phantom ones is invisible,
 and the resolution for noise is to discard the working tree. A
 `.gitattributes` now pins the repository to LF, so this cannot recur.
+
+## The grid is full, and the response is monotone, 16 September 2026
+
+Gemini at 1.10 and at 1.50 are answered, so all three models are now run
+at all four stated budgets. 480 decodes, 40 to a cell, nothing
+outstanding. `results/IN_PROGRESS` is deleted rather than emptied,
+because nothing is declared unfinished any more.
+
+What the two missing cells were worth:
+
+| stated budget | Gemini | Llama | Qwen |
+| --- | --- | --- | --- |
+| 1.10 | 1.0536 | 1.2817 | 1.1663 |
+| 1.25 | 1.0819 | 1.2817 | 1.1588 |
+| 1.50 | 1.1116 | 1.2817 | 1.1712 |
+| 2.00 | 1.1539 | 1.2817 | 1.1709 |
+
+Median cost ratio actually paid. Gemini rises at every step, across a
+budget that nearly doubles, for a total movement of 0.1003. Llama returns
+1.2817 in all four rows, to four places, which is not approximately
+unchanged but exactly unchanged. Qwen moves 0.0124 and not in order,
+1.1663 down to 1.1588 up to 1.1712 down to 1.1709, which is noise rather
+than response.
+
+Two points could have been a coincidence. Four monotone points are the
+finding the report leads with, and it cost 80 decodes over six days of a
+five request a minute free tier.
+
+**The statistic that separates them is not the violation count.** All
+three show violations falling as the ceiling loosens: Llama 30, 15, 10,
+0 and Qwen 17, 9, 3, 0. Read alone that looks like all three responding.
+The median cost ratio says otherwise: theirs does not move at all, so
+what falls is the line, not their spending. The draft already said this
+for two models and now says it for the shape of the whole grid. A reader
+given only the over-budget column would draw the opposite conclusion from
+the correct data.
+
+**What was left alone.** The per world claims at 1.25 against 2.00 are
+untouched, because they were about those two budgets and the records
+behind them have not changed: `keep_out_shortcut` going 1.0819 to 1.4139
+and buying 0.7710 to 0.8496, `wall_choice` crossing the baseline, and
+`fan_middle` spending nothing extra where deviating cannot help.
 
 ## Ground rules for this draft
 
