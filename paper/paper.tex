@@ -1,6 +1,6 @@
-% legible-motion-bench: HRI Late-Breaking Report.
+% legible-motion-bench: HRI 2027 Short Contribution, code track.
 %
-% ACM sigconf, the format the HRI LBR call requires. The class is
+% ACM sigconf, the format the call requires. The class is
 % vendored: acmart.cls is generated from acmart.ins by the Makefile, so
 % the build does not depend on the local TeX distribution shipping it.
 %
@@ -14,7 +14,9 @@
 % goes out with the wrong class, and it happened here often enough to be
 % worth removing as a possibility.
 %
-% Two to four pages excluding references. Every number below comes from
+% Four pages excluding references. The track is judged on availability,
+% completeness, utility and relevance, which is why Availability and use
+% is a section rather than a closing line. Every number below comes from
 % paper/generated/, written by tools/build_paper_results.py from the
 % committed records. None of them is typed by hand. See paper/STATUS.md
 % for the honest state of each section.
@@ -28,6 +30,16 @@
 \fi
 
 \usepackage{booktabs}
+
+% Without this both builds print acmart's placeholder, Conference'17,
+% July 2017, Washington, DC, USA, in the running head. Rights, ISBN and
+% DOI are deliberately not set: those are camera-ready values and
+% inventing one is worse than leaving the placeholder.
+\acmConference[HRI '27]{Proceedings of the 2027 ACM/IEEE International
+  Conference on Human-Robot Interaction}{March 8--12, 2027}{Santa Clara,
+  CA, USA}
+\acmYear{2027}
+\copyrightyear{2027}
 
 \begin{document}
 
@@ -400,26 +412,67 @@ observer has no option for a goal outside the declared set, though real
 observers form exactly that belief when motion becomes strange enough.
 And time to confidence, the one metric here with a free parameter, is not
 stable: across the admissible band the count of trajectories reaching
-confidence sooner than the baseline runs from 55 of 95 down to 31 of 95,
-and individual verdicts move with it. It is reported nowhere above and no
+confidence sooner than the baseline runs from 234 of 387 down to 144 of
+387 across the whole grid, and individual verdicts move with it: 72 of
+the 387 differ between the default and the loosest threshold. It is reported nowhere above and no
 claim here rests on it.
 
 Three models at one temperature over eight worlds is a pilot. Every number
 here is recomputed by a committed tool from committed records.
 
-\section{Availability}
+\section{Availability and use}
 
 The eight worlds and the facts each one carries, the prompt template,
 every record file behind the tables above, and the tools that recompute
-every table and the figure from those records, are public. The link is
-withheld here for anonymous review and will be given at camera-ready.
+every table and the figure from those records, are public under the MIT
+licence. The link is withheld here for anonymous review and an anonymised
+copy accompanies this submission; the link is given at camera-ready.
 Nothing reported above was produced by a step that is not in that
 repository.
 
-The instrument is not specific to language models. Anything that emits a
-trajectory can be scored by it, and the cost of adding a planner or a
+It runs on Python 3.10 with no third-party package. \texttt{pytest} runs
+the 248 tests; one further command re-checks the 46 facts the worlds
+carry against the code, and another prints the suite inventory that every
+denominator in this report comes from. Matplotlib is needed only to draw
+figures and nothing else imports it. The tables and the figure above are
+written from the record files by two committed tools, so a reader who
+doubts a number can regenerate it rather than take it.
+
+Adding a planner is one class with a \texttt{plan} method that takes a
+world and returns a sequence of positions. Adding a model is one backend
+with a \texttt{complete} method that takes a prompt and returns the
+reply as a string. Both are then scored by the code that scored
+everything here, because scoring takes a trajectory and a world and knows
+nothing about what produced either. Scoring is deliberately not done
+inside the runner: records hold the replies and a separate tool holds the
+arithmetic, so changing a metric cannot rewrite what a model said. Worlds
+are JSON, validated strictly in both directions, an unknown key being an
+error, because a misspelled \texttt{keep\_out\_zones} would otherwise
+load as a world in which every planner scores as perfectly safe.
+
+So the instrument is not specific to language models. Anything that emits
+a trajectory can be scored by it, and the cost of adding a planner or a
 model is one record file. The worlds and the facts they carry are the
 fixed part; what gets measured against them is not.
+
+\section{Responsible use}
+
+No human participants and no personal data are involved at any point.
+Replies are committed as given, the 292 failed requests recorded as
+evidence and retried rather than dropped, and the trajectories that
+proved physically impossible kept and counted rather than filtered out.
+A record set holding only what worked would misrepresent the models it
+names.
+
+Two readings of these numbers should be refused in advance. A legibility
+score is not a safety certificate: a keep-out zone stands in for a stated
+spatial constraint, and a trajectory that respects one has satisfied a
+declared rule rather than been shown to be safe near a person. That is
+the same boundary the limitations draw around the metric itself. And a
+model's standing here is its standing on this instrument, under one
+prompt at one temperature, rather than a general claim about the model;
+the exact checkpoint that answered is recorded in every record so a later
+run can be compared rather than assumed comparable.
 
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{references}
