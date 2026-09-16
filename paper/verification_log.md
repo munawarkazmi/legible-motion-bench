@@ -20,7 +20,7 @@ down.
 | Bastarache, Nielsen and Smith, On Legible and Predictable Robot Navigation in Multi-Agent Environments, ICRA 2023 | body checked 5 August 2026 | Extends Dragan to dynamic goal regions for multi-agent passing. Reports minimum separation and minimum time-to-collision alongside legibility, which narrows our safety claim; see below. |
 | Wallkotter, Chetouani and Castellano, A new approach to evaluating legibility, arXiv 2022 | body checked | Compares ten legibility frameworks on framework-independent trajectories across two scenarios, evaluated by human observers. The honest contrast for the judge-free claim: they evaluate frameworks against people, this benchmark evaluates planners against an exactly computed observer. The difference has to be argued rather than assumed to be an improvement. |
 | Francis et al., Principles and Guidelines for Evaluating Social Robot Navigation Algorithms | body checked 4 August 2026 | Read from the arXiv version, 2306.16740v4. It calls for runnable instruments explicitly and endorses computed metrics for reproducibility, so it is cited as motivation and not positioned around. It names legibility as principle P3 and attributes it to Dragan rather than proposing a computed metric of its own. It also sets a condition this project has not met, recorded below. |
-| Shi, Grislain, Sigaud and Chetouani, Controlling Intent Expressiveness in Robot Motion with Diffusion Models, 2025 | metadata only | Controllable legibility across a spectrum using an Information Potential Field. Abstract does not mention obstacles or constraint satisfaction; that absence is not yet confirmed from the body. |
+| Shi, Grislain, Sigaud and Chetouani, Controlling Intent Expressiveness in Robot Motion with Diffusion Models, arXiv 2510.12370v1, 14 October 2025 | body checked 16 September 2026 | Controllable legibility across a spectrum using an Information Potential Field. The absence suspected from the abstract is confirmed from the body: there are no obstacles in the work at all, and no cost is reported. See below. |
 | Mahadevan et al., Generative Expressive Robot Behaviors using Large Language Models, HRI 2024 | body checked 6 August 2026 | Closest existing work on language models and expressive motion, and it turns out not to measure legibility at all; see below. |
 | Mainprice, Sisbot, Simeon and Alami, Planning Safe and Legible Hand-over Motions for Human-Robot Interaction, 2010 | body checked 5 August 2026 | Read from a copy supplied by hand after the online sources refused. It is not about legibility in this project's sense at all; see below. |
 
@@ -323,15 +323,59 @@ re-checked against nothing here, because nothing newer was found. No row
 in the table above changes a claim in the draft, and none may until it is
 read.
 
+## Shi et al., read in full 16 September 2026
+
+Read from the PDF of arXiv 2510.12370v1, 5 pages, Sorbonne Universite,
+ISIR. Chetouani is an author here and on Legibot, so this is the same
+group as the row above it.
+
+What it does. A two-stage conditional diffusion framework that generates
+paths at a requested legibility level and then turns them into actions,
+with legibility scored by an Information Potential Field of their own
+construction. The contribution is the whole spectrum rather than the
+maximum: conditioning on a label from -1 to 1 moves the motion from
+deliberately ambiguous through predictable to maximally legible. Against
+Legibility Diffuser it matches on both metrics at the maximal setting,
+and the modulation is what is new.
+
+**There are no obstacles in it.** The word appears twice in the paper and
+neither is their own work: once in related work describing what
+artificial potential fields have been used for since Khatib, and once in
+Khatib's title in the bibliography. The problem statement is a
+goal-conditioned MDP over a finite goal set with no obstacle term, and
+both experiments are Block Reaching, an empty 2D plane and a 3D
+PandaGym Franka arm reaching one of two blocks. So the absence the
+metadata row suspected is not an omission in the write-up. It is the
+setting.
+
+**No cost is reported either, and that is the sharper finding.** Their
+Section IV defines predictability against a minimal cost C(ξ), naming
+path length as the example, so cost is in their formalism. It is then
+never measured. Table I reports success rate and two legibility scores,
+their own potential-based one and the distance-based one from Legibility
+Diffuser. There is no path length column, and no comparison of what any
+of the methods spent.
+
+What it changes here. Nothing has to be rewritten, and the claim it was
+most likely to complicate survives contact with it. Related work says
+that what a legible trajectory costs in path and in constraint
+satisfaction is not an axis of any reported result, and this paper, the
+most recent and most likely counterexample, reports neither. It is worth
+recording that the check was made against it rather than assumed.
+
+It stays uncited. The draft is at four pages with no room, the paragraph
+does not need it to be true, and a citation that supports a claim by
+absence earns its place only if a reviewer raises it. If one does, this
+entry is the answer.
+
 ## Outstanding obligations
 
-1. Shi et al.'s diffusion work is still metadata only and is not cited
-   for any finding. Read it in the body before it is. Attempted on 2
-   September 2026 and not possible from this machine: search returns the
-   exact title at arXiv 2510.12370, and the network policy here blocks
-   arxiv.org, so even the identifier is unconfirmed against arXiv itself.
-   The status stays metadata only and the read still has to happen
-   somewhere with a browser. Legibot was body
+1. Done on 16 September 2026. Shi et al. is body checked, from the PDF
+   of arXiv 2510.12370v1 fetched by hand, because the network policy on
+   the machine this was drafted on blocks arxiv.org. It has no obstacles
+   and reports no cost, so it does not complicate the related work claim
+   it was most likely to complicate. It remains uncited, deliberately;
+   the entry above says why. Legibot was body
    checked on the first pass and is now cited in the draft, and
    Mahadevan et al. was read on 6 August 2026 and is now cited for the
    pairing of language models with expressive motion.

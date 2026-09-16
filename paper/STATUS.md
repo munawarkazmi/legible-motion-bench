@@ -69,7 +69,7 @@ inspected.
   shaves clearance rather than crossing a line, and a low ambiguity world
   where the cheapest route is already fairly legible. `tests/test_suite.py`
   asserts the coverage claims no single scenario can make)
-- [ ] Literature review (first pass 4 August 2026; the two body checks
+- [x] Literature review (first pass 4 August 2026; the two body checks
   that were blocking the scenario suite are done the same day, Dragan and
   Srinivasa RSS 2013 read in full and Francis et al. read for whether it
   calls for runnable instruments, both recorded in
@@ -78,7 +78,11 @@ inspected.
   2026, in four paragraphs, and nothing in it rests on a paper that has
   not been read in the body. Mahadevan et al., HRI 2024, was the last
   blocking read and it is done: it turns out never to use the word
-  legible, which makes the contrast cleaner than expected)
+  legible, which makes the contrast cleaner than expected. Shi et al. was
+  the last work carried as metadata only and it is body checked as of 16
+  September 2026, leaving nothing on the list that a claim rests on. What
+  remains is the sweep for anything newer, which belongs in the week of
+  submission and not before)
 - [ ] Writing (a first draft builds, in five sections: introduction,
   related work, the instrument, what language models do, and limitations.
   Three pages in `sigconf`, no undefined references and no errors, with
