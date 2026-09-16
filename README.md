@@ -389,8 +389,8 @@ integration runs 3.10, 3.12 and 3.13 on `ubuntu-latest` on every push,
 and 3.10 is in that matrix because `pyproject.toml` declares it as the
 floor: a minimum version nothing runs is a claim rather than a supported
 version. The suite has also been run by hand on 3.11 on Linux and on
-3.14.6 on Windows, natively rather than under WSL, where all 250 tests
-pass in about 22 seconds.
+3.14.6 on Windows 11, build 26200, natively rather than under WSL, where
+all 250 tests pass in about 22 seconds.
 
 macOS is expected to work and is not claimed as tested. Nothing here
 touches a platform interface, every path goes through `pathlib`, and the
