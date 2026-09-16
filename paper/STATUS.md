@@ -1545,6 +1545,14 @@ when the work was being done in Winchester, and the affiliation is
 independent rather than institutional, so it records where the author is
 rather than a body they belong to.
 
+Rebuilt and committed. The warning is gone, both builds are still four
+pages, and the fix costs the submission build nothing: `paper-named.pdf`
+grew by the 55 bytes of the city line and `paper.pdf` came back at the
+same 413944 bytes with the same content, differing only in its build
+timestamp and PDF id, because the anonymised block never printed the
+field. That is the useful half of the result. A reviewer sees exactly the
+same four pages as before.
+
 ## Ground rules for this draft
 
 - Results tables and figures are generated from committed records by a
