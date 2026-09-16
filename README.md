@@ -384,14 +384,19 @@ Two optional extras, both in `pyproject.toml`:
 Nothing else imports matplotlib, so every number in this file can be
 reproduced without it.
 
-Tested on CPython 3.11 and 3.12 on Linux. Continuous integration runs
-3.12 on `ubuntu-latest` on every push, and that run is the one this file
-quotes. Windows and macOS are expected to work and are not claimed as
-tested: nothing here touches a platform interface, every path goes
-through `pathlib`, and the only file the code writes is a scenario
-property under `--write`. No GPU, no robot, no non-standard hardware.
-The world is 2D and kinematic and the whole suite runs on a laptop CPU in
-under a minute.
+Tested on CPython 3.10, 3.11, 3.12, 3.13 and 3.14. Continuous
+integration runs 3.10, 3.12 and 3.13 on `ubuntu-latest` on every push,
+and 3.10 is in that matrix because `pyproject.toml` declares it as the
+floor: a minimum version nothing runs is a claim rather than a supported
+version. The suite has also been run by hand on 3.11 on Linux and on
+3.14.6 on Windows, natively rather than under WSL, where all 250 tests
+pass in about 22 seconds.
+
+macOS is expected to work and is not claimed as tested. Nothing here
+touches a platform interface, every path goes through `pathlib`, and the
+only file the code writes is a scenario property under `--write`. No
+GPU, no robot, no non-standard hardware. The world is 2D and kinematic
+and the whole suite runs on a laptop CPU in under a minute.
 
 ## Installation
 
