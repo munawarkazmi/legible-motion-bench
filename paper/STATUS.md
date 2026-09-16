@@ -1529,13 +1529,11 @@ which is what Table 2 and its caption already claimed two paragraphs
 earlier. No number changed; every figure in those sentences was
 recomputed from the records first and all of them held.
 
-**The PDFs have not been rebuilt for this.** They are three phrases behind
-the source until `make both` is run, which needs a TeX distribution that
-carries `binhex.tex` for `newtxmath`. The edits add about fourteen
-characters to a four page draft that already carries a 1.71701pt overfull
-vbox, so the page break is worth looking at rather than assuming. This
-note is the declared exception, in the way `results/IN_PROGRESS` was, and
-it comes out when the two PDFs are committed.
+Both builds are rebuilt and committed. Sixteen characters more text in a
+four page draft that already carries a 1.71701pt overfull vbox, and the
+page break did not move: four pages each, the same single vbox on both,
+nothing undefined. `paper.pdf` grew by fifteen bytes and `paper-named.pdf`
+by seventeen, which is the whole of the difference.
 
 The absent city on the affiliation is still open, recorded on 6 August and
 unchanged. `acmart` documents `\institution`, `\city` and `\country` as
@@ -1563,9 +1561,21 @@ block and goes out without a city.
 
 ## Building the PDF
 
-From the TeX distribution, which on this machine is the one inside WSL:
+From the TeX distribution, which on this machine is the one inside WSL.
+Inside WSL:
 
-    cd paper && make
+    cd paper && make both
+
+There is no `make` on the Windows side, so from PowerShell it has to go
+through WSL in one call, and a login shell, because the fonts below live
+in the WSL user tree and a non-login shell does not find them:
+
+    wsl -e bash -lc "cd /mnt/c/Users/munaw/code/legible-motion-bench/paper && make both"
+
+`make both` rather than `make`, so the two builds cannot drift apart.
+Watch for `Nothing to do for 'paper.tex'`: that is latexmk finding the
+source older than the PDFs, which on a fresh pull usually means the pull
+has not happened yet rather than that the build is current.
 
 The distribution does not ship `acmart` and `tlmgr` refuses a
 cross-release install, so the class is vendored as `acmart.ins` and
