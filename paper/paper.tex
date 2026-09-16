@@ -42,38 +42,21 @@ Cost and Constraint Satisfaction}
 \email{munawarsaeedkazmi1@gmail.com}
 
 \begin{abstract}
-A robot moving towards one of several possible goals is unreadable for
-the first seconds of its motion, which is when a person nearby hesitates
-or steps into its path. Legible motion deviates early to resolve that
-ambiguity, and the deviation costs path length. What it can also cost is
-the constraint the robot was supposed to respect. We contribute a small
-judge-free benchmark that measures the three together: legibility in the
-form of Dragan et al., path cost against the exact optimum, and
-satisfaction of stated keep-out constraints. Eight worlds carry 46
-machine-checked facts about their own geometry, so a world and its proof
-obligations cannot drift apart. Optimal cost-to-go is the exact geodesic
-over a visibility graph rather than a grid approximation, computed
-through a predicate that falls back to exact arithmetic wherever floating
-point cannot prove its own sign. No human rater and no model judge
-appears anywhere in the scoring loop. Every reply is committed as a
-record, and every table and figure below is recomputed from those records
-by a tool, so each number traces to the reply that produced it. Anything
-that emits a trajectory can be scored, and adding a planner or a model
-costs one record file. We demonstrate the instrument on three language
-models asked to produce legible motion under a stated path budget, which
-returned 120 trajectories and differ exactly where it matters. Two of them
-called all 80 of their trajectories legible, including the 25 that were
-not physically possible, and broke the stated budget 24 times between
-them; in the world built so that the clearest signal is the one the robot
-is not allowed to send, both entered the keep-out zone on every one of
-ten samples. The third stayed inside the budget and outside the zone on
-all 40, and beat the shortest path in that same world on five of five
-without entering it. Given four different path budgets the first two
-moved the cost they actually paid by 0.0124 and by nothing whatever; the
-third moved at every one of them, 1.0536 to 1.0819 to 1.1116 to 1.1539.
-Its four refusals turn out to be about the stated budget rather than the
-motion: the same trajectory in the same world is called not legible under
-a tight budget and legible under a loose one.
+A robot heading for one of several goals is unreadable for the first
+seconds of its motion, when a person nearby hesitates or steps into its
+path. Legible motion deviates early to resolve that, the deviation costs
+path length, and it can also cost the constraint the robot was meant to
+respect. We contribute a judge-free benchmark measuring all three:
+legibility in Dragan et al.'s form, path cost against the exact optimum,
+and satisfaction of stated keep-out zones. Eight worlds carry 46
+machine-checked geometric facts, cost-to-go is the exact geodesic over a
+visibility graph, and no human rater or model judge appears in the
+scoring loop. Every table is recomputed from committed records, and
+anything emitting a trajectory can be scored. Three language models
+produced 480 trajectories under four stated path budgets. Two claimed
+legibility for all 320 of theirs, 93 of which were not physically
+possible, and paid the same whatever they were told. The third stayed
+feasible on all 160 and moved with the budget at every step.
 \end{abstract}
 
 % Mandatory for papers over two pages, which this became when related
