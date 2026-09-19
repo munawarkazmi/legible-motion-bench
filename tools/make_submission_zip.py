@@ -208,6 +208,12 @@ def main(argv=None) -> int:
     for name, data in payload:
         if Path(name).suffix.lower() not in {".md", ".py", ".toml", ".yml"}:
             continue
+        # This file names the excluded prefixes because excluding them is
+        # its job. Reporting its own comments as dangling references is
+        # noise, and noise in a report is how the real entries stop being
+        # read.
+        if Path(name).name == Path(__file__).name:
+            continue
         try:
             text = data.decode("utf-8")
         except UnicodeDecodeError:
